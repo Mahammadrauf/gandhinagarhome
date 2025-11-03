@@ -112,9 +112,10 @@ const Experience = () => {
               >
                 <div className="flex justify-center mb-2">
                   <a.icon className={`w-10 h-10 ${isActive ? 'text-white' : 'text-primary'}`} />
-                </div>
+                </div>  
                 <div className="text-3xl font-bold mb-2">
-                  {counts[a.key]}{a.suffix}
+                  {counts[a.key as keyof typeof counts]}
+{a.suffix}
                 </div>
                 <div className="text-lg">{a.title}</div>
               </div>
