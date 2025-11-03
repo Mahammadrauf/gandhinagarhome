@@ -1,39 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
 
-const Dropdown = ({ label, options }) => {
-  const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState(label);
-
-  return (
-    <div
-      className="relative"
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-    >
-      <button
-        className={`w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-left focus:outline-none transition-all hover:border-primary cursor-pointer ${open ? 'border-primary shadow-lg bg-white' : ''}`}
-      >
-        {selected}
-        <span className="ml-2 inline-block align-middle">&#x25BC;</span>
-      </button>
-      {open && (
-        <div className="absolute left-0 top-[100%] mt-2 w-full bg-white rounded-xl shadow-lg border border-gray-200 z-30">
-          {options.map((option, idx) => (
-            <div
-              key={option}
-              className="px-6 py-3 cursor-pointer hover:bg-primary/10 transition-all text-gray-700"
-              onMouseDown={() => { setSelected(option); setOpen(false); }}
-            >
-              {option}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
 const Hero = () => {
   return (
     <section className="relative bg-white min-h-screen flex flex-col">
