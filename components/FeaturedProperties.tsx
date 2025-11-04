@@ -1,7 +1,34 @@
-import React from 'react';
+"use client";
+
+import React, { useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
 
 const FeaturedProperties = () => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+
+  const updateScrollButtons = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanScrollPrev(el.scrollLeft > 0);
+  };
+
+  useEffect(() => {
+    updateScrollButtons();
+    const el = scrollRef.current;
+    if (!el) return;
+    el.addEventListener('scroll', updateScrollButtons, { passive: true });
+    window.addEventListener('resize', updateScrollButtons);
+    return () => {
+      el.removeEventListener('scroll', updateScrollButtons);
+      window.removeEventListener('resize', updateScrollButtons);
+    };
+  }, []);
+
+  const scrollByAmount = (amount: number) => {
+    if (scrollRef.current) scrollRef.current.scrollBy({ left: amount, behavior: 'smooth' });
+  };
+
   const properties = [
     {
       image: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=800&q=80',
@@ -90,7 +117,7 @@ const FeaturedProperties = () => {
       {/* Subtle decorative line */}
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
       
-      <div className="max-w-10xl mx-auto px-4 lg:px-10">
+      <div className="container mx-auto px-4">
         <div className="mb-12 text-center">
           <h2 className="text-4xl font-bold text-gray-800 mb-3">Featured Properties</h2>
           <p className="text-gray-600 text-lg">Curated interiors from Gandhinagar's finest homes.</p>
@@ -98,7 +125,11 @@ const FeaturedProperties = () => {
         </div>
 
         <div className="relative">
-          <div className="flex gap-6 overflow-x-auto pb-4" style={{ scrollbarWidth: 'thin', scrollbarColor: '#006D5B #f3f4f6' }}>
+          {/* Left gradient fade */}
+          
+          {/* Right gradient fade */}
+          
+          <div ref={scrollRef} className="flex gap-6 overflow-x-auto pb-4" style={{ scrollbarWidth: 'thin', scrollbarColor: '#006D5B #f3f4f6' }}>
             {properties.map((property, index) => (
               <div
                 key={index}
@@ -163,6 +194,30 @@ const FeaturedProperties = () => {
               </div>
             ))}
           </div>
+
+          {/* Prev/Next scroll buttons */}
+          {canScrollPrev && (
+            <button
+              type="button"
+              aria-label="Previous"
+              onClick={() => scrollByAmount(-320)}
+              className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 items-center justify-center rounded-full bg-primary text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+            >
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+          <button
+            type="button"
+            aria-label="Next"
+            onClick={() => scrollByAmount(320)}
+            className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 items-center justify-center rounded-full bg-primary text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+          >
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
         </div>
       </div>
     </section>

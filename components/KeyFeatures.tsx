@@ -31,26 +31,15 @@ const KeyFeatures = () => {
 
   return (
     <section className="py-12 bg-gray-50">
-      <div className="max-w-10xl mx-auto px-4 lg:px-10">
+      <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
               <div
                 key={index}
-                className="bg-white 
-                rounded-2xl 
-                shadow-md 
-                p-6 
-                border-l-4 border-primary 
-                transition-all 
-                duration-200
-                hover:shadow-xl
-                hover:-translate-y-1
-                hover:border-primary-dark
-                hover:bg-primary/5
-                cursor-pointer"
-                            >
+                className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-primary"
+              >
                 <div className="flex items-start gap-3">
                   <div className={`flex-shrink-0 p-2 rounded-lg bg-primary/10`}>
                     <Icon className="w-5 h-5 text-primary" />

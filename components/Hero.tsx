@@ -1,5 +1,37 @@
 import React from 'react';
 import Image from 'next/image';
+import { Dancing_Script, Playfair_Display } from 'next/font/google'; // Keeping both imports
+import * as Select from '@radix-ui/react-select';
+import { ChevronDown, Check } from 'lucide-react';
+
+// We will use 'dancing' for the tagline
+const dancing = Dancing_Script({ subsets: ['latin'], weight: ['400','600','700'] }); 
+const playfair = Playfair_Display({ subsets: ['latin'], weight: ['600','700','800'] });
+
+const Dropdown = ({ placeholder, options }: { placeholder: string; options: string[] }) => (
+  <Select.Root>
+    <Select.Trigger className="inline-flex items-center justify-between gap-2 px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary min-w-[12rem] shadow-sm">
+      <Select.Value placeholder={placeholder} />
+      <Select.Icon>
+        <ChevronDown className="w-4 h-4 text-gray-600" />
+      </Select.Icon>
+    </Select.Trigger>
+    <Select.Portal>
+      <Select.Content className="z-50 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xl animate-pop">
+        <Select.Viewport className="p-1">
+          {options.map((opt) => (
+            <Select.Item key={opt} value={opt} className="group flex items-center gap-2 px-3 py-2.5 rounded-lg text-gray-800 select-none data-[highlighted]:bg-gray-100 cursor-pointer">
+              <Select.ItemText>{opt}</Select.ItemText>
+              <Select.ItemIndicator className="ml-auto text-primary">
+                <Check className="w-4 h-4" />
+              </Select.ItemIndicator>
+            </Select.Item>
+          ))}
+        </Select.Viewport>
+      </Select.Content>
+    </Select.Portal>
+  </Select.Root>
+);
 
 const Hero = () => {
   return (
@@ -18,17 +50,17 @@ const Hero = () => {
           <div className="absolute inset-0 bg-black/40"></div>
         </div>
 
-        {/* Text Overlay with Glassmorphism - Perfectly Centered */}
+        {/* === MODIFIED TAGLINE BLOCK === */}
         <div className="relative z-10 h-full flex flex-col justify-center items-center text-center px-4">
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl px-8 py-6 md:px-12 md:py-8 border border-white/20 shadow-2xl">
-            <h1 className="text-3xl md:text-5xl font-bold text-white mb-3 drop-shadow-lg">
-              Gandhinagar Homes
-            </h1>
-            <p className="text-base md:text-lg text-white/95 max-w-2xl drop-shadow-md">
-              Premium homes and a trusted selling experience — curated for Gandhinagar.
+          {/* Changed background to white glassmorphism and increased padding */}
+          <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl px-8 py-4 shadow-2xl inline-flex animate-unfold">
+            {/* Changed font, color, size, and text for readability */}
+            <p className={`${dancing.className} font-bold text-primary-dark text-3xl md:text-4xl`}>
+              Premium Homes, Trusted Experience.
             </p>
           </div>
         </div>
+        {/* === END OF MODIFIED BLOCK === */}
 
         {/* Search Bar - At bottom of image */}
         <div className="absolute bottom-0 left-0 right-0 z-20 px-4 pb-4">
@@ -39,24 +71,12 @@ const Hero = () => {
                 placeholder="Location (Sargasan, Kudasan...)"
                 className="flex-1 px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white transition-all"
               />
-              <select className="px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white transition-all">
-                <option>Property Type</option>
-                <option>Apartment</option>
-                <option>Villa</option>
-                <option>Plot</option>
-              </select>
-              <select className="px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white transition-all">
-                <option>Price Range</option>
-                <option>Under ₹50 Lakhs</option>
-                <option>₹50 Lakhs - ₹1 Cr</option>
-                <option>₹1 Cr - ₹2 Cr</option>
-                <option>Above ₹2 Cr</option>
-              </select>
-              <select className="px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white transition-all">
-                <option>Possession</option>
-                <option>Ready to Move</option>
-                <option>Under Construction</option>
-              </select>
+
+              {/* Custom dropdowns */}
+              <Dropdown placeholder="Property Type" options={["Apartment","Villa","Plot","Penthouse"]} />
+              <Dropdown placeholder="Price Range" options={["Under ₹50 Lakhs","₹50L - ₹1 Cr","₹1 Cr - ₹2 Cr","Above ₹2 Cr"]} />
+              <Dropdown placeholder="Possession" options={["Ready to Move","Under Construction","Resale"]} />
+
               <button className="bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-xl font-medium transition-all transform hover:scale-105">
                 Search
               </button>
@@ -84,4 +104,3 @@ const Hero = () => {
 };
 
 export default Hero;
-
