@@ -27,7 +27,8 @@ const WhyInvest = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
             {/* Left: YouTube video (Unchanged) */}
             <div className="w-full">
-              <div className="relative w-full overflow-hidden rounded-2xl shadow-xl border border-gray-100 bg-white">
+              <div className="relative w-full overflow-hidden rounded-2xl shadow-xl border border-gray-100 bg-gray-100">
+
                 <div className="relative pt-[56.25%]">
                   <iframe
                     className="absolute inset-0 w-full h-full"

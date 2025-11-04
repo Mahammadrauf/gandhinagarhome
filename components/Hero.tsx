@@ -35,7 +35,7 @@ const Dropdown = ({ placeholder, options }: { placeholder: string; options: stri
 
 const Hero = () => {
   return (
-    <section className="relative bg-white min-h-screen flex flex-col">
+    <section className="relative bg-white flex flex-col">
       {/* Reduced Height Background Image Section */}
       <div className="container mx-auto px-4 md:px-8 mt-4 md:mt-6">
         <div className="relative h-[340px] md:h-[380px] overflow-hidden rounded-3xl border-2 border-gray-200">
@@ -53,10 +53,10 @@ const Hero = () => {
         {/* === MODIFIED TAGLINE BLOCK === */}
         <div className="relative z-10 h-full flex flex-col justify-center items-center text-center px-4">
           {/* Changed background to white glassmorphism and increased padding */}
-          <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl px-8 py-4 shadow-2xl inline-flex animate-unfold">
+          <div className="bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl px-8 py-4 shadow-2xl inline-flex animate-unfold">
             {/* Changed font, color, size, and text for readability */}
-            <p className={`${dancing.className} font-bold text-primary-dark text-3xl md:text-4xl`}>
-              Premium Homes, Trusted Experience.
+            <p className={`${playfair.className} font-bold text-black/95 text-3xl md:text-3xl`}>
+              Premium homes and a trusted selling experience — curated for Gandhinagar.
             </p>
           </div>
         </div>
@@ -87,18 +87,20 @@ const Hero = () => {
       </div>
 
       {/* Compact CTA Buttons Section with Glassmorphism */}
-      <div className="bg-white pt-2 pb-6 px-4 flex-1 flex items-center justify-center">
-        <div className="bg-white/80 backdrop-blur-md rounded-2xl px-4 py-4 md:px-6 md:py-4 border border-gray-200/50 shadow-xl inline-flex">
-          <div className="flex flex-col md:flex-row gap-4 items-center">
-            <button className="group bg-primary hover:bg-primary-dark text-white px-10 py-4 rounded-xl font-medium transition-all transform hover:scale-105 hover:shadow-lg border-2 border-transparent hover:border-primary-dark w-full md:w-auto">
-              Buy Property
-            </button>
-            <button className="group bg-primary hover:bg-primary-dark text-white px-10 py-4 rounded-xl font-medium transition-all transform hover:scale-105 hover:shadow-lg border-2 border-transparent hover:border-primary-dark w-full md:w-auto">
-              Sell Property
-            </button>
-          </div>
-        </div>
-      </div>
+      {/* Compact CTA Buttons Section with Glassmorphism */}
+<div className="bg-white py-12 flex justify-center">
+  <div className="bg-white/80 backdrop-blur-md rounded-2xl px-6 py-4 md:px-8 md:py-5 border border-gray-200/50 shadow-xl inline-flex">
+    <div className="flex flex-col md:flex-row gap-4 items-center">
+      <button className="group bg-primary hover:bg-primary-dark text-white px-10 py-4 rounded-xl font-medium transition-all transform hover:scale-105 hover:shadow-lg border-2 border-transparent hover:border-primary-dark">
+        Buy Property
+      </button>
+      <button className="group bg-primary hover:bg-primary-dark text-white px-10 py-4 rounded-xl font-medium transition-all transform hover:scale-105 hover:shadow-lg border-2 border-transparent hover:border-primary-dark">
+        Sell Property
+      </button>
+    </div>
+  </div>
+</div>
+
     </section>
   );
 };
