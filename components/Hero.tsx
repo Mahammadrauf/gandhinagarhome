@@ -3,6 +3,8 @@ import Image from 'next/image';
 import { Dancing_Script, Playfair_Display } from 'next/font/google'; // Keeping both imports
 import * as Select from '@radix-ui/react-select';
 import { ChevronDown, Check } from 'lucide-react';
+import heroBg from '../public/images/hero.png';
+
 
 // We will use 'dancing' for the tagline
 const dancing = Dancing_Script({ subsets: ['latin'], weight: ['400','600','700'] }); 
@@ -41,29 +43,24 @@ const Hero = () => {
         <div className="relative h-[340px] md:h-[380px] overflow-hidden rounded-3xl border-2 border-gray-200">
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1920&q=80"
+            src={heroBg}
             alt="Property background"
             fill
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-black/40"></div>
+          
         </div>
 
         {/* === MODIFIED TAGLINE BLOCK === */}
         <div className="relative z-10 h-full flex flex-col justify-center items-center text-center px-4">
           {/* Changed background to white glassmorphism and increased padding */}
-          <div className="bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl px-8 py-4 shadow-2xl inline-flex animate-unfold">
-            {/* Changed font, color, size, and text for readability */}
-            <p className={`${playfair.className} font-bold text-black/95 text-3xl md:text-3xl`}>
-              Premium homes and a trusted selling experience — curated for Gandhinagar.
-            </p>
-          </div>
+          
         </div>
         {/* === END OF MODIFIED BLOCK === */}
 
         {/* Search Bar - At bottom of image */}
-        <div className="absolute bottom-0 left-0 right-0 z-20 px-4 pb-4">
+        <div className="absolute bottom-0 left-0 right-0 z-20 px-4 pb-3">
           <div className="max-w-5xl mx-auto bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-2 border border-gray-200">
             <div className="flex flex-col md:flex-row gap-2">
               <input
