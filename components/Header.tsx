@@ -1,6 +1,28 @@
 import React from 'react';
 import { Home } from 'lucide-react';
 
+// A reusable component for the navigation links
+const NavLink = ({ href, children }) => (
+  <a
+    href={href}
+    // group and relative are new:
+    // 'group' lets us style a child element on parent hover
+    // 'relative' is the anchor for the absolute-positioned underline
+    className="relative group text-gray-800 font-semibold text-sm hover:text-primary transition-colors py-2"
+  >
+    {/* This span holds the text */}
+    <span>{children}</span>
+    
+    {/* --- THIS IS THE NEW UNDERLINE --- */}
+    <span 
+      className="absolute bottom-0 left-0 h-0.5 w-full bg-primary 
+                 transform scale-x-0 group-hover:scale-x-100 
+                 transition-transform duration-300 ease-out origin-left"
+    ></span>
+    {/* ---------------------------------- */}
+  </a>
+);
+
 const Header = () => {
   return (
     <header className="bg-gray-50 sticky top-0 z-50 border-b border-gray-200">
@@ -14,12 +36,13 @@ const Header = () => {
 
           {/* Navigation - Right Aligned */}
           <div className="hidden md:flex items-center gap-6">
+            {/* I've replaced your <a> tags with the new NavLink component */}
             <nav className="flex items-center gap-6">
-              <a href="#" className="text-gray-800 font-semibold text-sm hover:text-primary transition-colors py-1">Home</a>
-              <a href="#" className="text-gray-800 font-semibold text-sm hover:text-primary transition-colors py-1">Buy</a>
-              <a href="#" className="text-gray-800 font-semibold text-sm hover:text-primary transition-colors py-1">Sell</a>
-              <a href="#" className="text-gray-800 font-semibold text-sm hover:text-primary transition-colors py-1">About Us</a>
-              <a href="#" className="text-gray-800 font-semibold text-sm hover:text-primary transition-colors py-1">Contact Us</a>
+              <NavLink href="#">Home</NavLink>
+              <NavLink href="#">Buy</NavLink>
+              <NavLink href="#">Sell</NavLink>
+              <NavLink href="#">About Us</NavLink>
+              <NavLink href="#">Contact Us</NavLink>
             </nav>
             {/* Sign In Button */}
             <button className="bg-primary px-6 py-2.5 rounded-full text-white font-semibold text-sm hover:bg-primary-dark transition-colors flex-shrink-0 ml-4">
@@ -33,4 +56,3 @@ const Header = () => {
 };
 
 export default Header;
-

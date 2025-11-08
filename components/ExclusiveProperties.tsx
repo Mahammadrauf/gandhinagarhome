@@ -2,26 +2,56 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
-const TIMER_MS = 10000; // 10 seconds
+/** ========= Types ========= */
+type Property = {
+  image: string;
+  price: string;
+  location: string;
+  beds: number;
+  baths: number;
+  sqft: string;
+  features: string[];
+  tag: { text: string; color: string };
+};
 
-const FeaturedProperties = () => {
-  // ---- DATA (unchanged) ----
-  const allProperties = [
-    { image:"https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=800&q=80", price:"₹2.1 Cr", location:"Sargasan", beds:4, baths:4, sqft:"3,000", features:["Vaastu-friendly","2 Car Parks"], tag:{ text:"New", color:"bg-primary text-white" } },
-    { image:"https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80", price:"₹1.65 Cr", location:"Kudasan", beds:3, baths:3, sqft:"1,950", features:["Club Access","High Floor"], tag:{ text:"Exclusive", color:"bg-yellow-500 text-white" } },
-    { image:"https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80", price:"₹2.45 Cr", location:"Randesan", beds:3, baths:3, sqft:"2,250", features:["Garden View","Modular Kitchen"], tag:{ text:"Open House", color:"bg-gray-200 text-gray-800" } },
-    { image:"https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80", price:"₹3.10 Cr", location:"Sector 21", beds:4, baths:4, sqft:"3,500", features:["Private Pool","Premium Location"], tag:{ text:"Private", color:"bg-purple-500 text-white" } },
-    { image:"https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80", price:"₹1.85 Cr", location:"Sector 16", beds:3, baths:2, sqft:"2,100", features:["City View","Ready to Move"], tag:{ text:"Hot Deal", color:"bg-red-500 text-white" } },
-    { image:"https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80", price:"₹2.75 Cr", location:"Sector 7", beds:4, baths:3, sqft:"2,800", features:["Corner Plot","Premium Finishes"], tag:{ text:"Premium", color:"bg-primary text-white" } },
-  ];
-  const featuredList = useMemo(() => allProperties.slice(0, 6), []);
+type PropertySectionProps = {
+  title: string;
+  subTitle?: string;
+  properties: Property[];
+  timerMs?: number; // default 10000
+};
 
-  // ---- STATE & REFS ----
+/** ========= Utils ========= */
+const chunkInto = <T,>(arr: T[], size: number): T[][] => {
+  const out: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
+};
+
+/** ========= Generic Property Section (no circular control) ========= */
+const PropertySection: React.FC<PropertySectionProps> = ({
+  title,
+  subTitle = "Curated interiors from Gandhinagar's finest homes.",
+  properties,
+  timerMs = 10000,
+}) => {
+  const groups = useMemo(() => chunkInto(properties, 3), [properties]);
+  const groupCount = groups.length;
+
   const [groupIndex, setGroupIndex] = useState(0);
+
   const listRef = useRef<HTMLDivElement | null>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // ---- HELPERS ----
+  // Auto-advance every timerMs
+  useEffect(() => {
+    if (groupCount <= 1) return;
+    const id = setInterval(() => {
+      setGroupIndex((prev) => (prev + 1) % groupCount);
+    }, timerMs);
+    return () => clearInterval(id);
+  }, [groupCount, timerMs]);
+
   const scrollToActive = (idx: number) => {
     const startIdx = idx * 3;
     const container = listRef.current;
@@ -32,28 +62,11 @@ const FeaturedProperties = () => {
     }
   };
 
-  const nextGroup = () => {
-    const next = groupIndex === 0 ? 1 : 0;
-    setGroupIndex(next);
-    scrollToActive(next);
-  };
-
-  // ---- EFFECTS ----
-  // Auto-advance every 10s
   useEffect(() => {
-    const id = setInterval(() => {
-      setGroupIndex((prev) => {
-        const next = prev === 0 ? 1 : 0;
-        // scroll after state updates
-        queueMicrotask(() => scrollToActive(next));
-        return next;
-      });
-    }, TIMER_MS);
-    return () => clearInterval(id);
+    scrollToActive(groupIndex);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [groupIndex]);
 
-  // Keep alignment on resize
   useEffect(() => {
     const onResize = () => scrollToActive(groupIndex);
     window.addEventListener("resize", onResize);
@@ -61,27 +74,26 @@ const FeaturedProperties = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupIndex]);
 
-  // ---- RENDER ----
   return (
     <section className="py-20 bg-gradient-to-b from-white to-gray-50 relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
       <div className="container mx-auto">
         <div className="mb-12 text-center px-4">
-          <h2 className="text-4xl font-bold text-gray-800 mb-3">Featured Properties</h2>
-          <p className="text-gray-600 text-lg">Curated interiors from Gandhinagar&apos;s finest homes.</p>
+          <h2 className="text-4xl font-bold text-gray-800 mb-3">{title}</h2>
+          <p className="text-gray-600 text-lg">{subTitle}</p>
           <div className="w-20 h-1 bg-gradient-to-r from-primary to-primary-light mx-auto mt-4 rounded-full" />
         </div>
 
-        {/* Native horizontal scrollbar retained */}
+        {/* Native horizontal scrollbar kept */}
         <div
           ref={listRef}
           className="relative overflow-x-auto overflow-y-visible px-4 sm:px-6 lg:px-4 snap-x snap-mandatory
                      [-ms-overflow-style:auto] [scrollbar-width:auto]"
         >
           <div className="flex gap-6 min-w-full py-8">
-            {featuredList.map((property, index) => {
-              const isActive =
-                (groupIndex === 0 && index < 3) || (groupIndex === 1 && index >= 3);
+            {properties.map((property, index) => {
+              const activeStart = groupIndex * 3;
+              const isActive = index >= activeStart && index < activeStart + 3;
               const positionInGroup = index % 3;
 
               return (
@@ -90,7 +102,7 @@ const FeaturedProperties = () => {
                   ref={(el) => (itemRefs.current[index] = el)}
                   className="snap-start flex-none w-[85%] sm:w-[70%] md:w-[48%] lg:w-[32%]"
                 >
-                  {/* OUTER WRAPPER — unified radius + clipping to prevent sharp corners */}
+                  {/* OUTER WRAPPER — unify radius + clip */}
                   <div
                     className={[
                       "relative rounded-3xl overflow-hidden transform-gpu transition-all duration-500",
@@ -110,27 +122,34 @@ const FeaturedProperties = () => {
                   >
                     {/* === Card === */}
                     <div className="relative group flex-shrink-0 w-full bg-white rounded-3xl shadow-lg overflow-hidden transition-all duration-300 transform-gpu border border-gray-100 hover:shadow-2xl hover:-translate-y-2">
-                      <div className="relative h-48 overflow-hidden rounded-3xl">
+                      {/* Image with fallback */}
+                      <div className="relative h-56 sm:h-60 overflow-hidden rounded-3xl bg-gray-100">
                         <img
                           src={property.image}
                           alt={property.location}
                           className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src =
+                              "https://images.unsplash.com/photo-1600585154206-3cba1f1b9d1a?auto=format&fit=crop&w=1200&q=80";
+                          }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        <div className={`absolute top-4 right-4 px-4 py-1.5 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm ${property.tag.color}`}>
+                        <div
+                          className={`absolute top-4 right-4 px-4 py-1.5 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm ${property.tag.color}`}
+                        >
                           {property.tag.text}
                         </div>
                         <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm px-3 py-2 rounded-lg shadow-md">
                           <span className="text-lg font-bold text-primary">{property.price}</span>
                         </div>
                       </div>
+
+                      {/* Body */}
                       <div className="p-5">
                         <div className="flex items-center justify-between mb-3">
-                          <div>
-                            <h3 className="text-lg font-semibold text-gray-800 group-hover:text-primary transition-colors">
-                              {property.location}
-                            </h3>
-                          </div>
+                          <h3 className="text-lg font-semibold text-gray-800 group-hover:text-primary transition-colors">
+                            {property.location}
+                          </h3>
                         </div>
                         <div className="flex items-center gap-3 mb-3 text-sm text-gray-600">
                           <span className="flex items-center gap-1">
@@ -171,19 +190,9 @@ const FeaturedProperties = () => {
             })}
           </div>
         </div>
-
-        {/* If you still want a simple "Next" button instead of the circle, uncomment below:
-        <div className="mt-6 flex items-center justify-center">
-          <button
-            onClick={nextGroup}
-            className="px-4 py-2 rounded-lg bg-primary text-white font-semibold hover:opacity-90 transition"
-          >
-            Next
-          </button>
-        </div>
-        */}
       </div>
 
+      {/* Animation */}
       <style jsx global>{`
         @keyframes liftIn {
           0% { transform: translateY(10px) scale(0.985); opacity: 0.6; }
@@ -194,4 +203,30 @@ const FeaturedProperties = () => {
   );
 };
 
-export default FeaturedProperties;
+/** ========= Exclusive Property (12 items) ========= */
+const ExclusiveProperty: React.FC = () => {
+  const properties: Property[] = [
+    { image: "https://images.unsplash.com/photo-1505692952047-1a78307da8e8?auto=format&fit=crop&w=1200&q=80", price: "₹3.40 Cr", location: "Sector 5", beds: 4, baths: 4, sqft: "3,200", features: ["Penthouse", "Terrace Garden"], tag: { text: "Premium", color: "bg-primary text-white" } },
+    { image: "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=80", price: "₹1.90 Cr", location: "Koba", beds: 3, baths: 3, sqft: "2,050", features: ["Club Access", "Corner Unit"], tag: { text: "Exclusive", color: "bg-yellow-500 text-white" } },
+    { image: "https://images.unsplash.com/photo-1502005229762-cf1b2da7c52f?auto=format&fit=crop&w=1200&q=80", price: "₹2.80 Cr", location: "Torda", beds: 4, baths: 3, sqft: "2,850", features: ["Garden View", "Home Office"], tag: { text: "New", color: "bg-primary text-white" } },
+    { image: "https://images.unsplash.com/photo-1501183638710-841dd1904471?auto=format&fit=crop&w=1200&q=80", price: "₹3.60 Cr", location: "Gift City", beds: 4, baths: 4, sqft: "3,450", features: ["Riverfront", "High Floor"], tag: { text: "Private", color: "bg-purple-500 text-white" } },
+    { image: "https://images.unsplash.com/photo-1528909514045-2fa4ac7a08ba?auto=format&fit=crop&w=1200&q=80", price: "₹2.10 Cr", location: "Kh Road", beds: 3, baths: 3, sqft: "2,200", features: ["Ready to Move", "2 Car Parks"], tag: { text: "Hot Deal", color: "bg-red-500 text-white" } },
+    { image: "https://images.unsplash.com/photo-1523217582562-09d0def993a6?auto=format&fit=crop&w=1200&q=80", price: "₹2.95 Cr", location: "Chiloda", beds: 4, baths: 3, sqft: "2,900", features: ["Corner Plot", "Smart Home"], tag: { text: "Premium", color: "bg-primary text-white" } },
+    { image: "https://images.unsplash.com/photo-1536376072261-38c75010e6c9?auto=format&fit=crop&w=1200&q=80", price: "₹2.25 Cr", location: "Adalaj", beds: 3, baths: 3, sqft: "2,300", features: ["Club Access", "Park Facing"], tag: { text: "Open House", color: "bg-gray-200 text-gray-800" } },
+    { image: "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1200&q=80", price: "₹3.05 Cr", location: "Sargasan Ext.", beds: 4, baths: 4, sqft: "3,050", features: ["Premium Finishes", "Servant Room"], tag: { text: "Exclusive", color: "bg-yellow-500 text-white" } },
+    { image: "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80", price: "₹1.99 Cr", location: "Randesan", beds: 3, baths: 3, sqft: "2,120", features: ["Modular Kitchen", "City View"], tag: { text: "New", color: "bg-primary text-white" } },
+    { image: "https://images.unsplash.com/photo-1565183997392-2f6f122e5912?auto=format&fit=crop&w=1200&q=80", price: "₹2.70 Cr", location: "Kudasan Ext.", beds: 4, baths: 3, sqft: "2,780", features: ["Corner Unit", "Premium Location"], tag: { text: "Premium", color: "bg-primary text-white" } },
+    { image: "https://images.unsplash.com/photo-1489365091240-6a18fc761ec2?auto=format&fit=crop&w=1200&q=80", price: "₹2.35 Cr", location: "Sector 25", beds: 3, baths: 3, sqft: "2,380", features: ["Green Belt", "High Floor"], tag: { text: "Open House", color: "bg-gray-200 text-gray-800" } },
+    { image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80", price: "₹3.25 Cr", location: "Sector 10", beds: 4, baths: 4, sqft: "3,120", features: ["Terrace Deck", "2 Car Parks"], tag: { text: "Private", color: "bg-purple-500 text-white" } },
+  ];
+
+  return (
+    <PropertySection
+      title="Exclusive Properties"
+      properties={properties}
+      timerMs={10000}
+    />
+  );
+};
+
+export default ExclusiveProperty;
