@@ -25,10 +25,30 @@ module.exports = {
           '60%': { transform: 'scale(1.02)', opacity: '1' },
           '100%': { transform: 'scale(1)' },
         },
+        // tailwind.config.js (inside extend.keyframes)
+        'rise-up': {
+          '0%': { 
+            opacity: '0', 
+            transform: 'translateY(180px)',  // start lower for visible rise effect
+            filter: 'blur(6px)' 
+          },
+          '60%': { 
+            opacity: '1', 
+            transform: 'translateY(-6px)',   // slight overshoot for natural feel
+            filter: 'blur(0)' 
+          },
+          '100%': { 
+            opacity: '1', 
+            transform: 'translateY(0)', 
+            filter: 'blur(0)' 
+          },
+        },
+
       },
       animation: {
         unfold: 'unfold 600ms cubic-bezier(0.22, 1, 0.36, 1) 100ms both',
         pop: 'pop 300ms ease-out 0ms both',
+        'rise-up': 'rise-up 2.2s cubic-bezier(0.16, 1, 0.3, 1) both',
       },
     },
   },

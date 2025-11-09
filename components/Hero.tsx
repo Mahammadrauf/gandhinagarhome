@@ -6,6 +6,7 @@ import { ChevronDown, Check } from 'lucide-react';
 import heroBg from '../public/images/hero.png';
 
 
+
 // We will use 'dancing' for the tagline
 const dancing = Dancing_Script({ subsets: ['latin'], weight: ['400','600','700'] }); 
 const playfair = Playfair_Display({ subsets: ['latin'], weight: ['600','700','800'] });
@@ -53,10 +54,24 @@ const Hero = () => {
         </div>
 
         {/* === MODIFIED TAGLINE BLOCK === */}
-        <div className="relative z-10 h-full flex flex-col justify-center items-center text-center px-4">
-          {/* Changed background to white glassmorphism and increased padding */}
-          
-        </div>
+        {/* === MODIFIED TAGLINE BLOCK === */}
+{/* === MODIFIED TAGLINE BLOCK (Simple text like design) === */}
+<div className="absolute top-10 left-24 md:top-16 md:left-24 z-10 text-left text-white max-w-2xl drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)] animate-rise-up">
+  <h1 className={`${playfair.className} text-2xl md:text-4xl font-extrabold tracking-wide`}>
+    GandhinagarHomes.com
+  </h1>
+  <p className="text-lg lg:text-2xl font-medium mt-2 mb-6">
+    WHERE EVERY PROPERTY FINDS ITS NEXT OWNER.
+  </p>
+  <p className="text-base md:text-lg text-gray-100 leading-relaxed max-w-xl">
+    Your Trusted Platform Dedicated Exclusively To <span className="font-semibold text-white">Resale</span> Properties In <span className="font-semibold text-white">Gandhinagar</span>. 
+    We Connect Home Sellers With Genuine Buyers & Help Every Home Find Its Perfect Match.
+  </p>
+</div>
+{/* === END OF MODIFIED BLOCK === */}
+
+{/* === END OF MODIFIED BLOCK === */}
+
         {/* === END OF MODIFIED BLOCK === */}
 
         {/* Search Bar - At bottom of image */}
