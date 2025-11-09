@@ -1,8 +1,13 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { Home } from 'lucide-react';
 
+interface NavLinkProps {
+  href: string;
+  children: ReactNode;
+}
+
 // A reusable component for the navigation links
-const NavLink = ({ href, children }) => (
+const NavLink: React.FC<NavLinkProps> = ({ href, children }) => (
   <a
     href={href}
     // group and relative are new:

@@ -12,13 +12,13 @@ type Property = {
   image: string;
   price: string;
   location: string;
-  beds?: 1 | 2 | 3 | 4 | 5;      // optional: derive category from beds if not set
+  beds?: number;      // optional: derive category from beds if not set
   baths: number;
   sqft: string;
   features: string[];
   tag?: { text: string; color: string };
-  tier?: Tier;                   // exclusive | featured | standard
-  category?: CategoryKey;        // optional direct category
+  tier?: string;                   // exclusive | featured | standard
+  category?: string;        // optional direct category
 };
 
 /** ================= Helpers ================= */
@@ -41,12 +41,14 @@ const fallbackImg =
 
 // Normalize a property's category
 const resolveCategory = (p: Property): CategoryKey | null => {
-  if (p.category) return p.category;
+  if (p.category && ["2bhk", "3bhk", "4bhk", "bungalow", "plot"].includes(p.category))
+    return p.category as CategoryKey; // ✅ narrowed
   if (p.beds === 2) return "2bhk";
   if (p.beds === 3) return "3bhk";
   if (p.beds === 4) return "4bhk";
-  return null; // if no beds/category set, skip unless explicitly "bungalow"/"plot"
+  return null;
 };
+
 
 /** ================= Small UI Bits ================= */
 const Pills: React.FC<{
@@ -178,15 +180,18 @@ const ExploreListing: React.FC<{ properties: Property[] }> = ({ properties }) =>
     };
 
     for (const p of properties) {
-      const cat = p.category ?? resolveCategory(p);
-      if (!cat) continue; // skip if cannot resolve
-      dict[cat].push(p);
-    }
+  const cat = resolveCategory(p);
+  if (!cat) continue;
+  dict[cat].push(p);
+}
 
-    const sorter = (a: Property, b: Property) =>
-      tierWeight[a.tier ?? "standard"] - tierWeight[b.tier ?? "standard"];
 
-    (Object.keys(dict) as CategoryKey[]).forEach((k) => dict[k].sort(sorter));
+    const sorter = (a: Property, b: Property) => {
+  const getWeight = (t?: string): number =>
+    tierWeight[(t as Tier) ?? "standard"] ?? tierWeight["standard"];
+  return getWeight(a.tier) - getWeight(b.tier);
+};
+
 
     const counts: Record<CategoryKey, number> = {
       "2bhk": dict["2bhk"].length,

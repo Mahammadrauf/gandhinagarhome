@@ -99,7 +99,9 @@ const PropertySection: React.FC<PropertySectionProps> = ({
               return (
                 <div
                   key={`${property.location}-${index}`}
-                  ref={(el) => (itemRefs.current[index] = el)}
+                  ref={(el) => {
+                    itemRefs.current[index] = el;
+                  }}
                   className="snap-start flex-none w-[85%] sm:w-[70%] md:w-[48%] lg:w-[32%]"
                 >
                   {/* OUTER WRAPPER — unify radius + clip */}
