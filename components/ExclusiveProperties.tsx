@@ -28,32 +28,43 @@ const chunkInto = <T,>(arr: T[], size: number): T[][] => {
   return out;
 };
 
-/** ========= Generic Property Section (no circular control) ========= */
+/** ========= Generic Property Section (with dots + arrows, scrollbar hidden visually) ========= */
 const PropertySection: React.FC<PropertySectionProps> = ({
   title,
   subTitle = "Curated interiors from Gandhinagar's finest homes.",
   properties,
   timerMs = 10000,
 }) => {
-  const groups = useMemo(() => chunkInto(properties, 3), [properties]);
+  const GROUP_SIZE = 3;
+  const groups = useMemo(() => chunkInto(properties, GROUP_SIZE), [properties]);
   const groupCount = groups.length;
 
   const [groupIndex, setGroupIndex] = useState(0);
 
   const listRef = useRef<HTMLDivElement | null>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const autoRef = useRef<number | null>(null);
 
   // Auto-advance every timerMs
   useEffect(() => {
     if (groupCount <= 1) return;
-    const id = setInterval(() => {
+
+    // clear existing
+    if (autoRef.current) window.clearInterval(autoRef.current);
+
+    const id = window.setInterval(() => {
       setGroupIndex((prev) => (prev + 1) % groupCount);
     }, timerMs);
-    return () => clearInterval(id);
+
+    autoRef.current = id;
+    return () => {
+      if (autoRef.current) window.clearInterval(autoRef.current);
+      autoRef.current = null;
+    };
   }, [groupCount, timerMs]);
 
   const scrollToActive = (idx: number) => {
-    const startIdx = idx * 3;
+    const startIdx = idx * GROUP_SIZE;
     const container = listRef.current;
     const target = itemRefs.current[startIdx];
     if (container && target) {
@@ -62,17 +73,27 @@ const PropertySection: React.FC<PropertySectionProps> = ({
     }
   };
 
+  // Sync scroll when groupIndex changes
   useEffect(() => {
     scrollToActive(groupIndex);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupIndex]);
 
+  // keep alignment on resize
   useEffect(() => {
     const onResize = () => scrollToActive(groupIndex);
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupIndex]);
+
+  const goToGroup = (idx: number) => {
+    const clamped = Math.max(0, Math.min(idx, groupCount - 1));
+    setGroupIndex(clamped);
+  };
+
+  const prevGroup = () => goToGroup(groupIndex - 1);
+  const nextGroup = () => goToGroup(groupIndex + 1);
 
   return (
     <section className="py-20 bg-gradient-to-b from-white to-gray-50 relative overflow-hidden">
@@ -84,121 +105,171 @@ const PropertySection: React.FC<PropertySectionProps> = ({
           <div className="w-20 h-1 bg-gradient-to-r from-primary to-primary-light mx-auto mt-4 rounded-full" />
         </div>
 
-        {/* Native horizontal scrollbar kept */}
-        <div
-          ref={listRef}
-          className="relative overflow-x-auto overflow-y-visible px-4 sm:px-6 lg:px-4 snap-x snap-mandatory
-                     [-ms-overflow-style:auto] [scrollbar-width:auto]"
-        >
-          <div className="flex gap-6 min-w-full py-8">
-            {properties.map((property, index) => {
-              const activeStart = groupIndex * 3;
-              const isActive = index >= activeStart && index < activeStart + 3;
-              const positionInGroup = index % 3;
+        <div className="relative">
+          {/* Left arrow - hidden when groupIndex === 0 */}
+          {groupIndex > 0 && (
+            <button
+              aria-label="Previous properties"
+              onClick={prevGroup}
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:scale-105 transition transform"
+            >
+              <svg className="w-5 h-5 text-gray-700" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
 
-              return (
-                <div
-                  key={`${property.location}-${index}`}
-                  ref={(el) => {
-                    itemRefs.current[index] = el;
-                  }}
-                  className="snap-start flex-none w-[85%] sm:w-[70%] md:w-[48%] lg:w-[32%]"
-                >
-                  {/* OUTER WRAPPER — unify radius + clip */}
+          {/* Right arrow - hidden when last group */}
+          {groupIndex < groupCount - 1 && (
+            <button
+              aria-label="Next properties"
+              onClick={nextGroup}
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:scale-105 transition transform"
+            >
+              <svg className="w-5 h-5 text-gray-700" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
+
+          {/* Scrollable list - hide native scrollbar visually */}
+          <div
+            ref={listRef}
+            className="relative overflow-x-auto overflow-y-visible px-4 sm:px-6 lg:px-4 snap-x snap-mandatory no-scrollbar"
+            role="region"
+            aria-roledescription="carousel"
+            aria-label={title}
+          >
+            <div className="flex gap-6 min-w-full py-8">
+              {properties.map((property, index) => {
+                const activeStart = groupIndex * GROUP_SIZE;
+                const isActive = index >= activeStart && index < activeStart + GROUP_SIZE;
+                const positionInGroup = index % GROUP_SIZE;
+
+                return (
                   <div
-                    className={[
-                      "relative rounded-3xl overflow-hidden transform-gpu transition-all duration-500",
-                      isActive
-                        ? "z-10 -translate-y-2 scale-[1.01] shadow-2xl ring-1 ring-gray-200 bg-white"
-                        : "z-0 opacity-90 scale-[0.99] bg-white",
-                    ].join(" ")}
-                    style={
-                      isActive
-                        ? ({
-                            animation: "liftIn 480ms ease forwards",
-                            animationDelay: `${100 * positionInGroup}ms`,
-                            willChange: "transform, opacity",
-                          } as React.CSSProperties)
-                        : undefined
-                    }
+                    key={`${property.location}-${index}`}
+                    ref={(el) => {
+                      itemRefs.current[index] = el;
+                    }}
+                    className="snap-start flex-none w-[85%] sm:w-[70%] md:w-[48%] lg:w-[32%]"
                   >
-                    {/* === Card === */}
-                    <div className="relative group flex-shrink-0 w-full bg-white rounded-3xl shadow-lg overflow-hidden transition-all duration-300 transform-gpu border border-gray-100 hover:shadow-2xl hover:-translate-y-2">
-                      {/* Image with fallback */}
-                      <div className="relative h-56 sm:h-60 overflow-hidden rounded-3xl bg-gray-100">
-                        <img
-                          src={property.image}
-                          alt={property.location}
-                          className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                          onError={(e) => {
-                            (e.currentTarget as HTMLImageElement).src =
-                              "https://images.unsplash.com/photo-1600585154206-3cba1f1b9d1a?auto=format&fit=crop&w=1200&q=80";
-                          }}
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        <div
-                          className={`absolute top-4 right-4 px-4 py-1.5 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm ${property.tag.color}`}
-                        >
-                          {property.tag.text}
+                    <div
+                      className={[
+                        "relative rounded-3xl overflow-hidden transform-gpu transition-all duration-500",
+                        isActive
+                          ? "z-10 -translate-y-2 scale-[1.01] shadow-2xl ring-1 ring-gray-200 bg-white"
+                          : "z-0 opacity-90 scale-[0.99] bg-white",
+                      ].join(" ")}
+                      style={
+                        isActive
+                          ? ({
+                              animation: "liftIn 480ms ease forwards",
+                              animationDelay: `${100 * positionInGroup}ms`,
+                              willChange: "transform, opacity",
+                            } as React.CSSProperties)
+                          : undefined
+                      }
+                    >
+                      {/* === Card === */}
+                      <div className="relative group flex-shrink-0 w-full bg-white rounded-3xl shadow-lg overflow-hidden transition-all duration-300 transform-gpu border border-gray-100 hover:shadow-2xl hover:-translate-y-2">
+                        <div className="relative h-56 sm:h-60 overflow-hidden rounded-3xl bg-gray-100">
+                          <img
+                            src={property.image}
+                            alt={property.location}
+                            className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                            onError={(e) => {
+                              (e.currentTarget as HTMLImageElement).src =
+                                "https://images.unsplash.com/photo-1600585154206-3cba1f1b9d1a?auto=format&fit=crop&w=1200&q=80";
+                            }}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          <div
+                            className={`absolute top-4 right-4 px-4 py-1.5 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm ${property.tag.color}`}
+                          >
+                            {property.tag.text}
+                          </div>
+                          <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm px-3 py-2 rounded-lg shadow-md">
+                            <span className="text-lg font-bold text-primary">{property.price}</span>
+                          </div>
                         </div>
-                        <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm px-3 py-2 rounded-lg shadow-md">
-                          <span className="text-lg font-bold text-primary">{property.price}</span>
-                        </div>
-                      </div>
 
-                      {/* Body */}
-                      <div className="p-5">
-                        <div className="flex items-center justify-between mb-3">
-                          <h3 className="text-lg font-semibold text-gray-800 group-hover:text-primary transition-colors">
-                            {property.location}
-                          </h3>
-                        </div>
-                        <div className="flex items-center gap-3 mb-3 text-sm text-gray-600">
-                          <span className="flex items-center gap-1">
-                            <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                            </svg>
-                            {property.beds} bd
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
-                            </svg>
-                            {property.baths} ba
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                            </svg>
-                            {property.sqft} sq ft
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {property.features.map((feature, idx) => (
-                            <span key={idx} className="px-3 py-1 bg-primary/10 text-primary text-xs rounded-full font-medium">
-                              {feature}
+                        <div className="p-5">
+                          <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-lg font-semibold text-gray-800 group-hover:text-primary transition-colors">
+                              {property.location}
+                            </h3>
+                          </div>
+                          <div className="flex items-center gap-3 mb-3 text-sm text-gray-600">
+                            <span className="flex items-center gap-1">
+                              <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                              </svg>
+                              {property.beds} bd
                             </span>
-                          ))}
+                            <span className="flex items-center gap-1">
+                              <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+                              </svg>
+                              {property.baths} ba
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                              </svg>
+                              {property.sqft} sq ft
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {property.features.map((feature, idx) => (
+                              <span key={idx} className="px-3 py-1 bg-primary/10 text-primary text-xs rounded-full font-medium">
+                                {feature}
+                              </span>
+                            ))}
+                          </div>
+                          <button className="w-full bg-gradient-to-r from-primary to-primary-dark text-white py-2.5 rounded-lg font-medium hover:shadow-lg transition-all transform hover:scale-105">
+                            View Details
+                          </button>
                         </div>
-                        <button className="w-full bg-gradient-to-r from-primary to-primary-dark text-white py-2.5 rounded-lg font-medium hover:shadow-lg transition-all transform hover:scale-105">
-                          View Details
-                        </button>
                       </div>
+                      {/* === End card === */}
                     </div>
-                    {/* === End card === */}
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Dots */}
+          <div className="mt-4 flex items-center justify-center gap-3">
+            {Array.from({ length: groupCount }).map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => goToGroup(idx)}
+                aria-label={`Go to slide ${idx + 1}`}
+                className={`w-3 h-3 rounded-full transition-transform ${groupIndex === idx ? "scale-110 bg-primary shadow-md" : "bg-gray-300"}`}
+              />
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Animation */}
+      {/* Animation & scrollbar hide */}
       <style jsx global>{`
         @keyframes liftIn {
           0% { transform: translateY(10px) scale(0.985); opacity: 0.6; }
           100% { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        /* Hide scrollbar but keep scroll functionality */
+        .no-scrollbar {
+          -ms-overflow-style: none; /* IE and Edge */
+          scrollbar-width: none; /* Firefox */
+        }
+        .no-scrollbar::-webkit-scrollbar {
+          display: none; /* Chrome, Safari, Opera */
+          width: 0;
+          height: 0;
         }
       `}</style>
     </section>

@@ -4,28 +4,30 @@ import React, { useMemo, useRef, useEffect, useState } from "react";
 
 /** ================= Types ================= */
 type Tier = "exclusive" | "featured" | "standard";
-type CategoryKey = "2bhk" | "3bhk" | "4bhk" | "bungalow" | "plot";
+type CategoryKey = "1bhk" | "2bhk" | "3bhk" | "4bhk" | "5bhk" | "bungalow" | "plot";
 
 type Property = {
   id: string | number;
   title?: string;
-  image: string;
+  image: string; // Image is used in this version
   price: string;
   location: string;
-  beds?: number;      // optional: derive category from beds if not set
+  beds?: number;     
   baths: number;
   sqft: string;
   features: string[];
   tag?: { text: string; color: string };
-  tier?: string;                   // exclusive | featured | standard
-  category?: string;        // optional direct category
+  tier?: string;           
+  category?: string;     
 };
 
 /** ================= Helpers ================= */
 const CATEGORIES: { key: CategoryKey; label: string }[] = [
+  { key: "1bhk", label: "1 BHK" },
   { key: "2bhk", label: "2 BHK" },
   { key: "3bhk", label: "3 BHK" },
   { key: "4bhk", label: "4 BHK" },
+  { key: "5bhk", label: "5 BHK" },
   { key: "bungalow", label: "Bungalow" },
   { key: "plot", label: "Plot" },
 ];
@@ -39,42 +41,49 @@ const tierWeight: Record<Tier, number> = {
 const fallbackImg =
   "https://images.unsplash.com/photo-1600585154206-3cba1f1b9d1a?auto=format&fit=crop&w=1200&q=80";
 
-// Normalize a property's category
 const resolveCategory = (p: Property): CategoryKey | null => {
-  if (p.category && ["2bhk", "3bhk", "4bhk", "bungalow", "plot"].includes(p.category))
-    return p.category as CategoryKey; // ✅ narrowed
+  const validCategories: CategoryKey[] = ["1bhk", "2bhk", "3bhk", "4bhk", "5bhk", "bungalow", "plot"];
+  if (p.category && validCategories.includes(p.category as CategoryKey))
+    return p.category as CategoryKey;
+  if (p.beds === 1) return "1bhk";
   if (p.beds === 2) return "2bhk";
   if (p.beds === 3) return "3bhk";
   if (p.beds === 4) return "4bhk";
+  if (p.beds === 5) return "5bhk"; 
   return null;
 };
 
 
 /** ================= Small UI Bits ================= */
+// --- This is the Pills component for filtering ---
 const Pills: React.FC<{
   items: { key: CategoryKey; label: string; count: number }[];
   active: CategoryKey;
   onChange: (key: CategoryKey) => void;
 }> = ({ items, active, onChange }) => {
   return (
-    <div className="flex flex-wrap items-center gap-2 px-4 sm:px-6 lg:px-4">
+    <div className="flex flex-wrap items-center gap-3 px-4 sm:px-6 lg:px-4">
       {items.map((it) => {
+        // Don't render a pill if there are 0 items in that category
+        if (it.count === 0) return null; 
+        
         const isActive = it.key === active;
         return (
           <button
             key={it.key}
             onClick={() => onChange(it.key)}
             className={[
-              "px-4 py-2 rounded-full text-sm font-semibold transition-all",
+              // Styling for the pills, matching your image
+              "px-5 py-3 rounded-full text-base font-semibold transition-all duration-200 ease-in-out",
               isActive
-                ? "bg-primary text-white shadow"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200",
+                ? "bg-[#0b6b53] text-white shadow-lg" // Active state (green)
+                : "bg-gray-100 text-gray-800 hover:bg-gray-200", // Inactive state
             ].join(" ")}
             aria-pressed={isActive}
           >
             {it.label}
-            <span className={["ml-2 text-xs",
-              isActive ? "text-white/90" : "text-gray-500"].join(" ")}>
+            <span className={["ml-2.5 text-sm",
+              isActive ? "text-white/80" : "text-gray-500"].join(" ")}>
               {it.count}
             </span>
           </button>
@@ -86,117 +95,99 @@ const Pills: React.FC<{
 
 const HorizontalList: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const listRef = useRef<HTMLDivElement | null>(null);
+  
+  // Scrolls to the start when the category changes (children update)
   useEffect(() => {
     listRef.current?.scrollTo({ left: 0, behavior: "smooth" });
   }, [children]);
+
   return (
     <div
       ref={listRef}
       className="relative overflow-x-auto overflow-y-visible px-4 sm:px-6 lg:px-4 snap-x snap-mandatory
-                 [-ms-overflow-style:auto] [scrollbar-width:auto]"
+              [-ms-overflow-style:auto] [scrollbar-width:auto]"
     >
-      <div className="flex gap-6 min-w-full py-6">{children}</div>
+      <div className="flex gap-4 min-w-full py-6">{children}</div>
     </div>
   );
 };
 
-const PropertyCard: React.FC<{ p: Property }> = ({ p }) => (
-  <div className="snap-start flex-none w-[85%] sm:w-[70%] md:w-[48%] lg:w-[32%]">
-    <div className="relative rounded-3xl overflow-hidden bg-white shadow-lg ring-1 ring-gray-100 transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl">
+// --- This is the Property Card with the IMAGE ---
+const PropertyCard: React.FC<{ p: Property }> = ({ p }) => {
+  const locationCap = p.location.charAt(0).toUpperCase() + p.location.slice(1);
+  const title = p.title ?? 
+    (p.beds ? `${p.beds}BHK for sale in ${locationCap}` : 
+    (p.category ? `${p.category.charAt(0).toUpperCase() + p.category.slice(1)} for sale in ${locationCap}` : 
+    `Property in ${locationCap}`));
+
+  return (
+  <div className="snap-start flex-none w-[80%] sm:w-[60%] md:w-[45%] lg:w-[24%]">
+    <a
+      href={`/property/${p.id}`} // Example link
+      className="block rounded-2xl overflow-hidden bg-white shadow-md ring-1 ring-gray-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl group"
+    >
       {/* Image */}
-      <div className="relative h-56 sm:h-60 overflow-hidden rounded-3xl bg-gray-100">
+      <div className="relative aspect-[4/5] overflow-hidden bg-gray-100">
         <img
           src={p.image}
-          alt={p.location}
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          alt={title}
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           onError={(e) => {
             (e.currentTarget as HTMLImageElement).src = fallbackImg;
           }}
         />
-        {p.tag && (
-          <div
-            className={`absolute top-4 right-4 px-4 py-1.5 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm ${p.tag.color}`}
-          >
-            {p.tag.text}
-          </div>
-        )}
-        <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm px-3 py-2 rounded-lg shadow-md">
-          <span className="text-lg font-bold text-primary">{p.price}</span>
-        </div>
       </div>
 
       {/* Body */}
-      <div className="p-5">
-        <h3 className="text-lg font-semibold text-gray-800 mb-3">
-          {p.title ?? `${p.beds ? `${p.beds}BHK ` : ""}for sale in ${p.location}`}
+      <div className="p-4 text-center">
+        <h3 className="text-base font-semibold text-primary group-hover:text-primary-dark transition-colors">
+          {title}
         </h3>
-        <div className="flex items-center gap-3 mb-3 text-sm text-gray-600">
-          {typeof p.beds !== "undefined" && (
-            <span className="flex items-center gap-1">
-              <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-              {p.beds} bd
-            </span>
-          )}
-          <span className="flex items-center gap-1">
-            <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
-            </svg>
-            {p.baths} ba
-          </span>
-          <span className="flex items-center gap-1">
-            <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-            </svg>
-            {p.sqft} sq ft
-          </span>
-        </div>
-        <div className="flex flex-wrap gap-2 mb-4">
-          {p.features.map((f, i) => (
-            <span key={i} className="px-3 py-1 bg-primary/10 text-primary text-xs rounded-full font-medium">
-              {f}
-            </span>
-          ))}
-        </div>
-        <button className="w-full bg-gradient-to-r from-primary to-primary-dark text-white py-2.5 rounded-lg font-medium hover:shadow-lg transition-all transform hover:scale-105">
-          View Details
-        </button>
       </div>
-    </div>
+    </a>
   </div>
-);
+  );
+};
 
 /** ================= Main Component ================= */
 const ExploreListing: React.FC<{ properties: Property[] }> = ({ properties }) => {
-  // Build category buckets + counts + sort by tier inside each bucket
+  
+  // --- This logic creates the "buckets" for each category ---
   const buckets = useMemo(() => {
     const dict: Record<CategoryKey, Property[]> = {
+      "1bhk": [],
       "2bhk": [],
       "3bhk": [],
       "4bhk": [],
+      "5bhk": [],
       "bungalow": [],
       "plot": [],
     };
 
     for (const p of properties) {
-  const cat = resolveCategory(p);
-  if (!cat) continue;
-  dict[cat].push(p);
-}
+      const cat = resolveCategory(p);
+      if (!cat) continue;
+      dict[cat].push(p);
+    }
 
-
+    // Sorter function: ensures exclusive/featured are first
     const sorter = (a: Property, b: Property) => {
-  const getWeight = (t?: string): number =>
-    tierWeight[(t as Tier) ?? "standard"] ?? tierWeight["standard"];
-  return getWeight(a.tier) - getWeight(b.tier);
-};
+      const getWeight = (t?: string): number =>
+        tierWeight[(t as Tier) ?? "standard"] ?? tierWeight["standard"];
+      return getWeight(a.tier) - getWeight(b.tier);
+    };
 
+    // Sort each bucket individually
+    (Object.keys(dict) as CategoryKey[]).forEach((key) => {
+      dict[key].sort(sorter);
+    });
 
     const counts: Record<CategoryKey, number> = {
+      "1bhk": dict["1bhk"].length,
       "2bhk": dict["2bhk"].length,
       "3bhk": dict["3bhk"].length,
       "4bhk": dict["4bhk"].length,
+      "5bhk": dict["5bhk"].length,
       "bungalow": dict["bungalow"].length,
       "plot": dict["plot"].length,
     };
@@ -204,31 +195,33 @@ const ExploreListing: React.FC<{ properties: Property[] }> = ({ properties }) =>
     return { dict, counts };
   }, [properties]);
 
+  // --- This state tracks which pill is active ---
   const [active, setActive] = useState<CategoryKey>(() => {
-    // default to first category that has data, else "2bhk"
+    // default to first category that has data, else "1bhk"
     const firstWithData = CATEGORIES.find((c) => buckets.counts[c.key] > 0)?.key;
-    return firstWithData ?? "2bhk";
+    return firstWithData ?? "1bhk";
   });
 
-  // Ensure active tab always points to a non-empty bucket if possible
+  // This makes sure we never have an empty category selected
   useEffect(() => {
     if (buckets.counts[active] === 0) {
-      const fallback = CATEGORIES.find((c) => buckets.counts[c.key] > 0)?.key ?? "2bhk";
+      const fallback = CATEGORIES.find((c) => buckets.counts[c.key] > 0)?.key ?? "1bhk";
       if (fallback !== active) setActive(fallback);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [buckets]);
+  }, [buckets, active]); 
 
+  // Get the list of properties for the *active* category
   const list = buckets.dict[active];
 
   const RightCTA = (
     <a
       href="/listings"
-      className="hidden sm:inline-flex items-center gap-2 text-gray-800 hover:text-primary font-semibold"
+      className="inline-flex items-center gap-2 text-gray-800 hover:text-primary font-semibold text-base"
     >
       All Types
-      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 12h15" />
       </svg>
     </a>
   );
@@ -236,16 +229,14 @@ const ExploreListing: React.FC<{ properties: Property[] }> = ({ properties }) =>
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto">
+        
         {/* Header */}
-        <div className="flex items-end justify-between mb-6 px-4 sm:px-6 lg:px-4">
-          <div>
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-800">Explore Listing</h2>
-            <p className="text-gray-600 mt-2">Discover exceptional residential spaces</p>
-          </div>
+        <div className="flex items-center justify-between mb-8 px-4 sm:px-6 lg:px-4">
+          <p className="text-lg text-gray-700">Discover exceptional residential spaces</p>
           {RightCTA}
         </div>
 
-        {/* Category Pills */}
+        {/* --- Renders the filter pills --- */}
         <Pills
           items={CATEGORIES.map((c) => ({
             key: c.key,
@@ -256,7 +247,7 @@ const ExploreListing: React.FC<{ properties: Property[] }> = ({ properties }) =>
           onChange={setActive}
         />
 
-        {/* Cards for active category */}
+        {/* --- Renders the property cards for the active category --- */}
         <div className="mt-4">
           {list.length > 0 ? (
             <HorizontalList>

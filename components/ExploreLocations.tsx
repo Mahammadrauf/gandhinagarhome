@@ -1,128 +1,173 @@
-"use client";
+'use client';
 
-import React, { useEffect, useRef } from "react";
+import React, { useRef, useState, useEffect } from 'react';
+// --- REMOVED: Image import is no longer needed ---
+// import Image from 'next/image'; 
+import { Home } from 'lucide-react'; 
+import { motion, Variants } from 'framer-motion';
 
-type LocationItem = {
-  id: string | number;
-  name: string;
-  count: number;
-  href?: string;
-};
+const ExploreLocation = () => {
+  const sectionRef = useRef<HTMLElement>(null);
+  const [hasAnimated, setHasAnimated] = useState(false);
 
-type ExploreLocationsProps = {
-  title?: string;
-  subtitle?: string;
-  locations: LocationItem[];
-  allLocationHref?: string;
-};
-
-// 🏠 Home icon in theme color
-const HomeIcon = () => (
-  <svg
-    className="w-7 h-7 text-primary"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={2}
-    viewBox="0 0 24 24"
-  >
-    <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l9-7 9 7" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9 21V9h6v12" />
-  </svg>
-);
-
-export default function ExploreLocations({
-  title = "Explore Location",
-  subtitle = "Discover exceptional residential spaces",
-  locations,
-  allLocationHref = "/locations",
-}: ExploreLocationsProps) {
-  const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const locations = [
+    {
+      name: 'Sargasan',
+      properties: 120,
+      // --- REMOVED: Image property no longer needed ---
+      // image: '...',
+    },
+    {
+      name: 'Kudasan',
+      properties: 90,
+    },
+    {
+      name: 'Raysan',
+      properties: 75,
+    },
+    {
+      name: 'Motera',
+      properties: 150,
+    },
+    {
+      name: 'Infocity',
+      properties: 80,
+    },
+    {
+      name: 'Koba',
+      properties: 60,
+    },
+  ];
 
   useEffect(() => {
-    scrollerRef.current?.scrollTo({ left: 0 });
-  }, []);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasAnimated) {
+            setHasAnimated(true);
+          }
+        });
+      },
+      { threshold: 0.2 } // Trigger when 20% of the section is visible
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => {
+      if (sectionRef.current) {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, [hasAnimated]);
+
+  const fadeInSlideUp: Variants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+  };
+
+  const staggerContainer: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1, // Stagger each card
+        delayChildren: 0.2,
+      },
+    },
+  };
+
+  const itemBounceIn: Variants = {
+    hidden: { opacity: 0, y: 50, scale: 0.8 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      scale: 1, 
+      transition: { type: 'spring', stiffness: 120, damping: 10 } 
+    },
+  };
 
   return (
-    <section className="py-16 bg-white">
-      <div className="container mx-auto">
-        {/* Header */}
-        <div className="flex items-end justify-between mb-8 px-4 sm:px-6 lg:px-4">
-          <div>
-            {/* 👇 Now black text */}
-            <h2 className="text-3xl sm:text-4xl font-bold text-black">{title}</h2>
-            <p className="text-black/70 mt-2">{subtitle}</p>
-          </div>
+    <motion.section 
+      ref={sectionRef} 
+      className="py-12 bg-white relative overflow-hidden"
+      initial="hidden"
+      animate={hasAnimated ? "visible" : "hidden"}
+      variants={fadeInSlideUp}
+    >
+      {/* Animated Background Blobs */}
+      <motion.div 
+        className="pointer-events-none absolute -top-10 -left-10 w-80 h-80 bg-primary/5 rounded-full blur-3xl opacity-50"
+        animate={{ x: [0, -20, 0], y: [0, 30, 0] }}
+        transition={{ duration: 18, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
+      />
+      <motion.div 
+        className="pointer-events-none absolute -bottom-10 -right-10 w-96 h-96 bg-primary-light/5 rounded-full blur-3xl opacity-50"
+        animate={{ x: [0, 20, 0], y: [0, -30, 0] }}
+        transition={{ duration: 22, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
+      />
 
-          <a
-            href={allLocationHref}
-            className="hidden sm:inline-flex items-center gap-2 font-semibold text-emerald-900 hover:text-primary transition-colors"
-          >
-            All Location
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </a>
-        </div>
+      <div className="container mx-auto px-4 relative z-10">
+        <motion.div variants={fadeInSlideUp} className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
+            Explore Locations in Gandhinagar
+          </h2>
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+            Find your ideal home in Gandhinagar's most sought-after neighborhoods.
+          </p>
+          <div className="w-20 h-1 bg-gradient-to-r from-primary to-primary-light mx-auto mt-4 rounded-full" />
+        </motion.div>
 
-        {/* Scrollable location list */}
-        <div
-          ref={scrollerRef}
-          className="relative overflow-x-auto overflow-y-visible px-4 sm:px-6 lg:px-4 snap-x snap-mandatory
-                     [-ms-overflow-style:auto] [scrollbar-width:auto]"
+        <motion.div 
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          variants={staggerContainer}
+          initial="hidden"
+          animate={hasAnimated ? "visible" : "hidden"}
         >
-          <div className="flex gap-6 min-w-full py-4">
-            {locations.map((loc) => {
-              const Card = (
-                <div
-                  className="h-full flex flex-col justify-center rounded-3xl bg-primary/5 ring-1 ring-primary/15
-                             shadow-sm hover:shadow-md transition-all duration-200 p-6 sm:p-8 hover:-translate-y-0.5"
-                >
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white ring-1 ring-primary/20 shadow flex items-center justify-center mb-6">
-                    <HomeIcon />
-                  </div>
-
-                  <h3 className="text-lg sm:text-xl font-semibold text-emerald-900 leading-snug">
-                    {loc.name}
+          {locations.map((location, index) => (
+            // --- UPDATED: Card style without background image ---
+            <motion.div
+              key={index}
+              variants={itemBounceIn}
+              className="group relative rounded-xl bg-white shadow-lg border border-gray-100 
+                         transition-all duration-300 ease-in-out 
+                         hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-primary/20 
+                         cursor-pointer p-6"
+            >
+              <div className="flex items-center justify-between gap-4">
+                {/* Text content */}
+                <div>
+                  <h3 className="text-xl md:text-2xl font-bold text-gray-800 
+                             group-hover:text-primary transition-colors duration-300">
+                    {location.name}
                   </h3>
-
-                  <p className="text-emerald-800/70 mt-2">{loc.count} Properties</p>
+                  <p className="text-sm md:text-base text-gray-500 
+                              group-hover:text-gray-700 transition-colors duration-300">
+                    {location.properties} Properties
+                  </p>
                 </div>
-              );
-
-              return (
-                <div
-                  key={loc.id}
-                  className="snap-start flex-none w-[82%] sm:w-[55%] md:w-[40%] lg:w-[30%] xl:w-[24%]"
-                >
-                  {loc.href ? (
-                    <a
-                      href={loc.href}
-                      className="block rounded-3xl overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-                    >
-                      {Card}
-                    </a>
-                  ) : (
-                    <div className="rounded-3xl overflow-hidden">{Card}</div>
-                  )}
+                
+                {/* Icon (Logo) */}
+                <div className="flex-shrink-0
+                            p-4 rounded-full bg-primary/10 
+                            border border-primary/20
+                            group-hover:bg-primary
+                            transition-all duration-300 ease-in-out">
+                  <Home 
+                    className="w-6 h-6 text-primary 
+                               group-hover:text-white 
+                               transition-all duration-300"
+                  />
                 </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Mobile CTA */}
-        <div className="mt-6 px-4 sm:px-6 lg:px-4 sm:hidden">
-          <a
-            href={allLocationHref}
-            className="inline-flex items-center gap-2 font-semibold text-emerald-900 hover:text-primary transition-colors"
-          >
-            All Location
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </a>
-        </div>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
       </div>
-    </section>
+    </motion.section>
   );
-}
+};
+
+export default ExploreLocation;

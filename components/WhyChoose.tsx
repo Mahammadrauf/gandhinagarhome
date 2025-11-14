@@ -1,15 +1,16 @@
 'use client';
 
-// ADDED: useState and useEffect
 import React, { useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
-// ADDED: ArrowUp icon
 import { ArrowDown, ArrowUp } from 'lucide-react';
+// --- NEW: Import Framer Motion ---
+import { motion, Variants } from 'framer-motion';
 
 const WhyChoose = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  // ADDED: State to track if user is at the bottom
+  const sectionRef = useRef<HTMLElement>(null); // Ref for the whole section for scroll-trigger
   const [isAtBottom, setIsAtBottom] = useState(false);
+  const [hasAnimated, setHasAnimated] = useState(false); // State to trigger Framer Motion animations
 
   const testimonials = [
     {
@@ -56,7 +57,6 @@ const WhyChoose = () => {
     },
   ];
 
-  // RENAMED: from handleScroll to handleScrollDown
   const handleScrollDown = () => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollBy({
@@ -66,7 +66,6 @@ const WhyChoose = () => {
     }
   };
 
-  // ADDED: Handler to scroll to the top
   const handleScrollUp = () => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTo({
@@ -76,56 +75,114 @@ const WhyChoose = () => {
     }
   };
 
-  // ADDED: Effect to listen to scroll events
   useEffect(() => {
     const container = scrollContainerRef.current;
+    const section = sectionRef.current;
 
     const handleScroll = () => {
       if (container) {
         const { scrollTop, scrollHeight, clientHeight } = container;
-        // Check if user is ~10px from the bottom
         const atBottom = scrollHeight - scrollTop - clientHeight < 10;
         setIsAtBottom(atBottom);
       }
     };
 
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasAnimated) {
+            setHasAnimated(true);
+          }
+        });
+      },
+      { threshold: 0.2 } // Trigger when 20% of the section is visible
+    );
+
     if (container) {
       container.addEventListener('scroll', handleScroll);
-      // Run a check on mount
-      handleScroll();
+      handleScroll(); // Initial check
+    }
+    if (section) {
+      observer.observe(section);
     }
 
-    // Cleanup function
     return () => {
       if (container) {
         container.removeEventListener('scroll', handleScroll);
       }
+      if (section) {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        observer.unobserve(section);
+      }
     };
-  }, []); // Empty array means this runs once on mount
+  }, [hasAnimated]);
+
+  // --- NEW: Framer Motion Variants ---
+  const fadeInSlideUp: Variants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+  };
+
+  const staggerContainer: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15, // Stagger each testimonial card
+        delayChildren: 0.3,
+      },
+    },
+  };
+
+  const itemSlideFromBottom: Variants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100, damping: 10 } },
+  };
+
+  const itemSlideFromRight: Variants = {
+    hidden: { opacity: 0, x: 50 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut" } },
+  };
+
 
   return (
-    <section className="py-12 bg-white"> 
+    // --- NEW: Wrap with motion.section for overall section animation trigger ---
+    <motion.section 
+      ref={sectionRef} 
+      className="py-12 bg-white"
+      initial="hidden"
+      animate={hasAnimated ? "visible" : "hidden"}
+      variants={fadeInSlideUp} // Apply fade in slide up to the whole section initially
+    > 
       <div className="max-w-10xl mx-auto px-6 lg:px-10">
         
-      <div className="text-center mb-12">
+        {/* --- NEW: Animate Title --- */}
+        <motion.div variants={fadeInSlideUp} className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
             Why choose Gandhinagar Homes?
           </h2>
           <div className="w-20 h-1 bg-gradient-to-r from-primary to-primary-light mx-auto rounded-full" />
-        </div>
+        </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           <div className="lg:col-span-2 relative">
             
-            <div 
+            {/* --- NEW: Animate Testimonials Container --- */}
+            <motion.div 
               ref={scrollContainerRef} 
               className="space-y-6 h-[420px] overflow-y-auto hide-scrollbar pr-2"
+              variants={staggerContainer}
+              initial="hidden"
+              animate={hasAnimated ? "visible" : "hidden"}
             >
               {testimonials.map((testimonial, index) => (
-                <div 
+                // --- NEW: Animate individual testimonial cards ---
+                <motion.div 
                   key={index} 
-                  className="group bg-white rounded-xl shadow-md hover:shadow-xl p-6 border-l-4 border-primary transition-all duration-300 transform hover:-translate-x-1 relative overflow-hidden"
+                  variants={itemSlideFromBottom} // Apply slide from bottom to each card
+                  className="group bg-white rounded-xl shadow-md p-6 border-l-4 border-primary relative overflow-hidden
+                             transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl hover:shadow-primary/20" // Enhanced hover
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   
@@ -159,13 +216,11 @@ const WhyChoose = () => {
                       <p className="text-gray-700 font-bold leading-relaxed">"{testimonial.testimonial}"</p>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
             
-            {/* --- MODIFIED: Conditional Button Rendering --- */}
             {!isAtBottom ? (
-              // Show DOWN arrow if NOT at the bottom
               <button
                 onClick={handleScrollDown}
                 className="absolute bottom-6 right-8 z-20 bg-primary text-white p-3 rounded-full shadow-lg hover:bg-primary-dark transition-all animate-bounce"
@@ -174,7 +229,6 @@ const WhyChoose = () => {
                 <ArrowDown className="w-5 h-5" />
               </button>
             ) : (
-              // Show UP arrow if AT the bottom
               <button
                 onClick={handleScrollUp}
                 className="absolute bottom-6 right-8 z-20 bg-primary text-white p-3 rounded-full shadow-lg hover:bg-primary-dark transition-all"
@@ -183,15 +237,18 @@ const WhyChoose = () => {
                 <ArrowUp className="w-5 h-5" />
               </button>
             )}
-            {/* --- END OF MODIFICATION --- */}
-
             <div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-white via-white/70 to-transparent pointer-events-none"></div>
 
           </div>
 
-
-          {/* Trusted By Card (UNCHANGED) */}
-          <div className="bg-gradient-to-br from-primary-light via-primary/20 to-white rounded-xl shadow-lg p-6 border-2 border-primary/20 relative overflow-hidden">
+          {/* --- NEW: Animate Trusted By Card --- */}
+          <motion.div 
+            className="bg-gradient-to-br from-primary-light via-primary/20 to-white rounded-xl shadow-lg p-6 border-2 border-primary/20 relative overflow-hidden
+                       transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-primary/20" // Added hover effect
+            variants={itemSlideFromRight} // Slide in from right
+            initial="hidden"
+            animate={hasAnimated ? "visible" : "hidden"}
+          >
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/10 to-transparent rounded-bl-full"></div>
             
             <div className="relative z-10">
@@ -221,10 +278,10 @@ const WhyChoose = () => {
                 </li>
               </ul>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
-    </section>
+    </motion.section>
   );
 };
 

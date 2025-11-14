@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, Home, Heart } from 'lucide-react';
+// --- UPDATED: Import Variants ---
+import { motion, Variants } from 'framer-motion';
 
 const Experience = () => {
   const [counts, setCounts] = useState({ years: 0, properties: 0, clients: 0 });
   const [hasAnimated, setHasAnimated] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
-  // Removed: const [activeIndex, setActiveIndex] = useState(0);
 
   const achievements = [
     {
@@ -16,7 +17,6 @@ const Experience = () => {
       suffix: '+ Years Experience',
       title: 'Local expertise you can trust',
       key: 'years',
-      highlight: true,
     },
     {
       icon: Home,
@@ -24,7 +24,6 @@ const Experience = () => {
       suffix: '+ Properties Sold',
       title: 'Across premium neighborhoods',
       key: 'properties',
-      highlight: true,
     },
     {
       icon: Heart,
@@ -32,7 +31,6 @@ const Experience = () => {
       suffix: '+ Happy Clients',
       title: 'Service with a personal touch',
       key: 'clients',
-      highlight: true,
     },
   ];
 
@@ -65,9 +63,10 @@ const Experience = () => {
               }, stepDuration);
             };
 
+            // Stagger the start times for a nicer effect
             animateCount(15, 'years', 1500);
-            animateCount(500, 'properties', 2000);
-            animateCount(1000, 'clients', 2500);
+            setTimeout(() => animateCount(500, 'properties', 2000), 200);
+            setTimeout(() => animateCount(1000, 'clients', 2000), 400);
           }
         });
       },
@@ -80,48 +79,81 @@ const Experience = () => {
 
     return () => {
       if (sectionRef.current) {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         observer.unobserve(sectionRef.current);
       }
     };
   }, [hasAnimated]);
 
+  // --- UPDATED: Explicitly type containerVariants as Variants ---
+  const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2, // Each card animates 0.2s after the previous
+      },
+    },
+  };
+
+  // --- UPDATED: Explicitly type itemVariants as Variants ---
+  const itemVariants: Variants = {
+    hidden: { opacity: 0, y: 30 }, // Start invisible and 30px down
+    visible: { 
+      opacity: 1, 
+      y: 0, // Animate to visible and 0px
+      transition: { type: 'spring', stiffness: 100 } // Add a springy bounce
+    },
+  };
+
   return (
     <section ref={sectionRef} className="py-20 bg-white relative">
-      {/* Subtle decorative elements */}
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-20"></div>
 
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
+        {/* --- Title Animation --- */}
+        <motion.div 
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          animate={hasAnimated ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.5 }}
+        >
           <h2 className="text-4xl font-bold text-gray-800 mb-3">Experience</h2>
           <p className="text-gray-600 text-lg">Numbers that inspire confidence.</p>
           <div className="w-20 h-1 bg-gradient-to-r from-primary to-primary-light mx-auto mt-4 rounded-full"></div>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mx-6">
+        {/* --- Grid Animation Container --- */}
+        <motion.div 
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 mx-6"
+          variants={containerVariants}
+          initial="hidden"
+          animate={hasAnimated ? "visible" : "hidden"} // Use existing state
+        >
           {achievements.map((a, idx) => {
-            // Removed: const isActive = idx === activeIndex;
             return (
-              <div
+              // --- Card Animation Item ---
+              <motion.div
                 key={idx}
-                // Removed: onClick={() => setActiveIndex(idx)}
-                // Applied 'active' styles directly and removed hover/transition/cursor
-                className={`rounded-3xl p-6 shadow text-center
-                  bg-primary text-white border-primary
-                `}
+                variants={itemVariants} // This will now work
+                className={`rounded-3xl p-6 shadow-lg text-center
+                            bg-primary text-white border-primary
+                            transition-all duration-300 ease-in-out
+                            hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/30`}
               >
                 <div className="flex justify-center mb-2">
-                  {/* Applied 'active' icon color directly */}
                   <a.icon className={`w-10 h-10 text-white`} />
                 </div>
                 <div className="text-3xl font-bold mb-2">
+                  {/* The number count-up is handled by the useEffect */}
                   {counts[a.key as keyof typeof counts]}
                   {a.suffix}
                 </div>
                 <div className="text-lg">{a.title}</div>
-              </div>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
