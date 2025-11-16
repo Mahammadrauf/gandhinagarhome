@@ -112,12 +112,7 @@ export default function Home() {
       <ExploreListing properties={allProps} />
 
       {/* Explore by Location */}
-      <ExploreLocations
-        title="Explore Location"
-        subtitle="Discover exceptional residential spaces"
-        locations={locations}
-        allLocationHref="/locations"
-      />
+      <ExploreLocations/>
 
       {/* 👇 New: Contact Us form directly under Explore Locations */}
       <ContactUs />
