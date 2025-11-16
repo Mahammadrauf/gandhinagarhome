@@ -12,11 +12,10 @@ const onlyDigitsOrSymbols = (v: string) => /^[0-9+\-\s()]*$/.test(v);
 
 /**
  * Updated Sell page
- * - (User) Rebuilt Location step (Step 2) with Project Name, Unit No, Locality, City, Pincode
- * - (User) Added required validation for new Location fields
- * - (User) Applied card-based layout to ALL steps (0, 1, 2, 3)
- * - (User) Replaced ALL dropdowns with attractive Headless UI Listbox
- * - (User) Replaced Amenities input with a "chip/tag" component
+ * ... (previous changes)
+ * - (User) Page now scrolls to top on any step change.
+ * - (User) Updated Media Upload text to be optional (add now or later).
+ * - (Fix) Synced furnishing state with new furnishing options.
  */
 
 export default function SellPage() {
@@ -24,10 +23,17 @@ export default function SellPage() {
 
   // Basic Info
   const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [middleName, setMiddleName] = useState(""); 
+  const [lastName, setLastName] = useState(""); 
   const [email, setEmail] = useState("");
   const [mobile, setMobile] = useState("");
-  const [preferredContact, setPreferredContact] = useState<"WhatsApp" | "Call" | "Email">("WhatsApp");
+  const [alternateNumber, setAlternateNumber] = useState(""); 
+  
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isOtpVerified, setIsOtpVerified] = useState(false);
 
   // Specifications
   const [title, setTitle] = useState(""); // property name
@@ -36,8 +42,9 @@ export default function SellPage() {
   const [bathrooms, setBathrooms] = useState("2");
   const [balcony, setBalcony] = useState("0");
   const [parking, setParking] = useState("None");
-  const [ageOfProperty, setAgeOfProperty] = useState("New");
-  const [furnishing, setFurnishing] = useState<"Semi" | "Full" | "None">("None");
+  const [ageOfProperty, setAgeOfProperty] = useState("0-3 years"); 
+  // --- UPDATED: State type and default value to match options array ---
+  const [furnishing, setFurnishing] = useState<"Unfurnished" | "Semi-furnished" | "Fully furnished">("Unfurnished");
   const [availability, setAvailability] = useState<"Ready" | "After1Month">("Ready");
   const [price, setPrice] = useState("");
   const [amenities, setAmenities] = useState<string[]>([]);
@@ -47,9 +54,8 @@ export default function SellPage() {
   // Location
   const [city, setCity] = useState("Gandhinagar");
   const [locality, setLocality] = useState("");
-  const [society, setSociety] = useState(""); // Was optional, now "Project Name" (required)
-  const [unitNo, setUnitNo] = useState(""); // NEW: Unit No field
-  // const [address, setAddress] = useState(""); // REMOVED
+  const [society, setSociety] = useState(""); 
+  const [unitNo, setUnitNo] = useState(""); 
   const [pincode, setPincode] = useState("");
 
   // Media
@@ -64,10 +70,11 @@ export default function SellPage() {
 
   // validation
   // Step 1 Validation
-  const isNameValid = firstName.trim().length >= 3;
+  const isFirstNameValid = firstName.trim().length >= 2; 
+  const isLastNameValid = lastName.trim().length >= 2; 
   const isEmailValid = validateEmail(email);
-  const isMobileValid = mobile.trim().length >= 8 && onlyDigitsOrSymbols(mobile);
-  const canContinueStep1 = isNameValid && isEmailValid && isMobileValid;
+  const isMobileValid = mobile.trim().length >= 10 && onlyDigitsOrSymbols(mobile); 
+  const canContinueStep1 = isFirstNameValid && isLastNameValid && isEmailValid && isMobileValid && isOtpVerified;
 
   // Step 2 Validation
   const isTitleValid = title.trim().length >= 3;
@@ -76,13 +83,12 @@ export default function SellPage() {
   const isPriceValid = price.trim().length > 0;
   const canContinueStep2 = isTitleValid && isBedroomsValid && isBathroomsValid && isPriceValid;
 
-  // Step 3 Validation (UPDATED)
+  // Step 3 Validation
   const isCityValid = city.trim().length > 2;
   const isLocalityValid = locality.trim().length > 2;
   const isPincodeValid = pincode.trim().length >= 6 && onlyDigitsOrSymbols(pincode);
-  const isSocietyValid = society.trim().length >= 3; // NEW: Project Name validation
-  const isUnitNoValid = unitNo.trim().length > 0; // NEW: Unit No validation
-  // const isAddressValid = address.trim().length >= 5; // REMOVED
+  const isSocietyValid = society.trim().length >= 3; 
+  const isUnitNoValid = unitNo.trim().length > 0; 
   const canContinueStep3 = isCityValid && isLocalityValid && isPincodeValid && isSocietyValid && isUnitNoValid;
   
 
@@ -92,8 +98,9 @@ export default function SellPage() {
   const balconyOptions = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10+"];
   const bathroomOptions = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10+"];
   const parkingOptions = ["None", "1", "2", "3+"];
-  const ageOfPropertyOptions = ["New", "1-5 yrs", "5-10 yrs", "10+ yrs"];
-  const furnishingOptions = ["None", "Semi", "Full"];
+  const ageOfPropertyOptions = ["0-3 years", "3-6 years", "6-9 years", "10+ years"]; 
+  // --- UPDATED: Options from user's code ---
+  const furnishingOptions = ["Unfurnished", "Semi-furnished", "Fully furnished"];
   const availabilityOptions = ["Ready", "After1Month"];
   const amenitySuggestions = ["Lift", "Security", "Garden", "Gym", "Swimming Pool", "Clubhouse", "Parking"];
 
@@ -102,10 +109,11 @@ export default function SellPage() {
     if (target === 0) return true;
     if (target === 1) return canContinueStep1;
     if (target === 2) return canContinueStep1 && canContinueStep2;
-    if (target === 3) return canContinueStep1 && canContinueStep2 && canContinueStep3; // UPDATED
+    if (target === 3) return canContinueStep1 && canContinueStep2 && canContinueStep3;
     return false;
   };
 
+  // --- UPDATED: Added scroll to top ---
   const goTo = (s: Step) => {
     if (!canNavigateTo(s)) {
       setTriedContinue(true);
@@ -113,6 +121,7 @@ export default function SellPage() {
     }
     setStep(s);
     setTriedContinue(false); 
+    window.scrollTo({ top: 0, behavior: 'auto' }); // Scroll to top
   };
 
   const next = () => setStep((prev) => ((prev + 1) % 4) as Step);
@@ -122,10 +131,10 @@ export default function SellPage() {
   const handleSaveDraft = () => {
     setSaving(true);
     const payload = {
-      firstName, lastName, email, mobile, preferredContact,
+      firstName, middleName, lastName, email, mobile, alternateNumber,
       title, bedrooms, propertyType, bathrooms, balcony, parking, ageOfProperty, furnishing, availability, price, 
       amenities, 
-      city, locality, society, unitNo, pincode, // UPDATED
+      city, locality, society, unitNo, pincode,
       photosCount: photos.length,
       hasVideo: !!video,
       status: "draft",
@@ -143,7 +152,7 @@ export default function SellPage() {
     if (!canContinueStep1) {
       setStep(0);
       setTriedContinue(true);
-      alert("Please complete Basic Information.");
+      alert("Please complete Basic Information and verify your mobile number.");
       return;
     }
     if (!canContinueStep2) {
@@ -152,7 +161,6 @@ export default function SellPage() {
       alert("Please complete Specifications.");
       return;
     }
-    // NEW CHECK for Step 3 (Location)
     if (!canContinueStep3) {
       setStep(2);
       setTriedContinue(true);
@@ -161,10 +169,10 @@ export default function SellPage() {
     }
 
     const payload = {
-      firstName, lastName, email, mobile, preferredContact,
+      firstName, middleName, lastName, email, mobile, alternateNumber,
       title, bedrooms, propertyType, bathrooms, balcony, parking, ageOfProperty, furnishing, availability, price, 
       amenities, 
-      city, locality, society, unitNo, pincode, // UPDATED
+      city, locality, society, unitNo, pincode,
       photosCount: photos.length,
       hasVideo: !!video,
       submittedAt: new Date().toISOString(),
@@ -203,15 +211,21 @@ export default function SellPage() {
   const removePhoto = (i: number) => setPhotos((p) => p.filter((_, idx) => idx !== i));
   const removeVideo = () => setVideo(null);
 
+  // --- UPDATED: Added scroll to top ---
   const onContinueFromStep1 = () => {
+    setTriedContinue(true); 
     if (!canContinueStep1) {
-      setTriedContinue(true); 
+      if (!isOtpVerified) {
+        alert("Please verify your mobile number to continue.");
+      }
       return;
     }
     setStep(1);
     setTriedContinue(false); 
+    window.scrollTo({ top: 0, behavior: 'auto' }); // Scroll to top
   };
 
+  // --- UPDATED: Added scroll to top ---
   const onContinueFromStep2 = () => {
     if (!canContinueStep2) {
       setTriedContinue(true); 
@@ -219,9 +233,10 @@ export default function SellPage() {
     }
     setStep(2);
     setTriedContinue(false); 
+    window.scrollTo({ top: 0, behavior: 'auto' }); // Scroll to top
   };
 
-  // NEW: Continue from Step 3 (Location)
+  // --- UPDATED: Added scroll to top ---
   const onContinueFromStep3 = () => {
     if (!canContinueStep3) {
       setTriedContinue(true); 
@@ -229,32 +244,58 @@ export default function SellPage() {
     }
     setStep(3);
     setTriedContinue(false); 
+    window.scrollTo({ top: 0, behavior: 'auto' }); // Scroll to top
   };
 
+  // --- OTP Functions ---
+  const handleSendOtp = async () => {
+    setTriedContinue(true);
+    if (!isMobileValid) return;
 
-  // --- NEW: Helper functions for Amenities ---
+    setIsSendingOtp(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    console.log("Sending OTP to", mobile);
+    
+    setIsSendingOtp(false);
+    setOtpSent(true);
+    alert("OTP Sent to your mobile number (use 1234 to verify)");
+  };
+
+  const handleVerifyOtp = async () => {
+    setIsVerifying(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    console.log("Verifying OTP", otp);
+
+    if (otp === "1234") { // Placeholder OTP
+      setIsVerifying(false);
+      setIsOtpVerified(true);
+      alert("Mobile number verified successfully!");
+    } else {
+      setIsVerifying(false);
+      alert("Invalid OTP. Please try again.");
+    }
+  };
+  
+  // --- Amenities Functions ---
   const addAmenity = (amenityToAdd: string) => {
     const trimmed = amenityToAdd.trim();
     if (trimmed && !amenities.includes(trimmed)) {
       setAmenities([...amenities, trimmed]);
     }
-    setCurrentAmenity(""); // Clear input after adding
+    setCurrentAmenity("");
   };
-
   const removeAmenity = (indexToRemove: number) => {
     setAmenities(amenities.filter((_, index) => index !== indexToRemove));
   };
-
   const handleAmenityKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      e.preventDefault(); // Prevent form submission on Enter
+      e.preventDefault(); 
       addAmenity(currentAmenity);
     }
   };
-  // --- END: Helper functions for Amenities ---
 
 
-  // Reusable classes for consistent sizing (used inline to keep tailwind-style)
+  // Reusable classes
   const inputBase = "w-full h-12 rounded-xl px-4 border outline-none shadow-sm";
   const inputNormal = `${inputBase} border-gray-100 bg-white`;
   const selectNormal = `${inputNormal} appearance-none bg-no-repeat bg-[url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%236b7280'%3e%3cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd' /%3e%3c/svg%3e")] bg-[position:right_1rem_center] bg-[size:1.25em] pr-10 text-left`;
@@ -264,7 +305,6 @@ export default function SellPage() {
   const btnLight = "inline-flex items-center justify-center h-12 px-6 rounded-full bg-gray-100 text-gray-800 font-semibold transition hover:bg-gray-200";
   const btnDisabled = "inline-flex items-center justify-center h-12 px-6 rounded-full bg-gray-300 text-white cursor-not-allowed";
   const fieldLabel = "text-sm font-semibold text-gray-800 mb-2 block";
-  // NEW: Class for the card wrapper
   const cardWrapper = "p-6 rounded-xl border border-gray-100 shadow-sm";
 
 
@@ -296,7 +336,7 @@ export default function SellPage() {
                       <div>
                         <div className={`text-sm font-medium ${active ? "text-gray-900" : "text-gray-700"}`}>{t}</div>
                         <div className="text-xs text-gray-500">
-                          {i === 0 ? "Seller contact & preferred mode" : i === 1 ? "Set property details" : i === 2 ? "Map & address" : "Photos & docs"}
+                          {i === 0 ? "Seller contact & verification" : i === 1 ? "Set property details" : i === 2 ? "Map & address" : "Photos & docs"}
                         </div>
                       </div>
                     </button>
@@ -328,87 +368,128 @@ export default function SellPage() {
                     </div>
                   </div>
                   
-                  {/* Card 1: Name and Email */}
+                  {/* Card 1: Name */}
                   <div className={`${cardWrapper} grid grid-cols-1 lg:grid-cols-3 gap-6`}>
-                    <div className="lg:col-span-2">
-                      <label className={fieldLabel}>Seller Full Name <span className="text-[#0b6b53]">*</span></label>
+                    <div>
+                      <label className={fieldLabel}>First Name <span className="text-[#0b6b53]">*</span></label>
                       <input
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
-                        placeholder="Your legal name"
-                        className={`${triedContinue && !isNameValid ? inputError : inputNormal}`}
+                        placeholder="e.g. Ramesh"
+                        className={`${triedContinue && !isFirstNameValid ? inputError : inputNormal}`}
                       />
-                      {triedContinue && !isNameValid && <div className="text-xs text-red-600 mt-2">Please enter name (min 3 chars).</div>}
+                      {triedContinue && !isFirstNameValid && <div className="text-xs text-red-600 mt-2">Enter first name (min 2).</div>}
                     </div>
-
                     <div>
-                      <label className={fieldLabel}>Email <span className="text-[#0b6b53]">*</span></label>
+                      <label className={fieldLabel}>Middle Name</label>
                       <input
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="name@example.com"
-                        className={`${triedContinue && !isEmailValid ? inputError : inputNormal}`}
-                      />
-                      {triedContinue && !isEmailValid && <div className="text-xs text-red-600 mt-2">Enter a valid email address.</div>}
-                    </div>
-                  </div>
-
-                  {/* Card 2: Contact Details */}
-                  <div className={`${cardWrapper} grid grid-cols-1 md:grid-cols-3 gap-6`}>
-                    <div>
-                      <label className={fieldLabel}>Mobile Number <span className="text-[#0b6b53]">*</span></label>
-                      <input
-                        value={mobile}
-                        onChange={(e) => setMobile(e.target.value)}
-                        placeholder="+91 9XXXXXXXXX"
-                        className={`${triedContinue && !isMobileValid ? inputError : inputNormal}`}
-                      />
-                      {triedContinue && !isMobileValid && <div className="text-xs text-red-600 mt-2">Enter a valid mobile number.</div>}
-                    </div>
-
-                    <div>
-                      <label className={fieldLabel}>Alternate Number</label>
-                      <input
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
+                        value={middleName}
+                        onChange={(e) => setMiddleName(e.target.value)}
                         placeholder="Optional"
                         className={inputNormal}
                       />
                     </div>
-
                     <div>
-                      <label className={fieldLabel}>Preferred Mode of Contact</label>
-                      <div className="flex gap-2">
-                        <label className={`flex-1 h-12 flex items-center justify-center rounded-xl px-3 text-sm cursor-pointer ${preferredContact === "WhatsApp" ? "bg-[#0b6b53] text-white" : "bg-white border border-gray-100 text-gray-700"}`}>
-                          <input type="radio" name="prefContact" value="WhatsApp" checked={preferredContact === "WhatsApp"} onChange={() => setPreferredContact("WhatsApp")} className="hidden" />
-                          WhatsApp
-                        </label>
-                        <label className={`flex-1 h-12 flex items-center justify-center rounded-xl px-3 text-sm cursor-pointer ${preferredContact === "Call" ? "bg-[#0b6b53] text-white" : "bg-white border border-gray-100 text-gray-700"}`}>
-                          <input type="radio" name="prefContact" value="Call" checked={preferredContact === "Call"} onChange={() => setPreferredContact("Call")} className="hidden" />
-                          Call
-                        </label>
-                        <label className={`flex-1 h-12 flex items-center justify-center rounded-xl px-3 text-sm cursor-pointer ${preferredContact === "Email" ? "bg-[#0b6b53] text-white" : "bg-white border border-gray-100 text-gray-700"}`}>
-                          <input type="radio" name="prefContact" value="Email" checked={preferredContact === "Email"} onChange={() => setPreferredContact("Email")} className="hidden" />
-                          Email
-                        </label>
+                      <label className={fieldLabel}>Last Name <span className="text-[#0b6b53]">*</span></label>
+                      <input
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        placeholder="e.g. Shah"
+                        className={`${triedContinue && !isLastNameValid ? inputError : inputNormal}`}
+                      />
+                      {triedContinue && !isLastNameValid && <div className="text-xs text-red-600 mt-2">Enter last name (min 2).</div>}
+                    </div>
+                  </div>
+
+                  {/* Card 2: Contact Details */}
+                  <div className={`${cardWrapper} space-y-6`}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className={fieldLabel}>Email <span className="text-[#0b6b53]">*</span></label>
+                        <input
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="name@example.com"
+                          className={`${triedContinue && !isEmailValid ? inputError : inputNormal}`}
+                        />
+                        {triedContinue && !isEmailValid && <div className="text-xs text-red-600 mt-2">Enter a valid email address.</div>}
+                      </div>
+                      <div>
+                        <label className={fieldLabel}>Alternate Number</label>
+                        <input
+                          value={alternateNumber}
+                          onChange={(e) => setAlternateNumber(e.target.value)}
+                          placeholder="Optional"
+                          className={inputNormal}
+                        />
+                      </div>
+                    </div>
+
+                    {/* OTP Section */}
+                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className={fieldLabel}>Mobile Number <span className="text-[#0b6b53]">*</span></label>
+                          <div className="flex gap-2">
+                            <input
+                              value={mobile}
+                              onChange={(e) => setMobile(e.target.value)}
+                              placeholder="+91 9XXXXXXXXX"
+                              className={`${triedContinue && !isMobileValid ? inputError : inputNormal}`}
+                              disabled={otpSent} 
+                            />
+                            <button
+                              onClick={handleSendOtp}
+                              disabled={!isMobileValid || otpSent || isSendingOtp}
+                              className={`h-12 px-4 rounded-lg font-semibold text-sm ${(!isMobileValid || otpSent) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-primary text-white hover:bg-primary-dark'}`}
+                            >
+                              {isSendingOtp ? "Sending..." : (otpSent ? "Sent" : "Send OTP")}
+                            </button>
+                          </div>
+                          {triedContinue && !isMobileValid && <div className="text-xs text-red-600 mt-2">Enter a valid 10-digit number.</div>}
+                        </div>
+
+                        {otpSent && !isOtpVerified && (
+                          <div>
+                            <label className={fieldLabel}>Enter OTP <span className="text-[#0b6b53]">*</span></label>
+                            <div className="flex gap-2">
+                              <input
+                                value={otp}
+                                onChange={(e) => setOtp(e.target.value)}
+                                placeholder="Enter 4-digit OTP"
+                                className={inputNormal}
+                              />
+                              <button
+                                onClick={handleVerifyOtp}
+                                disabled={isVerifying || otp.length < 4}
+                                className={`h-12 px-4 rounded-lg font-semibold text-sm ${isVerifying || otp.length < 4 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
+                              >
+                                {isVerifying ? "Verifying..." : "Verify"}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {isOtpVerified && (
+                           <div className="flex items-center justify-center h-12 bg-green-100 text-green-700 font-semibold rounded-lg">
+                             ✓ Mobile Verified
+                           </div>
+                        )}
                       </div>
                     </div>
                   </div>
 
                   <p className="text-sm text-gray-500">Your contact is partially visible to buyers. Full details require buyer subscription.</p>
 
-                  {/* Footer: Buttons */}
                   <div className="flex items-center justify-between mt-4">
-                    <div className="flex items-center gap-3">
-                      <button onClick={handleSaveDraft} className={btnSecondary} disabled={saving}>{saving ? "Saving..." : "Save Draft"}</button>
-                      <button
-                        onClick={onContinueFromStep1}
-                        className={canContinueStep1 ? btnPrimary : btnDisabled}
-                        disabled={!canContinueStep1}
-                      >
-                        Continue to Specifications
-                      </button>
-                    </div>
+                    <button
+                      onClick={onContinueFromStep1}
+                      className={canContinueStep1 ? btnPrimary : btnDisabled}
+                      disabled={!canContinueStep1}
+                    >
+                      Continue to Specifications
+                    </button>
+                    
                     <div className="flex items-center gap-2 text-sm text-gray-700 font-medium">
                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                          <path d="M10 3L8 8l-5 2 5 2 2 5 2-5 5-2-5-2zM14 14l-2 5-2-5-5-2 5-2 2-5 2 5 5 2z"></path>
@@ -418,6 +499,8 @@ export default function SellPage() {
                   </div>
                 </div>
               )}
+              {/* --- END OF STEP 0 BLOCK --- */}
+
 
               {/* --- STEP 1: SPECIFICATIONS --- */}
               {step === 1 && (
@@ -806,7 +889,6 @@ export default function SellPage() {
                    <div className={cardWrapper + " grid grid-cols-1"}>
                       <div>
                         <label className={fieldLabel}>Amenities</label>
-                        {/* Chip display area */}
                         <div className="flex flex-wrap gap-2 mb-4">
                           {amenities.map((amenity, index) => (
                             <div key={index} className="inline-flex items-center gap-2 bg-gray-100 text-gray-800 text-sm font-medium px-3 py-1.5 rounded-full">
@@ -822,7 +904,6 @@ export default function SellPage() {
                           ))}
                         </div>
                         
-                        {/* Input field */}
                         <input 
                           value={currentAmenity} 
                           onChange={(e) => setCurrentAmenity(e.target.value)} 
@@ -831,7 +912,6 @@ export default function SellPage() {
                           className={inputNormal} 
                         />
 
-                        {/* Suggestions */}
                         <div className="mt-4">
                           <p className="text-xs text-gray-600 mb-2">Suggestions:</p>
                           <div className="flex flex-wrap gap-2">
@@ -841,7 +921,7 @@ export default function SellPage() {
                                 key={suggestion}
                                 onClick={() => addAmenity(suggestion)}
                                 className="inline-flex bg-white border border-gray-200 text-gray-700 text-sm px-3 py-1.5 rounded-full cursor-pointer hover:bg-gray-50 disabled:opacity-50"
-                                disabled={amenities.includes(suggestion)} // Disable if already added
+                                disabled={amenities.includes(suggestion)} 
                               >
                                 + {suggestion}
                               </button>
@@ -868,7 +948,7 @@ export default function SellPage() {
               )}
               {/* --- END OF STEP 1 BLOCK --- */}
 
-              {/* --- STEP 2: LOCATION (REBUILT) --- */}
+              {/* --- STEP 2: LOCATION --- */}
               {step === 2 && (
                 <div className="space-y-6">
                   {/* Row 0: Header */}
@@ -925,7 +1005,6 @@ export default function SellPage() {
                         alt="Map placeholder" 
                         className="w-full h-full object-cover"
                        />
-                       {/*  */}
                     </div>
                   </div>
                   
@@ -942,7 +1021,7 @@ export default function SellPage() {
               )}
               {/* --- END OF STEP 2 BLOCK --- */}
 
-              {/* --- STEP 3: MEDIA (REBUILT) --- */}
+              {/* --- STEP 3: MEDIA (UPDATED TEXT) --- */}
               {step === 3 && (
                 <div className="space-y-6">
                    {/* Row 0: Header */}
@@ -950,14 +1029,18 @@ export default function SellPage() {
                     <h3 className="text-lg font-semibold">Step 4: Media Upload</h3>
                     <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                      Add photos for 5x more views
+                      {/* --- UPDATED TEXT --- */}
+                      Add photos to get 5x more views
                     </div>
                   </div>
 
                   {/* Card 1: Photos */}
                   <div className={cardWrapper}>
-                    <label className={fieldLabel}>Photos (up to 9)</label>
-                    <p className="text-sm text-gray-500 mb-4">Upload high-quality photos of your property.</p>
+                    <label className={fieldLabel}>Upload Photos</label>
+                    {/* --- UPDATED TEXT --- */}
+                    <p className="text-sm text-gray-500 mb-4">
+                      Listings with photos get 5x more views. You can add them now or later from your dashboard.
+                    </p>
                     <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
                       {[...Array(9)].map((_, i) => {
                         const file = photos[i];
@@ -980,8 +1063,11 @@ export default function SellPage() {
                   
                   {/* Card 2: Video */}
                   <div className={cardWrapper}>
-                    <label className={fieldLabel}>Video (optional)</label>
-                    <p className="text-sm text-gray-500 mb-4">A video tour can significantly boost buyer interest.</p>
+                    <label className={fieldLabel}>Upload Video (Optional)</label>
+                    {/* --- UPDATED TEXT --- */}
+                    <p className="text-sm text-gray-500 mb-4">
+                      A video tour can also be added now or later.
+                    </p>
                     <div className="h-24 rounded-lg border-2 border-dashed border-gray-200 flex items-center gap-4 px-6">
                       {video ? (
                         <div className="flex items-center gap-4 w-full">
