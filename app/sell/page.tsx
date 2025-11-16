@@ -1,115 +1,111 @@
-// app/sell/page.tsx
 "use client";
 
 import React from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
-import { Home, FileText, MapPin, Camera } from "lucide-react";
 
 export default function SellIntroPage() {
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-gradient-to-b from-white via-slate-50 to-slate-100">
       <Header />
 
       <section className="w-full flex items-center justify-center py-16">
         <div className="container mx-auto px-4">
-          {/* Main card - stays above the fold */}
-          <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden flex flex-col lg:flex-row items-center gap-6 p-6 lg:p-8 animate-card-in">
-            {/* Left: Headline + short copy */}
+          
+          {/* Main Card */}
+          <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden flex flex-col lg:flex-row items-center gap-6 p-6 lg:p-8 animate-card-in">
+            
+            {/* LEFT SIDE */}
             <div className="flex-1 min-w-0">
-              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight animate-fade-up">
-                Sell your property — fast & simple
+              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 leading-tight animate-fade-up">
+                Sell your Gandhinagar property with confidence
               </h1>
-              <p className="mt-2 text-gray-600 max-w-xl animate-fade-up delay-75">
-                Publish your listing in minutes. Add basic information, set specs, choose the location and upload photos — we’ll connect you with buyers.
+
+              <p className="mt-3 text-slate-600 max-w-xl text-sm sm:text-base animate-fade-up delay-75">
+                One simple form. Verified local buyers. No broker spam. 
+                Get the best offer without wasting time.
               </p>
-
-              {/* Compact step badges */}
-              <div className="mt-4 flex flex-wrap gap-3 items-center">
-                <span className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-medium shadow-sm animate-pop-in">
-                  <Home className="w-4 h-4" /> Basic information
-                </span>
-
-                <span className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-medium shadow-sm animate-pop-in delay-100">
-                  <FileText className="w-4 h-4" /> Specification
-                </span>
-
-                <span className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-medium shadow-sm animate-pop-in delay-200">
-                  <MapPin className="w-4 h-4" /> Location
-                </span>
-
-                <span className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-medium shadow-sm animate-pop-in delay-300">
-                  <Camera className="w-4 h-4" /> Photos
-                </span>
-              </div>
             </div>
 
-            {/* Right: CTA */}
-            <div className="flex-shrink-0 w-full sm:w-auto">
+            {/* RIGHT SIDE CTA */}
+            <div className="flex-shrink-0 w-full sm:w-auto text-center lg:text-right">
               <Link
                 href="/sell/form"
-                className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-primary text-white font-semibold shadow-lg hover:scale-[1.02] transition-transform duration-250 animate-cta-in"
+                className="inline-flex items-center justify-center px-8 py-4 text-lg rounded-full bg-gradient-to-r from-primary to-primary-dark text-white font-bold shadow-xl hover:scale-[1.03] hover:shadow-2xl transition-all duration-300 ease-in-out animate-cta-in relative group overflow-hidden"
               >
-                Start Listing
+                <span className="relative z-10">Start Listing Now</span>
+                <span className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
               </Link>
-
-              <div className="mt-3 text-sm text-gray-500 text-center sm:text-left">
-                <span className="font-medium text-gray-700">4 quick steps</span> • Privacy protected
-              </div>
             </div>
           </div>
 
-          {/* Decorative mini info chips - small, above-fold */}
-          <div className="mt-6 grid grid-cols-3 gap-4 items-center text-center lg:text-left">
-            <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-100 animate-chip-in">
-              <div className="text-sm text-gray-500">Verified buyers</div>
-              <div className="font-semibold text-gray-800 mt-1">Quality leads</div>
+          {/* TRUST & VALUE CHIPS */}
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+            
+            {/* Chip 1 */}
+            <div className="bg-gradient-to-br from-primary/5 via-primary/10 to-white rounded-xl p-6 shadow-md border border-primary/15 animate-chip-in group cursor-pointer hover:scale-[1.02] hover:shadow-lg transition-all duration-300 transform-gpu hover:-translate-y-1">
+              <div className="text-xs font-semibold uppercase tracking-wide text-primary/80">
+                Verified buyers
+              </div>
+              <div className="text-xl font-bold text-slate-900 mt-2">Quality leads only</div>
+              <p className="text-slate-700 text-sm mt-2 opacity-80 group-hover:opacity-100 transition-opacity">
+                Every enquiry is screened so you only talk to genuine buyers.
+              </p>
             </div>
-            <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-100 animate-chip-in delay-75">
-              <div className="text-sm text-gray-500">Local focus</div>
-              <div className="font-semibold text-gray-800 mt-1">Gandhinagar only</div>
+
+            {/* Chip 2 */}
+            <div className="bg-gradient-to-br from-primary/5 via-slate-50 to-white rounded-xl p-6 shadow-md border border-slate-200 animate-chip-in delay-75 group cursor-pointer hover:scale-[1.02] hover:shadow-lg transition-all duration-300 transform-gpu hover:-translate-y-1">
+              <div className="text-xs font-semibold uppercase tracking-wide text-primary/80">
+                Gandhinagar focus
+              </div>
+              <div className="text-xl font-bold text-slate-900 mt-2">Built for this city</div>
+              <p className="text-slate-700 text-sm mt-2 opacity-80 group-hover:opacity-100 transition-opacity">
+                Hyper-local buyers and insights from top sectors & societies.
+              </p>
             </div>
-            <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-100 animate-chip-in delay-150">
-              <div className="text-sm text-gray-500">Secure</div>
-              <div className="font-semibold text-gray-800 mt-1">Privacy controls</div>
+
+            {/* Chip 3 */}
+            <div className="bg-gradient-to-br from-primary/5 via-emerald-50 to-white rounded-xl p-6 shadow-md border border-emerald-100 animate-chip-in delay-150 group cursor-pointer hover:scale-[1.02] hover:shadow-lg transition-all duration-300 transform-gpu hover:-translate-y-1">
+              <div className="text-xs font-semibold uppercase tracking-wide text-emerald-700/90">
+                Privacy first
+              </div>
+              <div className="text-xl font-bold text-slate-900 mt-2">Your data stays safe</div>
+              <p className="text-slate-700 text-sm mt-2 opacity-80 group-hover:opacity-100 transition-opacity">
+                We never display your phone number publicly. You stay in control.
+              </p>
             </div>
+
           </div>
         </div>
       </section>
 
-      {/* Local animations and tiny responsive tweak */}
+      {/* Animations */}
       <style jsx>{`
         .animate-card-in {
-          transform-origin: center;
           animation: cardIn 520ms cubic-bezier(.2,.9,.3,1) both;
         }
-        .animate-fade-up { animation: fadeUp 420ms ease both; }
-        .animate-pop-in { animation: popIn 420ms cubic-bezier(.2,.9,.3,1) both; }
-        .animate-chip-in { animation: chipIn 420ms ease both; }
-        .animate-cta-in { animation: ctaIn 520ms cubic-bezier(.15,.9,.3,1) both; }
-
-        .delay-75 { animation-delay: 75ms; }
-        .delay-100 { animation-delay: 100ms; }
-        .delay-150 { animation-delay: 150ms; }
-        .delay-200 { animation-delay: 200ms; }
-        .delay-300 { animation-delay: 300ms; }
+        .animate-fade-up {
+          animation: fadeUp 420ms ease both;
+        }
+        .animate-chip-in {
+          animation: chipIn 600ms cubic-bezier(.15,.9,.3,1) both;
+        }
+        .animate-cta-in {
+          animation: ctaIn 520ms cubic-bezier(.15,.9,.3,1) both;
+        }
 
         @keyframes cardIn {
-          from { opacity: 0; transform: translateY(8px) scale(.995); }
+          from { opacity: 0; transform: translateY(8px) scale(.99); }
           to   { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(6px); }
           to   { opacity: 1; transform: translateY(0); }
         }
-        @keyframes popIn {
-          0% { opacity: 0; transform: translateY(6px) scale(.98); }
-          60% { opacity: 1; transform: translateY(-2px) scale(1.01); }
-          100% { transform: translateY(0) scale(1); }
-        }
         @keyframes chipIn {
-          from { opacity: 0; transform: translateY(6px); }
-          to { opacity: 1; transform: translateY(0); }
+          0% { opacity: 0; transform: translateY(20px) scale(.9); }
+          50% { opacity: .7; transform: translateY(-5px) scale(1.02); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes ctaIn {
           0% { opacity: 0; transform: translateY(8px) scale(.98); }
