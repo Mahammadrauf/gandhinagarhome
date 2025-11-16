@@ -231,13 +231,17 @@ const ExploreListing: React.FC<{ properties: Property[] }> = ({ properties }) =>
       <div className="container mx-auto">
         
         {/* Header */}
-        <div className="flex items-center justify-between mb-8 px-4 sm:px-6 lg:px-4">
-          <p className="text-lg text-gray-700">Discover exceptional residential spaces</p>
-          {RightCTA}
-        </div>
+        <div className="px-4 sm:px-6 lg:px-4">
+  <h2 className="text-4xl sm:text-5xl font-extrabold text-blue-800 leading-tight">
+    Explore Listing
+  </h2>
+  <p className="text-lg text-gray-700 mt-2">
+    Discover exceptional residential spaces
+  </p>
+</div>
 
         {/* --- Renders the filter pills --- */}
-        <Pills
+        {/* <Pills
           items={CATEGORIES.map((c) => ({
             key: c.key,
             label: c.label,
@@ -245,7 +249,7 @@ const ExploreListing: React.FC<{ properties: Property[] }> = ({ properties }) =>
           }))}
           active={active}
           onChange={setActive}
-        />
+        /> */}
 
         {/* --- Renders the property cards for the active category --- */}
         <div className="mt-4">

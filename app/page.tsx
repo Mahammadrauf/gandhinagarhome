@@ -28,6 +28,37 @@ export default function Home() {
       image: 'https://images.unsplash.com/photo-1565183997392-2f6f122e5912?auto=format&fit=crop&w=1200&q=80',
       price: '₹58 L', location: 'Adalaj', beds: 2, baths: 2, sqft: '980',
       features: ['Park Facing', 'Ready to Move'], tag: { text: 'New', color: 'bg-primary text-white' }, tier: 'standard' },
+      { id: '2-103',
+    title: 'Bungalow for sale in Gandhinagar',
+    image: 'https://images.unsplash.com/photo-1528909514045-2fa4ac7a08ba?auto=format&fit=crop&w=1200&q=80',
+    price: '₹3.60 Cr', location: 'Raysan', baths: 4, sqft: '4,200',
+    features: ['Private Garden', 'Parking'],
+    tag: { text: 'Premium', color: 'bg-primary text-white' },
+    tier: 'featured',
+    category: '2bhk'
+  },
+
+  // ADD PLOT into 2BHK tab
+  { id: '2-103',
+    title: 'Residential Plot in Koba',
+    image: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1200&q=80',
+    price: '₹95 L', location: 'Koba', baths: 0, sqft: '2,400',
+    features: ['Corner', 'Wide Road'],
+    tag: { text: 'New', color: 'bg-primary text-white' },
+    tier: 'standard',
+    category: '2bhk'
+  },
+
+  // OPTIONAL: add any 1 more for total 5
+  { id: '2-104',
+    title: '2BHK in Randesan',
+    image: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=1200&q=80',
+    price: '₹62 L', location: 'Randesan', beds: 2, baths: 2, sqft: '1,050',
+    features: ['City View', 'Near School'],
+    tag: { text: 'Hot', color: 'bg-red-500 text-white' },
+    tier: 'featured',
+    category: '2bhk'
+  },
 
     { id: '3-201', title: '3BHK for Sale in Sargasan',
       image: 'https://images.unsplash.com/photo-1505692952047-1a78307da8e8?auto=format&fit=crop&w=1200&q=80',
