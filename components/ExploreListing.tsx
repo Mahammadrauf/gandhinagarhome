@@ -95,22 +95,108 @@ const Pills: React.FC<{
 
 const HorizontalList: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const listRef = useRef<HTMLDivElement | null>(null);
+  const innerRef = useRef<HTMLDivElement | null>(null);
+  const [index, setIndex] = useState(0);
 
-  // Scrolls to the start when the category changes (children update)
-  useEffect(() => {
-    listRef.current?.scrollTo({ left: 0, behavior: "smooth" });
-  }, [children]);
+  const items = React.Children.toArray(children);
+
+  const goTo = (i: number) => {
+    setIndex(i);
+
+    const card = innerRef.current?.children[i] as HTMLElement;
+    if (card) {
+      listRef.current?.scrollTo({
+        left: card.offsetLeft - 16,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  const next = () => index < items.length - 1 && goTo(index + 1);
+  const prev = () => index > 0 && goTo(index - 1);
 
   return (
-    <div
-      ref={listRef}
-      className="relative overflow-x-auto overflow-y-visible px-4 sm:px-6 lg:px-4 snap-x snap-mandatory
-                 
-                 [-ms-overflow-style:none] /* IE and Edge */
-                 [scrollbar-width:none]    /* Firefox */
-                 [&::-webkit-scrollbar]:hidden /* Webkit (Chrome, Safari) */"
-    >
-      <div className="flex gap-4 min-w-full py-6">{children}</div>
+    <div className="relative">
+      {/* Scroll wrapper */}
+      <div
+        ref={listRef}
+        onScroll={(e) => {
+          const scrollLeft = e.currentTarget.scrollLeft;
+          const childrenEls = Array.from(innerRef.current?.children ?? []) as HTMLElement[];
+          let activeIdx = 0;
+
+          childrenEls.forEach((child, i) => {
+            if (scrollLeft >= child.offsetLeft - 80) activeIdx = i;
+          });
+
+          setIndex(activeIdx);
+        }}
+        className="overflow-x-auto overflow-y-visible px-4 sm:px-6 lg:px-4 snap-x snap-mandatory
+                   [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        <div ref={innerRef} className="flex gap-4 min-w-full py-6">
+          {children}
+        </div>
+      </div>
+
+      {/* Left button */}
+      <button
+  aria-label="Previous properties"
+  onClick={prev}
+  className="absolute left-2 top-1/2 -translate-y-1/2 z-40 w-10 h-10 rounded-full bg-white shadow-lg 
+             flex items-center justify-center hover:scale-105 transition transform 
+             focus:outline-none focus:ring-2 focus:ring-primary/60"
+>
+  <svg
+    className="w-5 h-5 text-gray-700"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M15 19l-7-7 7-7"
+    />
+  </svg>
+</button>
+
+      {/* Right button */}
+      <button
+  aria-label="Next properties"
+  onClick={next}
+  className="absolute right-2 top-1/2 -translate-y-1/2 z-40 w-10 h-10 rounded-full bg-white shadow-lg 
+             flex items-center justify-center hover:scale-105 transition transform 
+             focus:outline-none focus:ring-2 focus:ring-primary/60"
+>
+  <svg
+    className="w-5 h-5 text-gray-700"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M9 5l7 7-7 7"
+    />
+  </svg>
+</button>
+
+      {/* Dots */}
+      <div className="mt-4 flex justify-center gap-2">
+        {items.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => goTo(i)}
+            className={`w-3 h-3 rounded-full ${
+              i === index ? "bg-[#0b6b53]" : "bg-gray-300"
+            }`}
+          />
+        ))}
+      </div>
     </div>
   );
 };
@@ -154,6 +240,30 @@ const PropertyCard: React.FC<{ p: Property }> = ({ p }) => {
 
 /** ================= Main Component ================= */
 const ExploreListing: React.FC<{ properties: Property[] }> = ({ properties }) => {
+
+  const [index, setIndex] = useState(0);
+
+const scrollRef = useRef<HTMLDivElement | null>(null);
+
+const goTo = (i: number) => {
+  setIndex(i);
+  const card = scrollRef.current?.children[i] as HTMLElement;
+  if (card) {
+    scrollRef.current?.scrollTo({
+      left: card.offsetLeft - 16,
+      behavior: "smooth",
+    });
+  }
+};
+
+const next = () => {
+  if (index < list.length - 1) goTo(index + 1);
+};
+
+const prev = () => {
+  if (index > 0) goTo(index - 1);
+};
+
 
   // --- This logic creates the "buckets" for each category ---
   const buckets = useMemo(() => {
