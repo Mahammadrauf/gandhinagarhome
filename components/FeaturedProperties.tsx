@@ -4,46 +4,189 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 
 const TIMER_MS = 5000; // 5 seconds
 
-const FeaturedProperties = () => {
-  // ---- DATA: This is now the 12-property list ----
-  const allProperties = [
-    { id: "e1", image: "https://images.unsplash.com/photo-1505692952047-1a78307da8e8?auto=format&fit=crop&w=1200&q=80", price: "₹3.40 Cr", location: "Sector 5", beds: 4, baths: 4, sqft: "3,200", features: ["Penthouse", "Terrace Garden"], tag: { text: "Premium", color: "bg-primary text-white" } },
-    { id: "e2", image: "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=80", price: "₹1.90 Cr", location: "Koba", beds: 3, baths: 3, sqft: "2,050", features: ["Club Access", "Corner Unit"], tag: { text: "Exclusive", color: "bg-yellow-500 text-white" } },
-    { id: "e3", image: "https://images.unsplash.com/photo-1502005229762-cf1b2da7c52f?auto=format&fit=crop&w=1200&q=80", price: "₹2.80 Cr", location: "Torda", beds: 4, baths: 3, sqft: "2,850", features: ["Garden View", "Home Office"], tag: { text: "New", color: "bg-primary text-white" } },
-    { id: "e4", image: "https://images.unsplash.com/photo-1501183638710-841dd1904471?auto=format&fit=crop&w=1200&q=80", price: "₹3.60 Cr", location: "Gift City", beds: 4, baths: 4, sqft: "3,450", features: ["Riverfront", "High Floor"], tag: { text: "Private", color: "bg-purple-500 text-white" } },
-    { id: "e5", image: "https://images.unsplash.com/photo-1528909514045-2fa4ac7a08ba?auto=format&fit=crop&w=1200&q=80", price: "₹2.10 Cr", location: "Kh Road", beds: 3, baths: 3, sqft: "2,200", features: ["Ready to Move", "2 Car Parks"], tag: { text: "Hot Deal", color: "bg-red-500 text-white" } },
-    { id: "e6", image: "https://images.unsplash.com/photo-1523217582562-09d0def993a6?auto=format&fit=crop&w=1200&q=80", price: "₹2.95 Cr", location: "Chiloda", beds: 4, baths: 3, sqft: "2,900", features: ["Corner Plot", "Smart Home"], tag: { text: "Premium", color: "bg-primary text-white" } },
-    { id: "e7", image: "https://images.unsplash.com/photo-1536376072261-38c75010e6c9?auto=format&fit=crop&w=1200&q=80", price: "₹2.25 Cr", location: "Adalaj", beds: 3, baths: 3, sqft: "2,300", features: ["Club Access", "Park Facing"], tag: { text: "Open House", color: "bg-gray-200 text-gray-800" } },
-    { id: "e8", image: "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1200&q=80", price: "₹3.05 Cr", location: "Sargasan Ext.", beds: 4, baths: 4, sqft: "3,050", features: ["Premium Finishes", "Servant Room"], tag: { text: "Exclusive", color: "bg-yellow-500 text-white" } },
-    { id: "e9", image: "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80", price: "₹1.99 Cr", location: "Randesan", beds: 3, baths: 3, sqft: "2,120", features: ["Modular Kitchen", "City View"], tag: { text: "New", color: "bg-primary text-white" } },
-    { id: "e10", image: "https://images.unsplash.com/photo-1565183997392-2f6f122e5912?auto=format&fit=crop&w=1200&q=80", price: "₹2.70 Cr", location: "Kudasan Ext.", beds: 4, baths: 3, sqft: "2,780", features: ["Corner Unit", "Premium Location"], tag: { text: "Premium", color: "bg-primary text-white" } },
-    { id: "e11", image: "https://images.unsplash.com/photo-1489365091240-6a18fc761ec2?auto=format&fit=crop&w=1200&q=80", price: "₹2.35 Cr", location: "Sector 25", beds: 3, baths: 3, sqft: "2,380", features: ["Green Belt", "High Floor"], tag: { text: "Open House", color: "bg-gray-200 text-gray-800" } },
-    { id: "e12", image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80", price: "₹3.25 Cr", location: "Sector 10", beds: 4, baths: 4, sqft: "3,120", features: ["Terrace Deck", "2 Car Parks"], tag: { text: "Private", color: "bg-purple-500 text-white" } },
-  ];
-  // --- UPDATED: Use all 12 properties ---
-  const featuredList = useMemo(() => allProperties, []);
+/** ========= Types ========= */
+type Property = {
+  id: string;
+  image: string;
+  price: string;
+  location: string;
+  beds: number;
+  baths: number;
+  sqft: string;
+  features: string[];
+  tag: { text: string; color: string };
+};
 
-  // ---- STATE & REFS ----
-  const [centerIndex, setCenterIndex] = useState(1); // Start at index 1
+/** ========= Data: 12 Featured Properties (Updated Order) ========= */
+const ALL_FEATURED_PROPERTIES: Property[] = [
+  // First 3 (from screenshot)
+  {
+    id: "e1",
+    image:
+      "https://images.unsplash.com/photo-1505692952047-1a78307da8e8?auto=format&fit=crop&w=1200&q=80",
+    price: "₹3.40 Cr",
+    location: "Sector 5",
+    beds: 4,
+    baths: 4,
+    sqft: "3,200",
+    features: ["Penthouse", "Terrace Garden"],
+    tag: { text: "Premium", color: "bg-primary text-white" },
+  },
+  {
+    id: "e2",
+    image:
+      "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=80",
+    price: "₹1.90 Cr",
+    location: "Koba",
+    beds: 3,
+    baths: 3,
+    sqft: "2,050",
+    features: ["Club Access", "Corner Unit"],
+    tag: { text: "Exclusive", color: "bg-yellow-500 text-white" },
+  },
+  {
+    id: "e3",
+    image:
+      "https://images.unsplash.com/photo-1502005229762-cf1b2da7c52f?auto=format&fit=crop&w=1200&q=80",
+    price: "₹2.80 Cr",
+    location: "Torda",
+    beds: 4,
+    baths: 3,
+    sqft: "2,850",
+    features: ["Garden View", "Home Office"],
+    tag: { text: "New", color: "bg-primary text-white" },
+  },
+
+  // Remaining properties
+  {
+    id: "e4",
+    image:
+      "https://images.unsplash.com/photo-1501183638710-841dd1904471?auto=format&fit=crop&w=1200&q=80",
+    price: "₹3.60 Cr",
+    location: "Gift City",
+    beds: 4,
+    baths: 4,
+    sqft: "3,450",
+    features: ["Riverfront", "High Floor"],
+    tag: { text: "Private", color: "bg-purple-500 text-white" },
+  },
+  {
+    id: "e5",
+    image:
+      "https://images.unsplash.com/photo-1528909514045-2fa4ac7a08ba?auto=format&fit=crop&w=1200&q=80",
+    price: "₹2.10 Cr",
+    location: "Kh Road",
+    beds: 3,
+    baths: 3,
+    sqft: "2,200",
+    features: ["Ready to Move", "2 Car Parks"],
+    tag: { text: "Hot Deal", color: "bg-red-500 text-white" },
+  },
+  {
+    id: "e6",
+    image:
+      "https://images.unsplash.com/photo-1523217582562-09d0def993a6?auto=format&fit=crop&w=1200&q=80",
+    price: "₹2.95 Cr",
+    location: "Chiloda",
+    beds: 4,
+    baths: 3,
+    sqft: "2,900",
+    features: ["Corner Plot", "Smart Home"],
+    tag: { text: "Premium", color: "bg-primary text-white" },
+  },
+  {
+    id: "e7",
+    image:
+      "https://images.unsplash.com/photo-1536376072261-38c75010e6c9?auto=format&fit=crop&w=1200&q=80",
+    price: "₹2.25 Cr",
+    location: "Adalaj",
+    beds: 3,
+    baths: 3,
+    sqft: "2,300",
+    features: ["Club Access", "Park Facing"],
+    tag: { text: "Open House", color: "bg-gray-200 text-gray-800" },
+  },
+  {
+    id: "e8",
+    image:
+      "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1200&q=80",
+    price: "₹3.05 Cr",
+    location: "Sargasan Ext.",
+    beds: 4,
+    baths: 4,
+    sqft: "3,050",
+    features: ["Premium Finishes", "Servant Room"],
+    tag: { text: "Exclusive", color: "bg-yellow-500 text-white" },
+  },
+  {
+    id: "e9",
+    image:
+      "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80",
+    price: "₹1.99 Cr",
+    location: "Randesan",
+    beds: 3,
+    baths: 3,
+    sqft: "2,120",
+    features: ["Modular Kitchen", "City View"],
+    tag: { text: "New", color: "bg-primary text-white" },
+  },
+  {
+    id: "e10",
+    image:
+      "https://images.unsplash.com/photo-1565183997392-2f6f122e5912?auto=format&fit=crop&w=1200&q=80",
+    price: "₹2.70 Cr",
+    location: "Kudasan Ext.",
+    beds: 4,
+    baths: 3,
+    sqft: "2,780",
+    features: ["Corner Unit", "Premium Location"],
+    tag: { text: "Premium", color: "bg-primary text-white" },
+  },
+  {
+    id: "e11",
+    image:
+      "https://images.unsplash.com/photo-1489365091240-6a18fc761ec2?auto=format&fit=crop&w=1200&q=80",
+    price: "₹2.35 Cr",
+    location: "Sector 25",
+    beds: 3,
+    baths: 3,
+    sqft: "2,380",
+    features: ["Green Belt", "High Floor"],
+    tag: { text: "Open House", color: "bg-gray-200 text-gray-800" },
+  },
+  {
+    id: "e12",
+    image:
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+    price: "₹3.25 Cr",
+    location: "Sector 10",
+    beds: 4,
+    baths: 4,
+    sqft: "3,120",
+    features: ["Terrace Deck", "2 Car Parks"],
+    tag: { text: "Private", color: "bg-purple-500 text-white" },
+  },
+];
+
+const FeaturedProperties: React.FC = () => {
+  const featuredList = useMemo(() => ALL_FEATURED_PROPERTIES, []);
+  const totalSlides = featuredList.length;
+
+  const [centerIndex, setCenterIndex] = useState(1);
   const [isHovered, setIsHovered] = useState(false);
 
   const listRef = useRef<HTMLDivElement | null>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const autoAdvanceRef = useRef<number | null>(null);
 
-  const totalSlides = featuredList.length;
-
-  // ---- HELPERS ----
   const scrollToActive = (idx: number) => {
     const container = listRef.current;
     const target = itemRefs.current[idx];
-    
+
     if (container && target) {
       const targetOffsetLeft = target.offsetLeft;
       const offset =
-        targetOffsetLeft -
-        container.offsetWidth / 2 +
-        target.offsetWidth / 2;
+        targetOffsetLeft - container.offsetWidth / 2 + target.offsetWidth / 2;
 
       container.scrollTo({ left: offset, behavior: "smooth" });
     }
@@ -61,7 +204,6 @@ const FeaturedProperties = () => {
   const prevSlide = () => goToSlide(centerIndex - 1);
   const nextSlide = () => goToSlide(centerIndex + 1);
 
-  // ---- EFFECTS ----
   useEffect(() => {
     if (isHovered) {
       if (autoAdvanceRef.current) window.clearInterval(autoAdvanceRef.current);
@@ -90,11 +232,9 @@ const FeaturedProperties = () => {
     return () => window.removeEventListener("resize", onResize);
   }, [centerIndex]);
 
-  // ---- UI HELPERS ----
   const getCircularDiff = (index: number) => {
     const rawDiff = index - centerIndex;
-    const altDiff =
-      rawDiff > 0 ? rawDiff - totalSlides : rawDiff + totalSlides;
+    const altDiff = rawDiff > 0 ? rawDiff - totalSlides : rawDiff + totalSlides;
     return Math.abs(altDiff) < Math.abs(rawDiff) ? altDiff : rawDiff;
   };
 
@@ -109,13 +249,13 @@ const FeaturedProperties = () => {
       };
     } else if (diff === -1) {
       return {
-        wrapper: "z-20 opacity-30 scale-[0.8] -translate-x-12",
-        tagText: featuredList[index].tag.text.split("").reverse().join(""),
+        wrapper: "z-20 scale-[0.9] -translate-x-10",
+        tagText: featuredList[index].tag.text,
       };
     } else if (diff === 1) {
       return {
-        wrapper: "z-20 opacity-30 scale-[0.8] translate-x-12",
-        tagText: featuredList[index].tag.text.split("").reverse().join(""),
+        wrapper: "z-20 scale-[0.9] translate-x-10",
+        tagText: featuredList[index].tag.text,
       };
     } else {
       return {
@@ -130,6 +270,7 @@ const FeaturedProperties = () => {
     <section className="py-20 bg-gradient-to-b from-white to-gray-50 relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
       <div className="container mx-auto">
+        {/* Heading */}
         <div className="mb-12 text-center px-4">
           <h2 className="text-4xl font-bold text-gray-800 mb-3">
             Featured Properties
@@ -141,6 +282,7 @@ const FeaturedProperties = () => {
         </div>
 
         <div className="relative">
+          {/* Prev */}
           <button
             aria-label="Previous properties"
             onClick={prevSlide}
@@ -161,6 +303,7 @@ const FeaturedProperties = () => {
             </svg>
           </button>
 
+          {/* Next */}
           <button
             aria-label="Next properties"
             onClick={nextSlide}
@@ -181,6 +324,7 @@ const FeaturedProperties = () => {
             </svg>
           </button>
 
+          {/* Carousel */}
           <div
             ref={listRef}
             className="relative overflow-x-auto overflow-y-visible px-4 md:px-24 lg:px-48 snap-x no-scrollbar"
@@ -191,12 +335,8 @@ const FeaturedProperties = () => {
             onMouseLeave={() => setIsHovered(false)}
           >
             <div className="flex gap-0 min-w-full py-8 justify-start">
-              {/* Ghost spacer for centering first card. Not ideal, but works for this centered-item-flex-start layout */}
-              <div
-                className="flex-none w-[320px] md:w-[350px] opacity-0 pointer-events-none"
-                aria-hidden="true"
-              />
-              
+              <div className="flex-none w-[320px] md:w-[350px] opacity-0 pointer-events-none" />
+
               {featuredList.map((property, index) => {
                 const isCenterCard = index === centerIndex;
                 const { wrapper: cardWrapperClasses, tagText } =
@@ -204,7 +344,7 @@ const FeaturedProperties = () => {
 
                 return (
                   <div
-                    key={`${property.location}-${index}`}
+                    key={property.id}
                     ref={(el) => {
                       itemRefs.current[index] = el;
                     }}
@@ -232,14 +372,16 @@ const FeaturedProperties = () => {
                             alt={property.location}
                             className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                           />
+
                           <div
                             className={`absolute top-4 ${
                               isCenterCard ? "right-4" : "left-4"
-                            } px-4 py-1.5 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm ${property.tag.color}`}
+                            } px-4 py-1.5 rounded-full text-xs font-semibold shadow-lg ${property.tag.color}`}
                           >
                             {tagText}
                           </div>
-                          <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm px-3 py-2 rounded-lg shadow-md">
+
+                          <div className="absolute bottom-4 left-4 bg-white/95 px-3 py-2 rounded-lg shadow-md">
                             <span className="text-lg font-bold text-primary">
                               {property.price}
                             </span>
@@ -257,33 +399,71 @@ const FeaturedProperties = () => {
                               </p>
                             </div>
                           </div>
+
                           <div className="flex items-center gap-3 mb-3 text-sm text-gray-600">
                             <span className="flex items-center gap-1">
-                              <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                              <svg
+                                className="w-4 h-4 text-primary"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                                />
                               </svg>
                               {property.beds} bd
                             </span>
+
                             <span className="flex items-center gap-1">
-                              <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>
+                              <svg
+                                className="w-4 h-4 text-primary"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"
+                                />
                               </svg>
                               {property.baths} ba
                             </span>
+
                             <span className="flex items-center gap-1">
-                              <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+                              <svg
+                                className="w-4 h-4 text-primary"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+                                />
                               </svg>
                               {property.sqft} sq ft
                             </span>
                           </div>
+
                           <div className="flex flex-wrap gap-2 mb-4">
                             {property.features.map((feature, idx) => (
-                              <span key={idx} className="px-3 py-1 bg-primary/10 text-primary text-xs rounded-full font-medium">
+                              <span
+                                key={idx}
+                                className="px-3 py-1 bg-primary/10 text-primary text-xs rounded-full font-medium"
+                              >
                                 {feature}
                               </span>
                             ))}
                           </div>
+
                           <button
                             className={`w-full py-2.5 rounded-lg font-medium hover:shadow-lg transition-all transform hover:scale-[1.02] ${
                               isCenterCard
@@ -299,21 +479,20 @@ const FeaturedProperties = () => {
                   </div>
                 );
               })}
-              
-              {/* Ghost spacer for centering last card. */}
-              <div
-                className="flex-none w-[320px] md:w-[350px] opacity-0 pointer-events-none"
-                aria-hidden="true"
-              />
+
+              <div className="flex-none w-[320px] md:w-[350px] opacity-0 pointer-events-none" />
             </div>
           </div>
 
+          {/* Dots */}
           <div className="mt-4 flex items-center justify-center gap-3">
             {Array.from({ length: totalSlides }).map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => goToSlide(idx)}
-                aria-label={`Go to property ${idx + 1}: ${featuredList[idx].location}`}
+                aria-label={`Go to property ${
+                  idx + 1
+                }: ${featuredList[idx].location}`}
                 className={`w-3 h-3 rounded-full transition-all ${
                   centerIndex === idx
                     ? "scale-125 bg-primary shadow-md"

@@ -8,6 +8,7 @@ type FormState = {
   email: string;
   phone: string;
   message: string;
+  preferred: "call" | "whatsapp" | "email";
 };
 
 export default function ContactUs() {
@@ -17,9 +18,12 @@ export default function ContactUs() {
     email: "",
     phone: "",
     message: "",
+    preferred: "call", // default
   });
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState<null | { ok: boolean; msg: string }>(null);
+  const [status, setStatus] = useState<null | { ok: boolean; msg: string }>(
+    null
+  );
 
   const onChange =
     (key: keyof FormState) =>
@@ -59,14 +63,21 @@ export default function ContactUs() {
           email: form.email.trim(),
           phone: form.phone.trim(),
           message: form.message.trim(),
-          // simple honeypot slot if you want to add later
+          preferred: form.preferred, // ⭐ send preferred mode
         }),
       });
 
       if (!res.ok) throw new Error("Failed");
 
       setStatus({ ok: true, msg: "Thanks! We’ll get back to you shortly." });
-      setForm({ firstName: "", lastName: "", email: "", phone: "", message: "" });
+      setForm({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        message: "",
+        preferred: "call", // reset
+      });
     } catch {
       setStatus({ ok: false, msg: "Something went wrong. Please try again." });
     } finally {
@@ -80,17 +91,27 @@ export default function ContactUs() {
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-4">
+        {/* Header */}
         <div className="mb-8 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-black">Contact Us</h2>
-          <p className="text-black/70 mt-2">
-            Have a question about buying, selling, or listing? Tell us a bit about you.
+          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">
+            Contact Us
+          </h2>
+          <div className="mt-3 w-16 h-1.5 bg-[#0b6b53] mx-auto rounded-full" />
+          <p className="text-black/70 mt-4">
+            Have a question about buying, selling, or listing? Tell us a bit
+            about you.
           </p>
         </div>
 
         <div className="mx-auto max-w-4xl rounded-3xl bg-primary/5 ring-1 ring-primary/15 shadow-sm p-6 sm:p-8">
-          <form onSubmit={submit} className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <form
+            onSubmit={submit}
+            className="grid grid-cols-1 sm:grid-cols-2 gap-5"
+          >
             <div>
-              <label className="block text-sm font-medium text-emerald-900 mb-2">First name</label>
+              <label className="block text-sm font-medium text-emerald-900 mb-2">
+                First name
+              </label>
               <input
                 className={inputBase}
                 placeholder="John"
@@ -104,7 +125,9 @@ export default function ContactUs() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-emerald-900 mb-2">Last name</label>
+              <label className="block text-sm font-medium text-emerald-900 mb-2">
+                Last name
+              </label>
               <input
                 className={inputBase}
                 placeholder="Doe"
@@ -118,7 +141,9 @@ export default function ContactUs() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-emerald-900 mb-2">Email</label>
+              <label className="block text-sm font-medium text-emerald-900 mb-2">
+                Email
+              </label>
               <input
                 type="email"
                 className={inputBase}
@@ -132,7 +157,9 @@ export default function ContactUs() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-emerald-900 mb-2">Mobile No.</label>
+              <label className="block text-sm font-medium text-emerald-900 mb-2">
+                Mobile No.
+              </label>
               <input
                 className={inputBase}
                 placeholder="+91 98765 43210"
@@ -144,8 +171,46 @@ export default function ContactUs() {
               />
             </div>
 
+            {/* Preferred Mode of Contact */}
             <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-emerald-900 mb-2">Your Query</label>
+              <label className="block text-sm font-medium text-emerald-900 mb-3">
+                Preferred Mode of Contact
+              </label>
+              <div className="flex items-center gap-3 flex-wrap">
+                {(["call", "whatsapp", "email"] as const).map((opt) => {
+                  const label =
+                    opt === "call"
+                      ? "Call"
+                      : opt === "whatsapp"
+                      ? "WhatsApp"
+                      : "Email";
+                  const active = form.preferred === opt;
+
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() =>
+                        setForm((s) => ({ ...s, preferred: opt }))
+                      }
+                      className={[
+                        "px-5 py-2 rounded-full text-sm font-semibold transition-all",
+                        active
+                          ? "bg-[#0b6b53] text-white shadow"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200",
+                      ].join(" ")}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-medium text-emerald-900 mb-2">
+                Your Query
+              </label>
               <textarea
                 className={inputBase + " min-h-[140px] resize-y"}
                 placeholder="Tell us about your requirement…"
@@ -161,7 +226,8 @@ export default function ContactUs() {
               {status && (
                 <p
                   className={
-                    "text-sm " + (status.ok ? "text-emerald-700" : "text-red-600")
+                    "text-sm " +
+                    (status.ok ? "text-emerald-700" : "text-red-600")
                   }
                 >
                   {status.msg}

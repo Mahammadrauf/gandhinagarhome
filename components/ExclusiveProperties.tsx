@@ -14,10 +14,9 @@ const ExclusiveProperty = () => {
     { id: "f5", image:"https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80", price:"₹1.85 Cr", location:"Sector 16", beds:3, baths:2, sqft:"2,100", features:["City View","Ready to Move"], tag:{ text:"Hot Deal", color:"bg-red-500 text-white" } },
     { id: "f6", image:"https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80", price:"₹2.75 Cr", location:"Sector 7", beds:4, baths:3, sqft:"2,800", features:["Corner Plot","Premium Finishes"], tag:{ text:"Premium", color:"bg-primary text-white" } },
   ];
-  // --- UPDATED: Use all 6 properties ---
+
   const exclusiveList = useMemo(() => allProperties, []);
 
-  // ---- STATE & REFS ----
   const [centerIndex, setCenterIndex] = useState(1); // Start at index 1
   const [isHovered, setIsHovered] = useState(false);
 
@@ -27,7 +26,6 @@ const ExclusiveProperty = () => {
 
   const totalSlides = exclusiveList.length;
 
-  // ---- HELPERS ----
   const scrollToActive = (idx: number) => {
     const container = listRef.current;
     const target = itemRefs.current[idx];
@@ -55,7 +53,6 @@ const ExclusiveProperty = () => {
   const prevSlide = () => goToSlide(centerIndex - 1);
   const nextSlide = () => goToSlide(centerIndex + 1);
 
-  // ---- EFFECTS ----
   useEffect(() => {
     if (isHovered) {
       if (autoAdvanceRef.current) window.clearInterval(autoAdvanceRef.current);
@@ -84,7 +81,6 @@ const ExclusiveProperty = () => {
     return () => window.removeEventListener("resize", onResize);
   }, [centerIndex]);
 
-  // ---- UI HELPERS ----
   const getCircularDiff = (index: number) => {
     const rawDiff = index - centerIndex;
     const altDiff =
@@ -92,6 +88,7 @@ const ExclusiveProperty = () => {
     return Math.abs(altDiff) < Math.abs(rawDiff) ? altDiff : rawDiff;
   };
 
+  // ⭐ Updated: side cards no longer low opacity (no "blur" feel)
   const getCardPositionClasses = (index: number) => {
     const diff = getCircularDiff(index);
 
@@ -103,13 +100,15 @@ const ExclusiveProperty = () => {
       };
     } else if (diff === -1) {
       return {
-        wrapper: "z-20 opacity-30 scale-[0.8] -translate-x-12",
-        tagText: exclusiveList[index].tag.text.split("").reverse().join(""),
+        // removed opacity-30, slightly smaller only
+        wrapper: "z-20 scale-[0.9] -translate-x-10",
+        tagText: exclusiveList[index].tag.text,
       };
     } else if (diff === 1) {
       return {
-        wrapper: "z-20 opacity-30 scale-[0.8] translate-x-12",
-        tagText: exclusiveList[index].tag.text.split("").reverse().join(""),
+        // removed opacity-30, slightly smaller only
+        wrapper: "z-20 scale-[0.9] translate-x-10",
+        tagText: exclusiveList[index].tag.text,
       };
     } else {
       return {
@@ -226,14 +225,16 @@ const ExclusiveProperty = () => {
                             alt={property.location}
                             className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                           />
+                          {/* ⭐ Removed backdrop-blur-sm from tag */}
                           <div
                             className={`absolute top-4 ${
                               isCenterCard ? "right-4" : "left-4"
-                            } px-4 py-1.5 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm ${property.tag.color}`}
+                            } px-4 py-1.5 rounded-full text-xs font-semibold shadow-lg ${property.tag.color}`}
                           >
                             {tagText}
                           </div>
-                          <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm px-3 py-2 rounded-lg shadow-md">
+                          {/* ⭐ Removed backdrop-blur-sm from price chip */}
+                          <div className="absolute bottom-4 left-4 bg-white/95 px-3 py-2 rounded-lg shadow-md">
                             <span className="text-lg font-bold text-primary">
                               {property.price}
                             </span>

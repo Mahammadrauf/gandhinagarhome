@@ -12,13 +12,13 @@ type Property = {
   image: string; // Image is used in this version
   price: string;
   location: string;
-  beds?: number;     
+  beds?: number;
   baths: number;
   sqft: string;
   features: string[];
   tag?: { text: string; color: string };
-  tier?: string;           
-  category?: string;     
+  tier?: string;
+  category?: string;
 };
 
 /** ================= Helpers ================= */
@@ -49,7 +49,7 @@ const resolveCategory = (p: Property): CategoryKey | null => {
   if (p.beds === 2) return "2bhk";
   if (p.beds === 3) return "3bhk";
   if (p.beds === 4) return "4bhk";
-  if (p.beds === 5) return "5bhk"; 
+  if (p.beds === 5) return "5bhk";
   return null;
 };
 
@@ -65,8 +65,8 @@ const Pills: React.FC<{
     <div className="flex flex-wrap items-center gap-3 px-4 sm:px-6 lg:px-4">
       {items.map((it) => {
         // Don't render a pill if there are 0 items in that category
-        if (it.count === 0) return null; 
-        
+        if (it.count === 0) return null;
+
         const isActive = it.key === active;
         return (
           <button
@@ -95,7 +95,7 @@ const Pills: React.FC<{
 
 const HorizontalList: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const listRef = useRef<HTMLDivElement | null>(null);
-  
+
   // Scrolls to the start when the category changes (children update)
   useEffect(() => {
     listRef.current?.scrollTo({ left: 0, behavior: "smooth" });
@@ -105,7 +105,10 @@ const HorizontalList: React.FC<{ children: React.ReactNode }> = ({ children }) =
     <div
       ref={listRef}
       className="relative overflow-x-auto overflow-y-visible px-4 sm:px-6 lg:px-4 snap-x snap-mandatory
-              [-ms-overflow-style:auto] [scrollbar-width:auto]"
+                 
+                 [-ms-overflow-style:none] /* IE and Edge */
+                 [scrollbar-width:none]    /* Firefox */
+                 [&::-webkit-scrollbar]:hidden /* Webkit (Chrome, Safari) */"
     >
       <div className="flex gap-4 min-w-full py-6">{children}</div>
     </div>
@@ -115,9 +118,9 @@ const HorizontalList: React.FC<{ children: React.ReactNode }> = ({ children }) =
 // --- This is the Property Card with the IMAGE ---
 const PropertyCard: React.FC<{ p: Property }> = ({ p }) => {
   const locationCap = p.location.charAt(0).toUpperCase() + p.location.slice(1);
-  const title = p.title ?? 
-    (p.beds ? `${p.beds}BHK for sale in ${locationCap}` : 
-    (p.category ? `${p.category.charAt(0).toUpperCase() + p.category.slice(1)} for sale in ${locationCap}` : 
+  const title = p.title ??
+    (p.beds ? `${p.beds}BHK for sale in ${locationCap}` :
+    (p.category ? `${p.category.charAt(0).toUpperCase() + p.category.slice(1)} for sale in ${locationCap}` :
     `Property in ${locationCap}`));
 
   return (
@@ -151,7 +154,7 @@ const PropertyCard: React.FC<{ p: Property }> = ({ p }) => {
 
 /** ================= Main Component ================= */
 const ExploreListing: React.FC<{ properties: Property[] }> = ({ properties }) => {
-  
+
   // --- This logic creates the "buckets" for each category ---
   const buckets = useMemo(() => {
     const dict: Record<CategoryKey, Property[]> = {
@@ -209,7 +212,7 @@ const ExploreListing: React.FC<{ properties: Property[] }> = ({ properties }) =>
       if (fallback !== active) setActive(fallback);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [buckets, active]); 
+  }, [buckets, active]);
 
   // Get the list of properties for the *active* category
   const list = buckets.dict[active];
@@ -230,15 +233,23 @@ const ExploreListing: React.FC<{ properties: Property[] }> = ({ properties }) =>
     <section className="py-16 bg-white">
       <div className="container mx-auto">
         
-        {/* Header */}
-        <div className="px-4 sm:px-6 lg:px-4">
-  <h2 className="text-4xl sm:text-5xl font-extrabold text-blue-800 leading-tight">
+{/* Header */}
+<div className="px-4 sm:px-6 lg:px-4 text-center">
+  <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">
     Explore Listing
   </h2>
-  <p className="text-lg text-gray-700 mt-2">
-    Discover exceptional residential spaces
+
+  {/* green underline like the image */}
+  <div className="mt-3 w-16 h-1.5 bg-[#0b6b53] mx-auto rounded-full" />
+  
+  {/* */}
+  <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+    Find your dream home from our exclusive collection of properties.
   </p>
+
 </div>
+
+
 
         {/* --- Renders the filter pills --- */}
         {/* <Pills
