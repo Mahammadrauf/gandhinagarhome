@@ -10,12 +10,26 @@ const stepTitles = ["Basic Information", "Specifications", "Location", "Media Up
 const validateEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
 const onlyDigitsOrSymbols = (v: string) => /^[0-9+\-\s()]*$/.test(v);
 
+// Small inline chevron icon for dropdowns
+const DropdownChevron = () => (
+  <svg
+    className="w-4 h-4 text-gray-500 ml-2 flex-shrink-0"
+    viewBox="0 0 20 20"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M6 8L10 12L14 8"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 /**
  * Updated Sell page
- * ... (previous changes)
- * - (User) Page now scrolls to top on any step change.
- * - (User) Updated Media Upload text to be optional (add now or later).
- * - (Fix) Synced furnishing state with new furnishing options.
  */
 
 export default function SellPage() {
@@ -42,14 +56,17 @@ export default function SellPage() {
   const [bathrooms, setBathrooms] = useState("2");
   const [balcony, setBalcony] = useState("0");
   const [parking, setParking] = useState("None");
-  const [ageOfProperty, setAgeOfProperty] = useState("0-3 years"); 
-  // --- UPDATED: State type and default value to match options array ---
+  // Age of property 1–25 and 25+
+  const [ageOfProperty, setAgeOfProperty] = useState("1");
   const [furnishing, setFurnishing] = useState<"Unfurnished" | "Semi-furnished" | "Fully furnished">("Unfurnished");
   const [availability, setAvailability] = useState<"Ready" | "After1Month">("Ready");
   const [price, setPrice] = useState("");
   const [amenities, setAmenities] = useState<string[]>([]);
   const [currentAmenity, setCurrentAmenity] = useState("");
 
+  // NEW: Size of Property
+  const [propertySize, setPropertySize] = useState("");
+  const [propertySizeUnit, setPropertySizeUnit] = useState<"sq ft" | "sq m" | "sq yd">("sq ft");
 
   // Location
   const [city, setCity] = useState("Gandhinagar");
@@ -63,6 +80,12 @@ export default function SellPage() {
   const [video, setVideo] = useState<File | null>(null);
   const photoRef = useRef<HTMLInputElement | null>(null);
   const videoRef = useRef<HTMLInputElement | null>(null);
+
+  // NEW: Docs
+  const [saleDeed, setSaleDeed] = useState<File | null>(null);
+  const [brochure, setBrochure] = useState<File | null>(null);
+  const saleDeedRef = useRef<HTMLInputElement | null>(null);
+  const brochureRef = useRef<HTMLInputElement | null>(null);
 
   // UI
   const [triedContinue, setTriedContinue] = useState(false);
@@ -78,8 +101,8 @@ export default function SellPage() {
 
   // Step 2 Validation
   const isTitleValid = title.trim().length >= 3;
-  const isBedroomsValid = Number(bedrooms) >= 1;
-  const isBathroomsValid = Number(bathrooms) >= 1;
+  const isBedroomsValid = Number(bedrooms.replace("+", "")) >= 1;
+  const isBathroomsValid = Number(bathrooms.replace("+", "")) >= 1;
   const isPriceValid = price.trim().length > 0;
   const canContinueStep2 = isTitleValid && isBedroomsValid && isBathroomsValid && isPriceValid;
 
@@ -93,17 +116,23 @@ export default function SellPage() {
   
 
   // --- Helper arrays for ALL dropdowns ---
-  const propertyTypeOptions = ["Apartment", "Villa", "Bungalow", "Plot"];
+  const propertyTypeOptions = ["Apartment", "Villa", "Bungalow", "Plot", "Other"];
   const bedroomOptions = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10+"];
   const balconyOptions = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10+"];
   const bathroomOptions = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10+"];
   const parkingOptions = ["None", "1", "2", "3+"];
-  const ageOfPropertyOptions = ["0-3 years", "3-6 years", "6-9 years", "10+ years"]; 
-  // --- UPDATED: Options from user's code ---
+
+  // Age of property: 1–25 and 25+
+  const ageOfPropertyOptions = [
+    ...Array.from({ length: 25 }, (_, i) => `${i + 1}`),
+    "25+",
+  ];
+
   const furnishingOptions = ["Unfurnished", "Semi-furnished", "Fully furnished"];
   const availabilityOptions = ["Ready", "After1Month"];
   const amenitySuggestions = ["Lift", "Security", "Garden", "Gym", "Swimming Pool", "Clubhouse", "Parking"];
 
+  const propertySizeUnitOptions: Array<"sq ft" | "sq m" | "sq yd"> = ["sq ft", "sq m", "sq yd"];
 
   const canNavigateTo = (target: number) => {
     if (target === 0) return true;
@@ -132,11 +161,24 @@ export default function SellPage() {
     setSaving(true);
     const payload = {
       firstName, middleName, lastName, email, mobile, alternateNumber,
-      title, bedrooms, propertyType, bathrooms, balcony, parking, ageOfProperty, furnishing, availability, price, 
-      amenities, 
+      title,
+      bedrooms,
+      propertyType,
+      bathrooms,
+      balcony,
+      parking,
+      ageOfProperty,
+      furnishing,
+      availability,
+      price,
+      amenities,
+      propertySize,
+      propertySizeUnit,
       city, locality, society, unitNo, pincode,
       photosCount: photos.length,
       hasVideo: !!video,
+      hasSaleDeed: !!saleDeed,
+      hasBrochure: !!brochure,
       status: "draft",
       savedAt: new Date().toISOString(),
     };
@@ -170,11 +212,24 @@ export default function SellPage() {
 
     const payload = {
       firstName, middleName, lastName, email, mobile, alternateNumber,
-      title, bedrooms, propertyType, bathrooms, balcony, parking, ageOfProperty, furnishing, availability, price, 
-      amenities, 
+      title,
+      bedrooms,
+      propertyType,
+      bathrooms,
+      balcony,
+      parking,
+      ageOfProperty,
+      furnishing,
+      availability,
+      price,
+      amenities,
+      propertySize,
+      propertySizeUnit,
       city, locality, society, unitNo, pincode,
       photosCount: photos.length,
       hasVideo: !!video,
+      hasSaleDeed: !!saleDeed,
+      hasBrochure: !!brochure,
       submittedAt: new Date().toISOString(),
     };
 
@@ -201,7 +256,9 @@ export default function SellPage() {
   // Files
   const onAddPhotos = (files: FileList | null) => {
     if (!files) return;
-    const arr = Array.from(files).slice(0, 9 - photos.length);
+    const maxRemaining = 9 - photos.length;
+    const arr = Array.from(files).slice(0, maxRemaining);
+    if (arr.length === 0) return;
     setPhotos((p) => [...p, ...arr]);
   };
   const onAddVideo = (file: FileList | null) => {
@@ -210,6 +267,17 @@ export default function SellPage() {
   };
   const removePhoto = (i: number) => setPhotos((p) => p.filter((_, idx) => idx !== i));
   const removeVideo = () => setVideo(null);
+
+  const onAddSaleDeed = (fileList: FileList | null) => {
+    if (!fileList || fileList.length === 0) return;
+    setSaleDeed(fileList[0]);
+  };
+  const onAddBrochure = (fileList: FileList | null) => {
+    if (!fileList || fileList.length === 0) return;
+    setBrochure(fileList[0]);
+  };
+  const removeSaleDeed = () => setSaleDeed(null);
+  const removeBrochure = () => setBrochure(null);
 
   // --- UPDATED: Added scroll to top ---
   const onContinueFromStep1 = () => {
@@ -298,7 +366,7 @@ export default function SellPage() {
   // Reusable classes
   const inputBase = "w-full h-12 rounded-xl px-4 border outline-none shadow-sm";
   const inputNormal = `${inputBase} border-gray-100 bg-white`;
-  const selectNormal = `${inputNormal} appearance-none bg-no-repeat bg-[url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%236b7280'%3e%3cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd' /%3e%3c/svg%3e")] bg-[position:right_1rem_center] bg-[size:1.25em] pr-10 text-left`;
+  const selectNormal = `${inputNormal} appearance-none bg-no-repeat pr-10 text-left`; // background arrow removed; we show SVG chevron
   const inputError = `${inputBase} border-red-200 bg-red-50`;
   const btnPrimary = "inline-flex items-center justify-center h-12 px-6 rounded-full bg-[#0b6b53] text-white font-semibold transition transform hover:scale-[1.02]";
   const btnSecondary = "inline-flex items-center justify-center h-12 px-5 rounded-lg border border-gray-200 bg-white text-gray-700 transition hover:shadow-sm";
@@ -415,7 +483,7 @@ export default function SellPage() {
                         {triedContinue && !isEmailValid && <div className="text-xs text-red-600 mt-2">Enter a valid email address.</div>}
                       </div>
                       <div>
-                        <label className={fieldLabel}>Alternate Number</label>
+                        <label className={fieldLabel}>Whatsapp Number</label>
                         <input
                           value={alternateNumber}
                           onChange={(e) => setAlternateNumber(e.target.value)}
@@ -536,8 +604,9 @@ export default function SellPage() {
                       <label className={fieldLabel}>Property Type</label>
                       <Listbox value={propertyType} onChange={setPropertyType}>
                         <div className="relative">
-                          <Listbox.Button className={selectNormal}>
+                          <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
                             <span className="block truncate">{propertyType}</span>
+                            <DropdownChevron />
                           </Listbox.Button>
                           <Transition
                             as={Fragment}
@@ -581,8 +650,9 @@ export default function SellPage() {
                       <label className={fieldLabel}>Bedrooms <span className="text-[#0b6b53]">*</span></label>
                        <Listbox value={bedrooms} onChange={setBedrooms}>
                         <div className="relative">
-                          <Listbox.Button className={`${selectNormal} ${triedContinue && !isBedroomsValid ? 'border-red-200' : 'border-gray-100'}`}>
+                          <Listbox.Button className={`${selectNormal} ${triedContinue && !isBedroomsValid ? 'border-red-200' : 'border-gray-100'} flex items-center justify-between`}>
                             <span className="block truncate">{bedrooms}</span>
+                            <DropdownChevron />
                           </Listbox.Button>
                           <Transition
                             as={Fragment}
@@ -624,8 +694,9 @@ export default function SellPage() {
                       <label className={fieldLabel}>Balcony</label>
                       <Listbox value={balcony} onChange={setBalcony}>
                         <div className="relative">
-                          <Listbox.Button className={selectNormal}>
+                          <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
                             <span className="block truncate">{balcony}</span>
+                            <DropdownChevron />
                           </Listbox.Button>
                           <Transition
                             as={Fragment}
@@ -666,8 +737,9 @@ export default function SellPage() {
                       <label className={fieldLabel}>Bathrooms <span className="text-[#0b6b53]">*</span></label>
                       <Listbox value={bathrooms} onChange={setBathrooms}>
                         <div className="relative">
-                          <Listbox.Button className={`${selectNormal} ${triedContinue && !isBathroomsValid ? 'border-red-200' : 'border-gray-100'}`}>
+                          <Listbox.Button className={`${selectNormal} ${triedContinue && !isBathroomsValid ? 'border-red-200' : 'border-gray-100'} flex items-center justify-between`}>
                             <span className="block truncate">{bathrooms}</span>
+                            <DropdownChevron />
                           </Listbox.Button>
                           <Transition
                             as={Fragment}
@@ -712,8 +784,9 @@ export default function SellPage() {
                       <label className={fieldLabel}>Parking</label>
                       <Listbox value={parking} onChange={setParking}>
                         <div className="relative">
-                          <Listbox.Button className={selectNormal}>
+                          <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
                             <span className="block truncate">{parking}</span>
+                            <DropdownChevron />
                           </Listbox.Button>
                           <Transition
                             as={Fragment}
@@ -751,11 +824,12 @@ export default function SellPage() {
 
                     {/* --- AGE OF PROPERTY --- */}
                     <div>
-                      <label className={fieldLabel}>Age of Property</label>
+                      <label className={fieldLabel}>Age of Property (years)</label>
                       <Listbox value={ageOfProperty} onChange={setAgeOfProperty}>
                         <div className="relative">
-                          <Listbox.Button className={selectNormal}>
+                          <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
                             <span className="block truncate">{ageOfProperty}</span>
+                            <DropdownChevron />
                           </Listbox.Button>
                           <Transition
                             as={Fragment}
@@ -796,8 +870,9 @@ export default function SellPage() {
                       <label className={fieldLabel}>Furnishing</label>
                       <Listbox value={furnishing} onChange={setFurnishing as any}>
                         <div className="relative">
-                          <Listbox.Button className={selectNormal}>
+                          <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
                             <span className="block truncate">{furnishing}</span>
+                            <DropdownChevron />
                           </Listbox.Button>
                           <Transition
                             as={Fragment}
@@ -833,6 +908,64 @@ export default function SellPage() {
                       </Listbox>
                     </div>
                   </div>
+
+                  {/* NEW Row: Size of Property */}
+                  <div className={cardWrapper + " grid grid-cols-1 md:grid-cols-2 gap-6"}>
+                    <div>
+                      <label className={fieldLabel}>Size of Property</label>
+                      <div className="flex gap-3">
+                        <input
+                          value={propertySize}
+                          onChange={(e) => setPropertySize(e.target.value)}
+                          placeholder="e.g., 1200"
+                          className={inputNormal}
+                          type="number"
+                          min={0}
+                        />
+                        <Listbox value={propertySizeUnit} onChange={setPropertySizeUnit}>
+                          <div className="relative min-w-[110px]">
+                            <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
+                              <span className="block truncate text-sm">{propertySizeUnit}</span>
+                              <DropdownChevron />
+                            </Listbox.Button>
+                            <Transition
+                              as={Fragment}
+                              leave="transition ease-in duration-100"
+                              leaveFrom="opacity-100"
+                              leaveTo="opacity-0"
+                            >
+                              <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-30">
+                                {propertySizeUnitOptions.map((option) => (
+                                  <Listbox.Option
+                                    key={option}
+                                    className={({ active }) =>
+                                      `relative cursor-default select-none py-2 px-4 ${
+                                        active ? 'bg-[#f1faf6] text-[#0b6b53]' : 'text-gray-900'
+                                      }`
+                                    }
+                                    value={option}
+                                  >
+                                    {({ selected }) => (
+                                      <span
+                                        className={`block truncate ${
+                                          selected ? 'font-medium' : 'font-normal'
+                                        }`}
+                                      >
+                                        {option}
+                                      </span>
+                                    )}
+                                  </Listbox.Option>
+                                ))}
+                              </Listbox.Options>
+                            </Transition>
+                          </div>
+                        </Listbox>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-2">
+                        Example: 1200 sq ft (carpet / built-up as per your local standard).
+                      </p>
+                    </div>
+                  </div>
                   
                   {/* Row 4: Availability / Price */}
                   <div className={cardWrapper + " grid grid-cols-1 md:grid-cols-2 gap-6"}>
@@ -841,8 +974,9 @@ export default function SellPage() {
                       <label className={fieldLabel}>Availability</label>
                       <Listbox value={availability} onChange={setAvailability as any}>
                         <div className="relative">
-                          <Listbox.Button className={selectNormal}>
+                          <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
                             <span className="block truncate">{availability === "Ready" ? "Immediately" : "After 1 Month"}</span>
+                            <DropdownChevron />
                           </Listbox.Button>
                           <Transition
                             as={Fragment}
@@ -949,76 +1083,160 @@ export default function SellPage() {
               {/* --- END OF STEP 1 BLOCK --- */}
 
               {/* --- STEP 2: LOCATION --- */}
-              {step === 2 && (
-                <div className="space-y-6">
-                  {/* Row 0: Header */}
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold">Step 3: Location</h3>
-                    <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                      Keep it simple
-                    </div>
-                  </div>
+{step === 2 && (
+  <div className="space-y-6">
+    {/* Row 0: Header */}
+    <div className="flex items-center justify-between">
+      <h3 className="text-lg font-semibold">Step 3: Location</h3>
+      <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+          <circle cx="12" cy="10" r="3"></circle>
+        </svg>
+        Keep it simple
+      </div>
+    </div>
 
-                  {/* Card 1: Project Name / Locality */}
-                  <div className={cardWrapper + " grid grid-cols-1 md:grid-cols-2 gap-6"}>
-                    <div>
-                      <label className={fieldLabel}>Project Name <span className="text-[#0b6b53]">*</span></label>
-                      <input value={society} onChange={(e) => setSociety(e.target.value)} placeholder="e.g., Shilp Residency" className={`${triedContinue && !isSocietyValid ? inputError : inputNormal}`} />
-                       {triedContinue && !isSocietyValid && <div className="text-xs text-red-600 mt-2">Please enter a project name.</div>}
-                    </div>
-                    <div>
-                      <label className={fieldLabel}>Locality / Area <span className="text-[#0b6b53]">*</span></label>
-                      <input value={locality} onChange={(e) => setLocality(e.target.value)} placeholder="e.g., Kudasan" className={`${triedContinue && !isLocalityValid ? inputError : inputNormal}`} />
-                       {triedContinue && !isLocalityValid && <div className="text-xs text-red-600 mt-2">Please enter a locality.</div>}
-                    </div>
-                  </div>
+    {/* Card 1: Project Name / Locality */}
+    <div className={cardWrapper + " grid grid-cols-1 md:grid-cols-2 gap-6"}>
+      <div>
+        <label className={fieldLabel}>
+          Project Name <span className="text-[#0b6b53]">*</span>
+        </label>
+        <input
+          value={society}
+          onChange={(e) => setSociety(e.target.value)}
+          placeholder="e.g., Shilp Residency"
+          className={`${triedContinue && !isSocietyValid ? inputError : inputNormal}`}
+        />
+        {triedContinue && !isSocietyValid && (
+          <div className="text-xs text-red-600 mt-2">
+            Please enter a project name.
+          </div>
+        )}
+      </div>
+      <div>
+        <label className={fieldLabel}>
+          Locality / Area <span className="text-[#0b6b53]">*</span>
+        </label>
+        <input
+          value={locality}
+          onChange={(e) => setLocality(e.target.value)}
+          placeholder="e.g., Kudasan"
+          className={`${triedContinue && !isLocalityValid ? inputError : inputNormal}`}
+        />
+        {triedContinue && !isLocalityValid && (
+          <div className="text-xs text-red-600 mt-2">
+            Please enter a locality.
+          </div>
+        )}
+      </div>
+    </div>
 
-                  {/* Card 2: Unit No / Pincode */}
-                  <div className={cardWrapper + " grid grid-cols-1 md:grid-cols-2 gap-6"}>
-                    <div>
-                      <label className={fieldLabel}>Unit No <span className="text-[#0b6b53]">*</span></label>
-                      <input value={unitNo} onChange={(e) => setUnitNo(e.target.value)} placeholder="e.g., B-701" className={`${triedContinue && !isUnitNoValid ? inputError : inputNormal}`} />
-                      {triedContinue && !isUnitNoValid && <div className="text-xs text-red-600 mt-2">Please enter a unit number.</div>}
-                    </div>
-                    <div>
-                      <label className={fieldLabel}>Pincode <span className="text-[#0b6b53]">*</span></label>
-                      <input value={pincode} onChange={(e) => setPincode(e.target.value)} placeholder="e.g., 382421" className={`${triedContinue && !isPincodeValid ? inputError : inputNormal}`} />
-                       {triedContinue && !isPincodeValid && <div className="text-xs text-red-600 mt-2">Please enter a valid 6-digit pincode.</div>}
-                    </div>
-                  </div>
-                  
-                  {/* Card 3: City */}
-                  <div className={cardWrapper + " grid grid-cols-1"}>
-                    <div>
-                      <label className={fieldLabel}>City <span className="text-[#0b6b53]">*</span></label>
-                      <input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Gandhinagar" className={`${triedContinue && !isCityValid ? inputError : inputNormal}`} />
-                       {triedContinue && !isCityValid && <div className="text-xs text-red-600 mt-2">Please enter a city.</div>}
-                    </div>
-                  </div>
-                  
-                  {/* Card 4: Map */}
-                  <div className={cardWrapper + " p-2"}>
-                    <div className="h-60 rounded-lg bg-gray-200 grid place-items-center text-sm text-gray-500 overflow-hidden">
-                       <img 
-                        src="https://placehold.co/800x400/e2e8f0/64748b?text=Map+Integration+Placeholder" 
-                        alt="Map placeholder" 
-                        className="w-full h-full object-cover"
-                       />
-                    </div>
-                  </div>
-                  
-                  <p className="text-sm text-gray-500">Accurate location helps buyers filter results effectively.</p>
+    {/* Card 2: Unit No / Pincode */}
+    <div className={cardWrapper + " grid grid-cols-1 md:grid-cols-2 gap-6"}>
+      <div>
+        <label className={fieldLabel}>
+          Unit No <span className="text-[#0b6b53]">*</span>
+        </label>
+        <input
+          value={unitNo}
+          onChange={(e) => setUnitNo(e.target.value)}
+          placeholder="e.g., B-701"
+          className={`${triedContinue && !isUnitNoValid ? inputError : inputNormal}`}
+        />
+        {triedContinue && !isUnitNoValid && (
+          <div className="text-xs text-red-600 mt-2">
+            Please enter a unit number.
+          </div>
+        )}
+      </div>
+      <div>
+        <label className={fieldLabel}>
+          Pincode <span className="text-[#0b6b53]">*</span>
+        </label>
+        <input
+          value={pincode}
+          onChange={(e) => setPincode(e.target.value)}
+          placeholder="e.g., 382421"
+          className={`${triedContinue && !isPincodeValid ? inputError : inputNormal}`}
+        />
+        {triedContinue && !isPincodeValid && (
+          <div className="text-xs text-red-600 mt-2">
+            Please enter a valid 6-digit pincode.
+          </div>
+        )}
+      </div>
+    </div>
 
-                  {/* Footer: Buttons */}
-                  <div className="flex items-center justify-between mt-4">
-                    <div className="flex items-center gap-3">
-                      <button onClick={() => setStep(1)} className={btnLight}>Back to Specifications</button>
-                      <button onClick={onContinueFromStep3} className={canContinueStep3 ? btnPrimary : btnDisabled} disabled={!canContinueStep3}>Continue to Media Upload</button>
-                    </div>
-                  </div>
-                </div>
-              )}
+    {/* Card 3: City */}
+    <div className={cardWrapper + " grid grid-cols-1"}>
+      <div>
+        <label className={fieldLabel}>
+          City <span className="text-[#0b6b53]">*</span>
+        </label>
+        <input
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+          placeholder="Gandhinagar"
+          className={`${triedContinue && !isCityValid ? inputError : inputNormal}`}
+        />
+        {triedContinue && !isCityValid && (
+          <div className="text-xs text-red-600 mt-2">
+            Please enter a city.
+          </div>
+        )}
+      </div>
+    </div>
+
+    {/* Card 4: Map */}
+    <div className={cardWrapper + " p-2"}>
+      {/* NEW helper text */}
+      <p className="text-sm text-gray-600 mb-3 px-1">
+        Click on the map to open the location picker, search your address and drop a pin so buyers can see your exact location.
+      </p>
+
+      <div className="h-60 rounded-lg bg-gray-200 grid place-items-center text-sm text-gray-500 overflow-hidden cursor-pointer">
+        <img
+          src="https://placehold.co/800x400/e2e8f0/64748b?text=Map+Integration+Placeholder"
+          alt="Map placeholder"
+          className="w-full h-full object-cover"
+        />
+      </div>
+    </div>
+
+    <p className="text-sm text-gray-500">
+      Accurate location helps buyers filter results effectively.
+    </p>
+
+    {/* Footer: Buttons */}
+    <div className="flex items-center justify-between mt-4">
+      <div className="flex items-center gap-3">
+        <button onClick={() => setStep(1)} className={btnLight}>
+          Back to Specifications
+        </button>
+        <button
+          onClick={onContinueFromStep3}
+          className={canContinueStep3 ? btnPrimary : btnDisabled}
+          disabled={!canContinueStep3}
+        >
+          Continue to Media Upload
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
               {/* --- END OF STEP 2 BLOCK --- */}
 
               {/* --- STEP 3: MEDIA (UPDATED TEXT) --- */}
@@ -1026,7 +1244,7 @@ export default function SellPage() {
                 <div className="space-y-6">
                    {/* Row 0: Header */}
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold">Step 4: Media Upload</h3>
+                    <h3 className="text-lg font-semibold">Step 4: Media Upload </h3>
                     <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
                       {/* --- UPDATED TEXT --- */}
@@ -1034,37 +1252,85 @@ export default function SellPage() {
                     </div>
                   </div>
 
-                  {/* Card 1: Photos */}
+                  {/* Card 1: Photos – SINGLE UPLOAD BOX + PREVIEW GRID */}
                   <div className={cardWrapper}>
-                    <label className={fieldLabel}>Upload Photos</label>
-                    {/* --- UPDATED TEXT --- */}
+                    <label className={fieldLabel}>Upload Photos (Optional)</label>
                     <p className="text-sm text-gray-500 mb-4">
                       Listings with photos get 5x more views. You can add them now or later from your dashboard.
                     </p>
-                    <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
-                      {[...Array(9)].map((_, i) => {
-                        const file = photos[i];
-                        return (
-                          <div key={i} className="aspect-square rounded-lg border-2 border-dashed border-gray-200 flex items-center justify-center bg-white overflow-hidden relative">
-                            {file ? (
-                              <>
-                                <img src={URL.createObjectURL(file)} alt="preview" className="object-cover w-full h-full" />
-                                <button onClick={() => removePhoto(i)} className="absolute top-1.5 right-1.5 bg-white rounded-full p-1 text-xs shadow-md leading-none w-5 h-5 flex items-center justify-center hover:bg-gray-100">✕</button>
-                              </>
-                            ) : (
-                              <button onClick={() => photoRef.current?.click()} className="text-sm text-gray-500 p-2 text-center">+ Add Photo</button>
-                            )}
-                          </div>
-                        );
-                      })}
-                      <input ref={photoRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => onAddPhotos(e.target.files)} />
+
+                    {/* Single big clickable box */}
+                    <div
+                      className="rounded-lg border-2 border-dashed border-gray-200 bg-white px-6 py-6 flex flex-col items-center justify-center text-center cursor-pointer hover:border-[#0b6b53]/60 hover:bg-[#f8fffc]"
+                      onClick={() => photoRef.current?.click()}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="32"
+                        height="32"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="mb-3 text-gray-400"
+                      >
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21 15 16 10 5 21"></polyline>
+                      </svg>
+                      <p className="text-sm font-medium text-gray-800">
+                        Click to upload property photos
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        You can select multiple images at once (up to 9).
+                      </p>
+                      {photos.length > 0 && (
+                        <p className="text-xs text-gray-500 mt-2">
+                          {photos.length} photo{photos.length > 1 ? "s" : ""} selected
+                        </p>
+                      )}
                     </div>
+
+                    {/* Hidden file input */}
+                    <input
+                      ref={photoRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={(e) => onAddPhotos(e.target.files)}
+                    />
+
+                    {/* Preview thumbnails if any */}
+                    {photos.length > 0 && (
+                      <div className="mt-4 grid grid-cols-3 md:grid-cols-5 gap-3">
+                        {photos.map((file, i) => (
+                          <div
+                            key={i}
+                            className="aspect-square rounded-lg border border-gray-200 flex items-center justify-center bg-white overflow-hidden relative"
+                          >
+                            <img
+                              src={URL.createObjectURL(file)}
+                              alt={`preview-${i}`}
+                              className="object-cover w-full h-full"
+                            />
+                            <button
+                              onClick={() => removePhoto(i)}
+                              className="absolute top-1.5 right-1.5 bg-white rounded-full p-1 text-xs shadow-md leading-none w-5 h-5 flex items-center justify-center hover:bg-gray-100"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   
                   {/* Card 2: Video */}
                   <div className={cardWrapper}>
                     <label className={fieldLabel}>Upload Video (Optional)</label>
-                    {/* --- UPDATED TEXT --- */}
                     <p className="text-sm text-gray-500 mb-4">
                       A video tour can also be added now or later.
                     </p>
@@ -1086,6 +1352,92 @@ export default function SellPage() {
                         </div>
                       )}
                       <input ref={videoRef} type="file" accept="video/*" className="hidden" onChange={(e) => onAddVideo(e.target.files)} />
+                    </div>
+                  </div>
+
+                  {/* Card 3: Sale Deed / Index Copy */}
+                  <div className={cardWrapper}>
+                    <label className={fieldLabel}>Upload Sale Deed / Index Copy (Optional)</label>
+                    <p className="text-sm text-gray-500 mb-4">
+                      Uploading a sale deed or index copy helps buyers verify ownership and adds trust to your listing.
+                    </p>
+                    <div className="h-24 rounded-lg border-2 border-dashed border-gray-200 flex items-center gap-4 px-6">
+                      {saleDeed ? (
+                        <div className="flex items-center gap-4 w-full">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#0b6b53]">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                          </svg>
+                          <div className="flex-1">
+                            <p className="text-sm text-gray-800 font-medium truncate">{saleDeed.name}</p>
+                            <p className="text-xs text-gray-500">{(saleDeed.size / 1024 / 1024).toFixed(2)} MB</p>
+                          </div>
+                          <button onClick={removeSaleDeed} className="text-sm text-red-600 font-medium ml-auto">Remove</button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-4 w-full">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                          </svg>
+                          <div className="text-sm text-gray-500">No document uploaded</div>
+                          <button onClick={() => saleDeedRef.current?.click()} className="ml-auto h-10 px-4 rounded-lg bg-[#0b6b53] text-white text-sm font-semibold">
+                            Add Document
+                          </button>
+                        </div>
+                      )}
+                      <input
+                        ref={saleDeedRef}
+                        type="file"
+                        accept="application/pdf,image/*"
+                        className="hidden"
+                        onChange={(e) => onAddSaleDeed(e.target.files)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Card 4: Brochure */}
+                  <div className={cardWrapper}>
+                    <label className={fieldLabel}>Upload Brochure (Optional)</label>
+                    <p className="text-sm text-gray-500 mb-4">
+                      Share your project or property brochure so buyers can see detailed plans, layouts and highlights.
+                    </p>
+                    <div className="h-24 rounded-lg border-2 border-dashed border-gray-200 flex items-center gap-4 px-6">
+                      {brochure ? (
+                        <div className="flex items-center gap-4 w-full">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#0b6b53]">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                            <path d="M4 4.5A2.5 2.5 0 0 1 6.5 7H20"></path>
+                            <path d="M4 4.5v15"></path>
+                            <path d="M20 4.5v15"></path>
+                          </svg>
+                          <div className="flex-1">
+                            <p className="text-sm text-gray-800 font-medium truncate">{brochure.name}</p>
+                            <p className="text-xs text-gray-500">{(brochure.size / 1024 / 1024).toFixed(2)} MB</p>
+                          </div>
+                          <button onClick={removeBrochure} className="text-sm text-red-600 font-medium ml-auto">Remove</button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-4 w-full">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                            <path d="M4 4.5A2.5 2.5 0 0 1 6.5 7H20"></path>
+                            <path d="M4 4.5v15"></path>
+                            <path d="M20 4.5v15"></path>
+                          </svg>
+                          <div className="text-sm text-gray-500">No brochure uploaded</div>
+                          <button onClick={() => brochureRef.current?.click()} className="ml-auto h-10 px-4 rounded-lg bg-[#0b6b53] text-white text-sm font-semibold">
+                            Add Brochure
+                          </button>
+                        </div>
+                      )}
+                      <input
+                        ref={brochureRef}
+                        type="file"
+                        accept="application/pdf,image/*"
+                        className="hidden"
+                        onChange={(e) => onAddBrochure(e.target.files)}
+                      />
                     </div>
                   </div>
 
