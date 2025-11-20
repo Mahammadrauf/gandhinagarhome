@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
-const TIMER_MS = 5000; // 5 seconds
+const TIMER_MS = 2000; // 5 seconds
 
 /** ========= Types ========= */
 type Property = {
