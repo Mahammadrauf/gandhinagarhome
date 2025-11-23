@@ -278,7 +278,12 @@ const FeaturedProperties: React.FC = () => {
           <p className="text-gray-600 text-lg">
             Curated interiors from Gandhinagar&apos;s finest homes.
           </p>
-          <div className="w-20 h-1 bg-gradient-to-r from-primary to-primary-light mx-auto mt-4 rounded-full" />
+          
+          {/* === THE INTERACTIVE EXPANDING LINE === */}
+          <div 
+            className="h-1.5 bg-[#056F5E] mx-auto mt-5 rounded-full w-24 hover:w-64 transition-all duration-500 ease-in-out cursor-pointer" 
+          />
+          
         </div>
 
         <div className="relative">

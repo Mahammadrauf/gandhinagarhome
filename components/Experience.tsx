@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, Home, Heart } from 'lucide-react';
-// --- UPDATED: Import Variants ---
 import { motion, Variants } from 'framer-motion';
 
 const Experience = () => {
@@ -85,7 +84,6 @@ const Experience = () => {
     };
   }, [hasAnimated]);
 
-  // --- UPDATED: Explicitly type containerVariants as Variants ---
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
@@ -96,7 +94,6 @@ const Experience = () => {
     },
   };
 
-  // --- UPDATED: Explicitly type itemVariants as Variants ---
   const itemVariants: Variants = {
     hidden: { opacity: 0, y: 30 }, // Start invisible and 30px down
     visible: { 
@@ -120,7 +117,12 @@ const Experience = () => {
         >
           <h2 className="text-4xl font-bold text-gray-800 mb-3">Experience</h2>
           <p className="text-gray-600 text-lg">Numbers that inspire confidence.</p>
-          <div className="w-20 h-1 bg-gradient-to-r from-primary to-primary-light mx-auto mt-4 rounded-full"></div>
+          
+          {/* === THE UPDATED INTERACTIVE LINE === */}
+          <div 
+            className="h-1.5 bg-[#056F5E] mx-auto mt-5 rounded-full w-24 hover:w-64 transition-all duration-500 ease-in-out cursor-pointer" 
+          />
+
         </motion.div>
 
         {/* --- Grid Animation Container --- */}
@@ -135,7 +137,7 @@ const Experience = () => {
               // --- Card Animation Item ---
               <motion.div
                 key={idx}
-                variants={itemVariants} // This will now work
+                variants={itemVariants}
                 className={`rounded-3xl p-6 shadow-lg text-center
                             bg-primary text-white border-primary
                             transition-all duration-300 ease-in-out

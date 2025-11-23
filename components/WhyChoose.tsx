@@ -3,14 +3,13 @@
 import React, { useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
 import { ArrowDown, ArrowUp } from 'lucide-react';
-// --- NEW: Import Framer Motion ---
 import { motion, Variants } from 'framer-motion';
 
 const WhyChoose = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const sectionRef = useRef<HTMLElement>(null); // Ref for the whole section for scroll-trigger
+  const sectionRef = useRef<HTMLElement>(null); 
   const [isAtBottom, setIsAtBottom] = useState(false);
-  const [hasAnimated, setHasAnimated] = useState(false); // State to trigger Framer Motion animations
+  const [hasAnimated, setHasAnimated] = useState(false); 
 
   const testimonials = [
     {
@@ -95,12 +94,12 @@ const WhyChoose = () => {
           }
         });
       },
-      { threshold: 0.2 } // Trigger when 20% of the section is visible
+      { threshold: 0.2 } 
     );
 
     if (container) {
       container.addEventListener('scroll', handleScroll);
-      handleScroll(); // Initial check
+      handleScroll(); 
     }
     if (section) {
       observer.observe(section);
@@ -117,7 +116,6 @@ const WhyChoose = () => {
     };
   }, [hasAnimated]);
 
-  // --- NEW: Framer Motion Variants ---
   const fadeInSlideUp: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
@@ -128,7 +126,7 @@ const WhyChoose = () => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.15, // Stagger each testimonial card
+        staggerChildren: 0.15, 
         delayChildren: 0.3,
       },
     },
@@ -146,29 +144,32 @@ const WhyChoose = () => {
 
 
   return (
-    // --- NEW: Wrap with motion.section for overall section animation trigger ---
     <motion.section 
       ref={sectionRef} 
       className="py-12 bg-white"
       initial="hidden"
       animate={hasAnimated ? "visible" : "hidden"}
-      variants={fadeInSlideUp} // Apply fade in slide up to the whole section initially
+      variants={fadeInSlideUp} 
     > 
       <div className="max-w-10xl mx-auto px-6 lg:px-10">
         
-        {/* --- NEW: Animate Title --- */}
+        {/* --- Title Section --- */}
         <motion.div variants={fadeInSlideUp} className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
-            Why choose Gandhinagar Homes?
+            Why choose GandhinagarHomes?
           </h2>
-          <div className="w-20 h-1 bg-gradient-to-r from-primary to-primary-light mx-auto rounded-full" />
+          
+          {/* === THE INTERACTIVE EXPANDING LINE === */}
+          <div 
+            className="h-1.5 bg-[#056F5E] mx-auto mt-4 rounded-full w-24 hover:w-64 transition-all duration-500 ease-in-out cursor-pointer" 
+          />
+
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           <div className="lg:col-span-2 relative">
             
-            {/* --- NEW: Animate Testimonials Container --- */}
             <motion.div 
               ref={scrollContainerRef} 
               className="space-y-6 h-[420px] overflow-y-auto hide-scrollbar pr-2"
@@ -177,12 +178,11 @@ const WhyChoose = () => {
               animate={hasAnimated ? "visible" : "hidden"}
             >
               {testimonials.map((testimonial, index) => (
-                // --- NEW: Animate individual testimonial cards ---
                 <motion.div 
                   key={index} 
-                  variants={itemSlideFromBottom} // Apply slide from bottom to each card
+                  variants={itemSlideFromBottom} 
                   className="group bg-white rounded-xl shadow-md p-6 border-l-4 border-primary relative overflow-hidden
-                             transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl hover:shadow-primary/20" // Enhanced hover
+                             transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl hover:shadow-primary/20" 
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   
@@ -241,11 +241,10 @@ const WhyChoose = () => {
 
           </div>
 
-          {/* --- NEW: Animate Trusted By Card --- */}
           <motion.div 
             className="bg-gradient-to-br from-primary-light via-primary/20 to-white rounded-xl shadow-lg p-6 border-2 border-primary/20 relative overflow-hidden
-                       transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-primary/20" // Added hover effect
-            variants={itemSlideFromRight} // Slide in from right
+                       transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-primary/20" 
+            variants={itemSlideFromRight} 
             initial="hidden"
             animate={hasAnimated ? "visible" : "hidden"}
           >
