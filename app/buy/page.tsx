@@ -1,0 +1,1240 @@
+"use client";
+
+import React, { useMemo, useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import Header from "@/components/Header";
+import { MapPin, Clock, Car, Calendar } from "lucide-react"; // Added icons
+
+// --- TYPES ---
+type Tier = "exclusive" | "featured" | "regular";
+type PropertyType = "Apartment" | "Villa" | "Bungalow" | "Plot";
+type Possession = "Ready to move" | "Immediate" | "After 1 Month";
+type PriceRangeValue = "any" | "0-1.5" | "1.5-2" | "2-2.5" | "2.5+";
+type SortOption = "Newest" | "PriceLowHigh" | "PriceHighLow" | "SizeHighLow";
+
+interface Listing {
+  id: number;
+  tier: Tier;
+  title: string;
+  locality: string;
+  city: string;
+  bedrooms: number;
+  bathrooms: number;
+  areaSqft: number;
+  type: PropertyType;
+  furnishing: "Unfurnished" | "Semi-furnished" | "Fully furnished";
+  readyStatus: Possession;
+  parking: number;
+  ageLabel: string;
+  priceCr: number;
+  priceLabel: string;
+  media: string;
+  phoneMasked: string;
+  image: string;
+  tags: string[];
+  amenities: string[];
+}
+
+interface Filters {
+  location: string;
+  locationMode: "city" | "locality";
+  propertyType: "any" | PropertyType;
+  priceRange: PriceRangeValue;
+  possession: "any" | Possession;
+  minBedrooms: number;
+  minBathrooms: number;
+  furnishing: "any" | Listing["furnishing"];
+  minParking: number;
+  amenities: string[];
+  priceMin: string;
+  priceMax: string;
+  sizeMin: string;
+  sizeMax: string;
+  photosDocs: string[];
+}
+
+// --- DATA ---
+const listings: Listing[] = [
+  {
+    id: 6,
+    tier: "exclusive",
+    title: "Raysan Luxury Villa • Corner Plot",
+    locality: "Raysan",
+    city: "Gandhinagar",
+    bedrooms: 4,
+    bathrooms: 4,
+    areaSqft: 3400,
+    type: "Villa",
+    furnishing: "Fully furnished",
+    readyStatus: "Ready to move",
+    parking: 2,
+    ageLabel: "5–10 years",
+    priceCr: 3.1,
+    priceLabel: "₹3.10 Cr",
+    media: "8 photos • Video • Floor plan",
+    phoneMasked: "+91 8XXX-XXX000",
+    image:
+      "https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    tags: ["Vaastu friendly", "Smart home", "Private garden"],
+    amenities: ["Garden", "Security", "Parking"],
+  },
+  {
+    id: 5,
+    tier: "exclusive",
+    title: "Sargasan Bungalow • Private Terrace",
+    locality: "Sargasan",
+    city: "Gandhinagar",
+    bedrooms: 4,
+    bathrooms: 4,
+    areaSqft: 3000,
+    type: "Bungalow",
+    furnishing: "Semi-furnished",
+    readyStatus: "After 1 Month",
+    parking: 2,
+    ageLabel: "10+ years",
+    priceCr: 2.4,
+    priceLabel: "₹2.40 Cr",
+    media: "7 photos • No video",
+    phoneMasked: "+91 9XXX-XXX000",
+    image:
+      "https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    tags: ["Terrace", "Corner unit", "Modular kitchen"],
+    amenities: ["Terrace", "Parking", "Garden"],
+  },
+  {
+    id: 4,
+    tier: "featured",
+    title: "Kudasan High-Rise • Club Access",
+    locality: "Kudasan",
+    city: "Gandhinagar",
+    bedrooms: 3,
+    bathrooms: 3,
+    areaSqft: 1950,
+    type: "Apartment",
+    furnishing: "Semi-furnished",
+    readyStatus: "Immediate",
+    parking: 1,
+    ageLabel: "<5 years",
+    priceCr: 1.65,
+    priceLabel: "₹1.65 Cr",
+    media: "9 photos • Video",
+    phoneMasked: "+91 7XXX-XXX000",
+    image:
+      "https://images.pexels.com/photos/439391/pexels-photo-439391.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    tags: ["Club house", "Gym", "City view"],
+    amenities: ["Gym", "Club house", "Lift", "Security"],
+  },
+  {
+    id: 3,
+    tier: "regular",
+    title: "Sector 21 Apartment • Park Facing",
+    locality: "Sector 21",
+    city: "Gandhinagar",
+    bedrooms: 2,
+    bathrooms: 2,
+    areaSqft: 1250,
+    type: "Apartment",
+    furnishing: "Unfurnished",
+    readyStatus: "Ready to move",
+    parking: 1,
+    ageLabel: "5–10 years",
+    priceCr: 1.25,
+    priceLabel: "₹1.25 Cr",
+    media: "5 photos • No video",
+    phoneMasked: "+91 9XXX-XXX000",
+    image:
+      "https://images.pexels.com/photos/439227/pexels-photo-439227.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    tags: ["Renovated", "Park view"],
+    amenities: ["Park view", "Lift"],
+  },
+  {
+    id: 2,
+    tier: "regular",
+    title: "Kudasan Cozy 3BHK • Renovated",
+    locality: "Kudasan",
+    city: "Gandhinagar",
+    bedrooms: 3,
+    bathrooms: 3,
+    areaSqft: 1800,
+    type: "Apartment",
+    furnishing: "Semi-furnished",
+    readyStatus: "Immediate",
+    parking: 1,
+    ageLabel: "1–5 years",
+    priceCr: 1.55,
+    priceLabel: "₹1.55 Cr",
+    media: "6 photos • Video",
+    phoneMasked: "+91 9XXX-XXX000",
+    image:
+      "https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    tags: ["South facing", "Lift"],
+    amenities: ["Lift", "Security"],
+  },
+  {
+    id: 1,
+    tier: "regular",
+    title: "Randesan Premium 3BHK • Garden View",
+    locality: "Randesan",
+    city: "Gandhinagar",
+    bedrooms: 3,
+    bathrooms: 3,
+    areaSqft: 2250,
+    type: "Apartment",
+    furnishing: "Fully furnished",
+    readyStatus: "Ready to move",
+    parking: 2,
+    ageLabel: "5–10 years",
+    priceCr: 2.1,
+    priceLabel: "₹2.10 Cr",
+    media: "8 photos • Video",
+    phoneMasked: "+91 9XXX-XXX000",
+    image:
+      "https://images.pexels.com/photos/1571459/pexels-photo-1571459.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    tags: ["Modular kitchen", "Garden"],
+    amenities: ["Garden", "Lift"],
+  },
+];
+
+const initialFilters: Filters = {
+  location: "",
+  locationMode: "locality",
+  propertyType: "any",
+  priceRange: "any",
+  possession: "any",
+  minBedrooms: 0,
+  minBathrooms: 0,
+  furnishing: "any",
+  minParking: 0,
+  amenities: [],
+  priceMin: "",
+  priceMax: "",
+  sizeMin: "",
+  sizeMax: "",
+  photosDocs: [],
+};
+
+// --- HELPER: Tier Ranking ---
+const getTierWeight = (tier: Tier) => {
+  if (tier === "exclusive") return 3;
+  if (tier === "featured") return 2;
+  return 1; // regular
+};
+
+// --- MAIN PAGE COMPONENT ---
+export default function BuyIntroPage() {
+  const [filters, setFilters] = useState<Filters>(initialFilters);
+  const [sortBy, setSortBy] = useState<SortOption>("Newest");
+
+  const handleAmenityToggle = (amenity: string) => {
+    setFilters((prev) => {
+      const exists = prev.amenities.includes(amenity);
+      return {
+        ...prev,
+        amenities: exists
+          ? prev.amenities.filter((a) => a !== amenity)
+          : [...prev.amenities, amenity],
+      };
+    });
+  };
+
+  const handlePhotosDocsToggle = (key: string) => {
+    setFilters((prev) => {
+      const exists = prev.photosDocs.includes(key);
+      return {
+        ...prev,
+        photosDocs: exists
+          ? prev.photosDocs.filter((k) => k !== key)
+          : [...prev.photosDocs, key],
+      };
+    });
+  };
+
+  const handleClearFilters = () => setFilters(initialFilters);
+
+  const filteredListings = useMemo(() => {
+    let result = listings.filter((l) => {
+      // LOCATION text search
+      if (filters.location.trim()) {
+        const q = filters.location.toLowerCase().trim();
+        const locString = `${l.locality} ${l.city}`.toLowerCase();
+        if (!locString.includes(q)) return false;
+      }
+
+      // PROPERTY TYPE
+      if (
+        filters.propertyType !== "any" &&
+        l.type !== filters.propertyType
+      )
+        return false;
+
+      // PRICE (Dropdown)
+      if (filters.priceRange !== "any") {
+        const price = l.priceCr;
+        if (filters.priceRange === "0-1.5" && !(price <= 1.5)) return false;
+        if (
+          filters.priceRange === "1.5-2" &&
+          !(price >= 1.5 && price <= 2)
+        )
+          return false;
+        if (
+          filters.priceRange === "2-2.5" &&
+          !(price >= 2 && price <= 2.5)
+        )
+          return false;
+        if (filters.priceRange === "2.5+" && !(price >= 2.5)) return false;
+      }
+
+      // PRICE (Min/Max inputs)
+      const minPriceCr = filters.priceMin
+        ? parseFloat(filters.priceMin)
+        : NaN;
+      const maxPriceCr = filters.priceMax
+        ? parseFloat(filters.priceMax)
+        : NaN;
+      if (!Number.isNaN(minPriceCr) && l.priceCr < minPriceCr) return false;
+      if (!Number.isNaN(maxPriceCr) && l.priceCr > maxPriceCr) return false;
+
+      // POSSESSION
+      if (
+        filters.possession !== "any" &&
+        l.readyStatus !== filters.possession
+      )
+        return false;
+
+      // BED / BATH / PARKING
+      if (l.bedrooms < filters.minBedrooms) return false;
+      if (l.bathrooms < filters.minBathrooms) return false;
+      if (l.parking < filters.minParking) return false;
+
+      // FURNISHING
+      if (
+        filters.furnishing !== "any" &&
+        l.furnishing !== filters.furnishing
+      )
+        return false;
+
+      // SIZE
+      const minSize = filters.sizeMin ? parseInt(filters.sizeMin, 10) : NaN;
+      const maxSize = filters.sizeMax ? parseInt(filters.sizeMax, 10) : NaN;
+      if (!Number.isNaN(minSize) && l.areaSqft < minSize) return false;
+      if (!Number.isNaN(maxSize) && l.areaSqft > maxSize) return false;
+
+      // AMENITIES
+      if (filters.amenities.length > 0) {
+        const hasAll = filters.amenities.every((a) =>
+          l.amenities.includes(a)
+        );
+        if (!hasAll) return false;
+      }
+
+      // PHOTOS & DOCS
+      if (filters.photosDocs.length > 0) {
+        const mediaText = l.media.toLowerCase();
+        for (const key of filters.photosDocs) {
+          if (key === "photos" && !mediaText.includes("photo")) return false;
+          if (key === "video" && !mediaText.includes("video")) return false;
+          if (key === "saleDeed" && !mediaText.includes("sale deed"))
+            return false;
+          if (key === "brochure" && !mediaText.includes("brochure"))
+            return false;
+        }
+      }
+
+      return true;
+    });
+
+    // --- SORTING LOGIC ---
+    // Tier Weight > User Selection
+    result = [...result].sort((a, b) => {
+      // 1. Primary Sort: Tier
+      const weightA = getTierWeight(a.tier);
+      const weightB = getTierWeight(b.tier);
+
+      if (weightA !== weightB) {
+        return weightB - weightA; // Exclusive (3) first
+      }
+
+      // 2. Secondary Sort: User Selection
+      switch (sortBy) {
+        case "PriceLowHigh":
+          return a.priceCr - b.priceCr;
+        case "PriceHighLow":
+          return b.priceCr - a.priceCr;
+        case "SizeHighLow":
+          return b.areaSqft - a.areaSqft;
+        case "Newest":
+        default:
+          return b.id - a.id;
+      }
+    });
+
+    return result;
+  }, [filters, sortBy]);
+
+  return (
+    <main className="min-h-screen bg-[#F5F7F9]">
+      <Header />
+
+      {/* FULL-WIDTH WRAPPER */}
+      <section className="w-full px-3 sm:px-4 lg:px-6 xl:px-10 py-6">
+        
+        {/* --- TOP SEARCH CARD --- */}
+        <div className="rounded-2xl border border-slate-200 bg-white px-4 sm:px-6 py-5 shadow-sm">
+          {/* Header & Badges */}
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-5">
+            <div>
+              <h1 className="text-lg font-semibold text-slate-900">
+                Find your next home
+              </h1>
+              <p className="text-xs text-slate-500 mt-1">
+                Search by city, locality, type, and budget.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-500">
+              <BadgeDot color="#059669">Seller OTP verified</BadgeDot>
+              <BadgeDot color="#f59e0b">Exclusive on top</BadgeDot>
+              <BadgeDot color="#0ea5e9">Featured next</BadgeDot>
+            </div>
+          </div>
+
+          {/* SEARCH ROW */}
+          <div className="flex flex-col gap-3 lg:flex-row">
+            
+            {/* 1. Location Input */}
+            <div className="relative flex min-w-[240px] flex-[1.2] items-center rounded-full border border-slate-200 bg-slate-50 px-4 transition-colors hover:border-slate-300 focus-within:border-emerald-500 focus-within:bg-white focus-within:ring-1 focus-within:ring-emerald-500 h-11">
+              <svg
+                className="mr-2 h-4 w-4 text-slate-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+              <input
+                value={filters.location}
+                onChange={(e) =>
+                  setFilters((f) => ({ ...f, location: e.target.value }))
+                }
+                placeholder="Search City, Locality..."
+                className="w-full bg-transparent text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none"
+              />
+            </div>
+
+            {/* 2. Horizontal Filters */}
+            <div className="flex flex-1 flex-col gap-2 sm:flex-row">
+              <SmartDropdown
+                label="Type"
+                value={filters.propertyType}
+                onChange={(val) =>
+                  setFilters((f) => ({ ...f, propertyType: val as any }))
+                }
+                options={[
+                  { value: "any", label: "Any" },
+                  { value: "Apartment", label: "Apartment" },
+                  { value: "Villa", label: "Villa" },
+                  { value: "Plot", label: "Plot" },
+                ]}
+              />
+
+              <SmartDropdown
+                label="Budget"
+                value={filters.priceRange}
+                onChange={(val) =>
+                  setFilters((f) => ({ ...f, priceRange: val as any }))
+                }
+                options={[
+                  { value: "any", label: "Any" },
+                  { value: "0-1.5", label: "Up to ₹1.5 Cr" },
+                  { value: "1.5-2", label: "₹1.5 - ₹2 Cr" },
+                  { value: "2.5+", label: "₹2.5 Cr +" },
+                ]}
+              />
+
+              <SmartDropdown
+                label="Move"
+                value={filters.possession}
+                onChange={(val) =>
+                  setFilters((f) => ({ ...f, possession: val as any }))
+                }
+                options={[
+                  { value: "any", label: "Any" },
+                  { value: "Ready to move", label: "Ready to Move" },
+                  { value: "Immediate", label: "Immediate" },
+                  { value: "After 1 Month", label: "After 1 Month" },
+                ]}
+              />
+            </div>
+
+            {/* 3. Search Button */}
+            <button className="h-11 shrink-0 rounded-full bg-[#006B5B] px-8 text-sm font-bold text-white shadow-lg shadow-emerald-900/10 transition-all hover:bg-[#005347] active:scale-95">
+              Search
+            </button>
+          </div>
+
+          {/* --- FOOTER & SORTING --- */}
+          <div className="mt-5 flex flex-col gap-3 border-t border-slate-100 pt-5 lg:flex-row lg:items-center lg:justify-between">
+            
+            {/* LEFT SIDE: Info Pills */}
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5 text-[11px] font-medium text-slate-600">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-slate-400"
+                >
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+                Order: Exclusive first, then Featured, then all others.
+              </div>
+
+              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5 text-[11px] font-medium text-slate-600">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-slate-400"
+                >
+                   <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91" />
+                   <line x1="22" y1="2" x2="2" y2="22" />
+                </svg>
+                Seller mobile is partially hidden. View photos free.
+              </div>
+            </div>
+
+            {/* RIGHT SIDE: CUSTOM Sort Dropdown */}
+            <div className="relative mt-2 lg:mt-0">
+               <SortDropdown 
+                 value={sortBy}
+                 onChange={setSortBy}
+               />
+            </div>
+
+          </div>
+        </div>
+
+        {/* MAIN GRID */}
+        <div className="mt-5 grid gap-4 md:grid-cols-[270px,1fr]">
+          
+          {/* SIDEBAR FILTERS (RESTORED) */}
+          <aside className="rounded-2xl border border-slate-200 bg-white px-4 py-5 text-xs text-slate-700 shadow-sm h-fit">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <h2 className="text-sm font-semibold text-slate-900">
+                  Filters
+                </h2>
+                <p className="text-[11px] text-slate-500">
+                  Refine your search results.
+                </p>
+              </div>
+              <button
+                onClick={handleClearFilters}
+                className="text-[11px] font-medium text-[#006B5B]"
+              >
+                Clear all
+              </button>
+            </div>
+
+            <div className="mt-4 space-y-4">
+              {/* City & Locality */}
+              <FilterBlock title="Location Mode">
+                <PillButton
+                  active={filters.locationMode === "city"}
+                  onClick={() =>
+                    setFilters((f) => ({ ...f, locationMode: "city" }))
+                  }
+                >
+                  City
+                </PillButton>
+                <PillButton
+                  active={filters.locationMode === "locality"}
+                  onClick={() =>
+                    setFilters((f) => ({ ...f, locationMode: "locality" }))
+                  }
+                >
+                  Locality
+                </PillButton>
+              </FilterBlock>
+
+              {/* Property type */}
+              <FilterBlock title="Property type">
+                {["Apartment", "Villa", "Bungalow", "Plot"].map(
+                  (type) => (
+                    <PillButton
+                      key={type}
+                      active={filters.propertyType === type}
+                      onClick={() =>
+                        setFilters((f) => ({
+                          ...f,
+                          propertyType:
+                            f.propertyType === type
+                              ? "any"
+                              : (type as PropertyType),
+                        }))
+                      }
+                    >
+                      {type}
+                    </PillButton>
+                  )
+                )}
+              </FilterBlock>
+
+              {/* Price range (₹) */}
+              <FilterBlock title="Price range (₹)">
+                <div className="flex gap-2 w-full">
+                  <input
+                    value={filters.priceMin}
+                    onChange={(e) =>
+                      setFilters((f) => ({
+                        ...f,
+                        priceMin: e.target.value,
+                      }))
+                    }
+                    placeholder="Min Cr"
+                    className="w-full rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] outline-none placeholder:text-slate-400 focus:border-emerald-500"
+                  />
+                  <input
+                    value={filters.priceMax}
+                    onChange={(e) =>
+                      setFilters((f) => ({
+                        ...f,
+                        priceMax: e.target.value,
+                      }))
+                    }
+                    placeholder="Max Cr"
+                    className="w-full rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] outline-none placeholder:text-slate-400 focus:border-emerald-500"
+                  />
+                </div>
+              </FilterBlock>
+
+              {/* Bedrooms */}
+              <FilterBlock title="Bedrooms">
+                {["1+", "2+", "3+", "4+"].map((label, idx) => {
+                  const value = idx + 1;
+                  return (
+                    <PillButton
+                      key={label}
+                      active={filters.minBedrooms === value}
+                      onClick={() =>
+                        setFilters((f) => ({
+                          ...f,
+                          minBedrooms:
+                            f.minBedrooms === value ? 0 : value,
+                        }))
+                      }
+                    >
+                      {label}
+                    </PillButton>
+                  );
+                })}
+              </FilterBlock>
+
+              {/* Bathrooms */}
+              <FilterBlock title="Bathrooms">
+                {["1+", "2+", "3+"].map((label, idx) => {
+                  const value = idx + 1;
+                  return (
+                    <PillButton
+                      key={label}
+                      active={filters.minBathrooms === value}
+                      onClick={() =>
+                        setFilters((f) => ({
+                          ...f,
+                          minBathrooms:
+                            f.minBathrooms === value ? 0 : value,
+                        }))
+                      }
+                    >
+                      {label}
+                    </PillButton>
+                  );
+                })}
+              </FilterBlock>
+
+              {/* Furnishing */}
+              <FilterBlock title="Furnishing">
+                {[
+                  "Unfurnished",
+                  "Semi-furnished",
+                  "Fully furnished",
+                ].map((label) => (
+                  <PillButton
+                    key={label}
+                    active={filters.furnishing === label}
+                    onClick={() =>
+                      setFilters((f) => ({
+                        ...f,
+                        furnishing:
+                          f.furnishing === label
+                            ? "any"
+                            : (label as Listing["furnishing"]),
+                      }))
+                    }
+                  >
+                    {label}
+                  </PillButton>
+                ))}
+              </FilterBlock>
+
+              {/* Parking */}
+              <FilterBlock title="Parking">
+                <PillButton
+                  active={filters.minParking === 0}
+                  onClick={() =>
+                    setFilters((f) => ({ ...f, minParking: 0 }))
+                  }
+                >
+                  Any
+                </PillButton>
+                <PillButton
+                  active={filters.minParking === 1}
+                  onClick={() =>
+                    setFilters((f) => ({ ...f, minParking: 1 }))
+                  }
+                >
+                  1+
+                </PillButton>
+                <PillButton
+                  active={filters.minParking === 2}
+                  onClick={() =>
+                    setFilters((f) => ({ ...f, minParking: 2 }))
+                  }
+                >
+                  2+
+                </PillButton>
+              </FilterBlock>
+
+              {/* Size (sq ft) */}
+              <FilterBlock title="Size (sq ft)">
+                <div className="flex gap-2 w-full">
+                  <input
+                    value={filters.sizeMin}
+                    onChange={(e) =>
+                      setFilters((f) => ({
+                        ...f,
+                        sizeMin: e.target.value,
+                      }))
+                    }
+                    placeholder="Min size"
+                    className="w-full rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] outline-none placeholder:text-slate-400 focus:border-emerald-500"
+                  />
+                  <input
+                    value={filters.sizeMax}
+                    onChange={(e) =>
+                      setFilters((f) => ({
+                        ...f,
+                        sizeMax: e.target.value,
+                      }))
+                    }
+                    placeholder="Max size"
+                    className="w-full rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] outline-none placeholder:text-slate-400 focus:border-emerald-500"
+                  />
+                </div>
+              </FilterBlock>
+
+              {/* Age & availability */}
+              <FilterBlock title="Possession">
+                <PillButton
+                  active={filters.possession === "any"}
+                  onClick={() =>
+                    setFilters((f) => ({ ...f, possession: "any" }))
+                  }
+                >
+                  Any
+                </PillButton>
+                <PillButton
+                  active={filters.possession === "Immediate"}
+                  onClick={() =>
+                    setFilters((f) => ({
+                      ...f,
+                      possession: "Immediate",
+                    }))
+                  }
+                >
+                  Immediate
+                </PillButton>
+                <PillButton
+                  active={filters.possession === "After 1 Month"}
+                  onClick={() =>
+                    setFilters((f) => ({
+                      ...f,
+                      possession: "After 1 Month",
+                    }))
+                  }
+                >
+                  After 1 Month
+                </PillButton>
+              </FilterBlock>
+
+              {/* Amenities */}
+              <FilterBlock title="Amenities">
+                {["Lift", "Garden", "Security", "Gym"].map(
+                  (amenity) => (
+                    <PillButton
+                      key={amenity}
+                      active={filters.amenities.includes(amenity)}
+                      onClick={() => handleAmenityToggle(amenity)}
+                    >
+                      {amenity}
+                    </PillButton>
+                  )
+                )}
+              </FilterBlock>
+
+              {/* Photos & documents */}
+              <FilterBlock title="Documents & Media">
+                <PillButton
+                  active={filters.photosDocs.includes("photos")}
+                  onClick={() => handlePhotosDocsToggle("photos")}
+                >
+                  Photos
+                </PillButton>
+                <PillButton
+                  active={filters.photosDocs.includes("video")}
+                  onClick={() => handlePhotosDocsToggle("video")}
+                >
+                  Video
+                </PillButton>
+                <PillButton
+                  active={filters.photosDocs.includes("saleDeed")}
+                  onClick={() => handlePhotosDocsToggle("saleDeed")}
+                >
+                  Sale deed
+                </PillButton>
+              </FilterBlock>
+            </div>
+          </aside>
+
+          {/* LISTINGS */}
+          <section className="space-y-4">
+            {/* HEADER SECTION - UPDATED to Horizontal Layout */}
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold text-slate-900">
+                Showing properties in Gandhinagar
+              </h2>
+              <span className="text-xs font-medium text-slate-500">
+                {filteredListings.length} listings • Updated today
+              </span>
+            </div>
+
+            {/* UNIFIED LIST RENDERING (Exclusive -> Featured -> Regular) */}
+            <div className="space-y-4">
+              {filteredListings.map((item) => (
+                <ListingCard key={item.id} item={item} />
+              ))}
+            </div>
+
+            {filteredListings.length === 0 && (
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
+                No properties match your filters yet. Try adjusting your
+                budget or removing some filters.
+              </div>
+            )}
+          </section>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+/* ===== UI Helpers ===== */
+
+interface SortDropdownProps {
+  value: SortOption;
+  onChange: (value: SortOption) => void;
+}
+
+const SortDropdown: React.FC<SortDropdownProps> = ({ value, onChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  const options: { label: string; value: SortOption }[] = [
+    { label: "Newest", value: "Newest" },
+    { label: "Price (Low to High)", value: "PriceLowHigh" },
+    { label: "Price (High to Low)", value: "PriceHighLow" },
+    { label: "Size (Large to Small)", value: "SizeHighLow" },
+  ];
+
+  const selectedLabel = options.find((o) => o.value === value)?.label;
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative" ref={wrapperRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="group inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5 text-[11px] font-medium text-slate-600 transition-all hover:border-slate-300 hover:bg-white"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="text-slate-400"
+        >
+          <line x1="21" x2="14" y1="4" y2="4" />
+          <line x1="10" x2="3" y1="4" y2="4" />
+          <line x1="21" x2="12" y1="12" y2="12" />
+          <line x1="8" x2="3" y1="12" y2="12" />
+          <line x1="21" x2="16" y1="20" y2="20" />
+          <line x1="12" x2="3" y1="20" y2="20" />
+        </svg>
+        <span>
+          Sort by: <span className="font-semibold text-slate-900">{selectedLabel}</span>
+        </span>
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 top-full z-50 mt-2 w-48 origin-top-right animate-in fade-in zoom-in-95 duration-100 rounded-xl border border-slate-100 bg-white p-1 shadow-xl shadow-slate-200/50">
+          <div className="flex flex-col">
+            {options.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => {
+                  onChange(option.value);
+                  setIsOpen(false);
+                }}
+                className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs transition-colors ${
+                  value === option.value
+                    ? "bg-emerald-50 text-emerald-700 font-medium"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                }`}
+              >
+                {option.label}
+                {value === option.value && (
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+interface SmartDropdownProps {
+  label: string;
+  options: { value: string; label: string }[];
+  value: string;
+  onChange: (value: string) => void;
+}
+
+const SmartDropdown: React.FC<SmartDropdownProps> = ({
+  label,
+  options,
+  value,
+  onChange,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedOption = options.find((opt) => opt.value === value);
+  const displayLabel = selectedOption ? selectedOption.label : "Any";
+  const isActive = value !== "any";
+
+  return (
+    <div className="relative flex-1 min-w-[140px]" ref={wrapperRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={`group flex h-11 w-full items-center justify-between rounded-full border px-4 transition-all duration-200 ${
+          isOpen
+            ? "border-emerald-500 ring-1 ring-emerald-500 bg-white"
+            : isActive
+            ? "border-emerald-200 bg-emerald-50/30 hover:border-emerald-300"
+            : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+        }`}
+      >
+        <div className="flex items-center gap-2 overflow-hidden">
+          <span className="shrink-0 text-xs font-medium text-slate-500">
+            {label}
+          </span>
+          <span className="h-3 w-px bg-slate-200"></span>
+          <span
+            className={`truncate text-sm ${
+              isActive ? "font-semibold text-emerald-900" : "text-slate-700"
+            }`}
+          >
+            {displayLabel}
+          </span>
+        </div>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={`ml-2 h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${
+            isOpen ? "rotate-180 text-emerald-600" : ""
+          }`}
+        >
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 top-full z-50 mt-1.5 w-full min-w-[180px] origin-top-left animate-in fade-in zoom-in-95 duration-100 rounded-xl border border-slate-100 bg-white p-1 shadow-xl shadow-slate-200/50">
+          <div className="flex flex-col">
+            {options.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => {
+                  onChange(option.value);
+                  setIsOpen(false);
+                }}
+                className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+                  value === option.value
+                    ? "bg-emerald-50 text-emerald-700 font-medium"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                }`}
+              >
+                {option.label}
+                {value === option.value && (
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+function BadgeDot({
+  color,
+  children,
+}: {
+  color: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <span className="flex items-center gap-1">
+      <span
+        className="h-1.5 w-1.5 rounded-full"
+        style={{ backgroundColor: color }}
+      />
+      {children}
+    </span>
+  );
+}
+
+function FilterBlock({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <div className="text-[11px] font-semibold text-slate-500">{title}</div>
+      <div className="mt-2 flex flex-wrap gap-1.5">{children}</div>
+    </div>
+  );
+}
+
+function PillButton({
+  active,
+  children,
+  onClick,
+}: {
+  active?: boolean;
+  children: React.ReactNode;
+  onClick?: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-full px-3 py-1 text-[11px] transition-colors ${
+        active
+          ? "border border-[#0B8A72] bg-[#E5F6F2] font-medium text-[#0B6754]"
+          : "border border-slate-200 bg-white text-slate-600 hover:border-[#0B8A72]/60"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+// --- TIER HELPER ---
+function tierLabel(tier: Tier) {
+  if (tier === "exclusive") return "Exclusive";
+  if (tier === "featured") return "Featured";
+  return "";
+}
+
+function tierBadgeClasses(tier: Tier) {
+  if (tier === "exclusive")
+    return "bg-[#004D40] text-white"; // Updated to Dark Green background
+  if (tier === "featured")
+    return "bg-[#F59E0B] text-white"; // Updated to Mustard/Gold background
+  return "";
+}
+
+// --- LISTING CARD (UPDATED TO EXACT MATCH) ---
+function ListingCard({ item }: { item: Listing }) {
+  return (
+    <article className="flex flex-col md:flex-row gap-4 md:gap-6 p-4 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200">
+      {/* LEFT: Image Section */}
+      <div className="w-full md:w-[288px] h-[200px] relative rounded-xl overflow-hidden shrink-0 bg-slate-100">
+        <img
+          src={item.image}
+          alt={item.title}
+          className="w-full h-full object-cover"
+        />
+        {/* Badge Overlay */}
+        {tierLabel(item.tier) && (
+          <span
+            className={`absolute top-3 left-3 px-3 py-1 text-[11px] font-semibold rounded-full shadow-sm ${tierBadgeClasses(
+              item.tier
+            )}`}
+          >
+            {tierLabel(item.tier)}
+          </span>
+        )}
+      </div>
+
+      {/* CENTER: Info Section */}
+      <div className="flex-1 flex flex-col gap-3">
+        {/* Title */}
+        <div>
+          <h3 className="text-xl font-bold text-slate-900 leading-tight">
+            {item.title}
+          </h3>
+        </div>
+
+        {/* Row 1: Specs Pills */}
+        <div className="flex flex-wrap gap-2">
+          <span className="px-3 py-1.5 bg-slate-50 rounded-lg text-sm font-semibold text-slate-700 border border-slate-100">
+            {item.bedrooms} BHK • {item.bathrooms} Bath
+          </span>
+          <span className="px-3 py-1.5 bg-slate-50 rounded-lg text-sm font-semibold text-slate-700 border border-slate-100">
+            {item.areaSqft.toLocaleString()} sq ft
+          </span>
+        </div>
+
+        {/* Row 2: Type & Location */}
+        <div className="flex flex-wrap gap-2">
+          <span className="px-3 py-1.5 bg-white rounded-full text-xs font-medium text-slate-600 border border-slate-200">
+            {item.type} • {item.furnishing}
+          </span>
+          <span className="px-3 py-1.5 bg-white rounded-full text-xs font-medium text-slate-600 border border-slate-200">
+            {item.locality}, {item.city}
+          </span>
+        </div>
+
+        {/* Row 3: Meta Info (Icons) */}
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-1 text-sm text-slate-500">
+          <div className="flex items-center gap-1.5">
+            <Clock className="w-4 h-4 text-slate-400" />
+            <span>{item.readyStatus}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Car className="w-4 h-4 text-slate-400" />
+            <span>{item.parking} Parking</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Calendar className="w-4 h-4 text-slate-400" />
+            <span>Age: {item.ageLabel}</span>
+          </div>
+        </div>
+
+        {/* Row 4: Tags */}
+        <div className="flex flex-wrap gap-2 mt-auto">
+          {item.tags.map((tag) => (
+            <span
+              key={tag}
+              className="px-2.5 py-1 bg-[#E5F6F2] rounded-md text-[11px] font-medium text-[#006B5B]"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+        
+        {/* Media Text */}
+        <div className="text-[11px] text-slate-400 pt-1">
+           Media & docs • {item.media}
+        </div>
+      </div>
+
+      {/* RIGHT: Price & Actions */}
+      <div className="w-full md:w-48 shrink-0 flex flex-col justify-between md:border-l md:border-slate-100 md:pl-6 pt-4 md:pt-0 border-t md:border-t-0 border-slate-100">
+        
+        {/* Top: Price */}
+        <div>
+          <div className="text-xs font-medium text-slate-500">Price</div>
+          <div className="text-2xl font-bold text-slate-900 mt-0.5">
+            {item.priceLabel}
+          </div>
+          <div className="mt-3">
+             <div className="text-xs text-slate-500">Seller access</div>
+             <div className="text-xs font-medium text-slate-700 mt-0.5">{item.phoneMasked}</div>
+             <div className="text-[10px] text-slate-400 leading-tight">full number after subscription</div>
+          </div>
+        </div>
+
+        {/* Bottom: Buttons */}
+        <div className="flex flex-col gap-3 mt-6">
+          <button className="w-full py-2.5 rounded-full bg-[#0F4C3E] hover:bg-[#0b3b30] text-white text-sm font-bold shadow-sm transition-all active:scale-95">
+            View details
+          </button>
+          <button className="w-full py-2.5 rounded-full border border-slate-300 bg-white hover:border-slate-400 text-slate-800 text-sm font-bold transition-all active:scale-95">
+            Unlock seller
+          </button>
+        </div>
+
+      </div>
+    </article>
+  );
+}

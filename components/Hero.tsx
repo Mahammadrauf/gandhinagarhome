@@ -92,9 +92,12 @@ const Hero = () => {
       <div className="bg-white py-12 flex justify-center">
         <div className="bg-white/80 backdrop-blur-md rounded-2xl px-6 py-4 md:px-8 md:py-5 border border-gray-200/50 shadow-xl inline-flex">
           <div className="flex flex-col md:flex-row gap-4 items-center">
-            <button className="group bg-primary hover:bg-primary-dark text-white px-10 py-4 rounded-xl font-medium transition-all transform hover:scale-105 hover:shadow-lg border-2 border-transparent hover:border-primary-dark">
+            <Link
+              href="/buy"
+              className="inline-block bg-primary hover:bg-primary-dark text-white px-10 py-4 rounded-xl font-medium transition-all transform hover:scale-105 hover:shadow-lg border-2 border-transparent hover:border-primary-dark"
+            >
               Buy Property
-            </button>
+            </Link>
             <Link
               href="/sell"
               className="inline-block bg-primary hover:bg-primary-dark text-white px-10 py-4 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-lg border-2 border-transparent hover:border-primary-dark"
