@@ -41,7 +41,7 @@ const Header = () => {
             {/* I've replaced your <a> tags with the new NavLink component */}
             <nav className="flex items-center gap-6">
               <NavLink href="/">Home</NavLink>
-              <NavLink href="#">Buy</NavLink>
+              <NavLink href="/buy">Buy</NavLink>
               <NavLink href="/sell">Sell</NavLink>
               <NavLink href="#">About Us</NavLink>
               <NavLink href="#">Contact Us</NavLink>
