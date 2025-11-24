@@ -118,9 +118,9 @@ const Hero = () => {
                   <Dropdown placeholder="Possession" options={["Ready to Move","Under Construction"]} />
                 </div>
                 {/* Search button uses the same new premium style */}
-                <button className={`${BUTTON_BASE_CLASSES} !px-8 !py-3 flex-shrink-0`}>
+                <Link href="/buy" className={`${BUTTON_BASE_CLASSES} !px-8 !py-3 flex-shrink-0`}>
                   Search
-                </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -135,9 +135,9 @@ const Hero = () => {
           <div className="flex flex-col md:flex-row gap-6 items-center">
             
             {/* Buy Button - Solid Green with new hover effect */}
-            <button className={BUTTON_BASE_CLASSES}>
+            <Link href="/buy" className={`inline-block ${BUTTON_BASE_CLASSES}`}>
               Buy Property
-            </button>
+            </Link>
             
             {/* Sell Button - Now ALSO Solid Green with same effect */}
             <Link href="/sell" className={`inline-block ${BUTTON_BASE_CLASSES}`}>
