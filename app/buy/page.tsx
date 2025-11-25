@@ -3,18 +3,26 @@
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
-import { MapPin, Clock, Car, Calendar } from "lucide-react"; // Added icons
+import { MapPin, Clock, Car, Calendar, Map as MapIcon, ShieldCheck, User } from "lucide-react";
 
 // --- TYPES ---
 type Tier = "exclusive" | "featured" | "regular";
 type PropertyType = "Apartment" | "Villa" | "Bungalow" | "Plot";
 type Possession = "Ready to move" | "Immediate" | "After 1 Month";
 type PriceRangeValue = "any" | "0-1.5" | "1.5-2" | "2-2.5" | "2.5+";
-type SortOption = "Newest" | "PriceLowHigh" | "PriceHighLow" | "SizeHighLow";
+
+type SortOption = 
+  | "PriceLowHigh" 
+  | "PriceHighLow" 
+  | "SizeLowHigh"
+  | "SizeHighLow" 
+  | "Oldest" 
+  | "Newest";
 
 interface Listing {
   id: number;
   tier: Tier;
+  source: "owner" | "partner"; // owner = Owner, partner = Agent
   title: string;
   locality: string;
   city: string;
@@ -37,10 +45,10 @@ interface Listing {
 
 interface Filters {
   location: string;
-  locationMode: "city" | "locality";
   propertyType: "any" | PropertyType;
   priceRange: PriceRangeValue;
   possession: "any" | Possession;
+  listedBy: "any" | "owner" | "partner"; 
   minBedrooms: number;
   minBathrooms: number;
   furnishing: "any" | Listing["furnishing"];
@@ -50,7 +58,6 @@ interface Filters {
   priceMax: string;
   sizeMin: string;
   sizeMax: string;
-  photosDocs: string[];
 }
 
 // --- DATA ---
@@ -58,6 +65,7 @@ const listings: Listing[] = [
   {
     id: 6,
     tier: "exclusive",
+    source: "owner", 
     title: "Raysan Luxury Villa • Corner Plot",
     locality: "Raysan",
     city: "Gandhinagar",
@@ -81,6 +89,7 @@ const listings: Listing[] = [
   {
     id: 5,
     tier: "exclusive",
+    source: "partner",
     title: "Sargasan Bungalow • Private Terrace",
     locality: "Sargasan",
     city: "Gandhinagar",
@@ -104,6 +113,7 @@ const listings: Listing[] = [
   {
     id: 4,
     tier: "featured",
+    source: "partner",
     title: "Kudasan High-Rise • Club Access",
     locality: "Kudasan",
     city: "Gandhinagar",
@@ -127,6 +137,7 @@ const listings: Listing[] = [
   {
     id: 3,
     tier: "regular",
+    source: "owner",
     title: "Sector 21 Apartment • Park Facing",
     locality: "Sector 21",
     city: "Gandhinagar",
@@ -150,6 +161,7 @@ const listings: Listing[] = [
   {
     id: 2,
     tier: "regular",
+    source: "partner",
     title: "Kudasan Cozy 3BHK • Renovated",
     locality: "Kudasan",
     city: "Gandhinagar",
@@ -173,6 +185,7 @@ const listings: Listing[] = [
   {
     id: 1,
     tier: "regular",
+    source: "owner",
     title: "Randesan Premium 3BHK • Garden View",
     locality: "Randesan",
     city: "Gandhinagar",
@@ -197,10 +210,10 @@ const listings: Listing[] = [
 
 const initialFilters: Filters = {
   location: "",
-  locationMode: "locality",
   propertyType: "any",
   priceRange: "any",
   possession: "any",
+  listedBy: "any", 
   minBedrooms: 0,
   minBathrooms: 0,
   furnishing: "any",
@@ -210,7 +223,6 @@ const initialFilters: Filters = {
   priceMax: "",
   sizeMin: "",
   sizeMax: "",
-  photosDocs: [],
 };
 
 // --- HELPER: Tier Ranking ---
@@ -233,18 +245,6 @@ export default function BuyIntroPage() {
         amenities: exists
           ? prev.amenities.filter((a) => a !== amenity)
           : [...prev.amenities, amenity],
-      };
-    });
-  };
-
-  const handlePhotosDocsToggle = (key: string) => {
-    setFilters((prev) => {
-      const exists = prev.photosDocs.includes(key);
-      return {
-        ...prev,
-        photosDocs: exists
-          ? prev.photosDocs.filter((k) => k !== key)
-          : [...prev.photosDocs, key],
       };
     });
   };
@@ -300,6 +300,12 @@ export default function BuyIntroPage() {
         l.readyStatus !== filters.possession
       )
         return false;
+        
+      // LISTED BY
+      if (filters.listedBy !== "any") {
+          if (filters.listedBy === "owner" && l.source !== "owner") return false;
+          if (filters.listedBy === "partner" && l.source !== "partner") return false;
+      }
 
       // BED / BATH / PARKING
       if (l.bedrooms < filters.minBedrooms) return false;
@@ -327,19 +333,6 @@ export default function BuyIntroPage() {
         if (!hasAll) return false;
       }
 
-      // PHOTOS & DOCS
-      if (filters.photosDocs.length > 0) {
-        const mediaText = l.media.toLowerCase();
-        for (const key of filters.photosDocs) {
-          if (key === "photos" && !mediaText.includes("photo")) return false;
-          if (key === "video" && !mediaText.includes("video")) return false;
-          if (key === "saleDeed" && !mediaText.includes("sale deed"))
-            return false;
-          if (key === "brochure" && !mediaText.includes("brochure"))
-            return false;
-        }
-      }
-
       return true;
     });
 
@@ -360,11 +353,15 @@ export default function BuyIntroPage() {
           return a.priceCr - b.priceCr;
         case "PriceHighLow":
           return b.priceCr - a.priceCr;
+        case "SizeLowHigh":
+            return a.areaSqft - b.areaSqft; 
         case "SizeHighLow":
-          return b.areaSqft - a.areaSqft;
+          return b.areaSqft - a.areaSqft; 
+        case "Oldest":
+            return a.id - b.id; // Ascending ID
         case "Newest":
         default:
-          return b.id - a.id;
+          return b.id - a.id; // Descending ID
       }
     });
 
@@ -393,8 +390,9 @@ export default function BuyIntroPage() {
 
             <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-500">
               <BadgeDot color="#059669">Seller OTP verified</BadgeDot>
-              <BadgeDot color="#f59e0b">Exclusive on top</BadgeDot>
-              <BadgeDot color="#0ea5e9">Featured next</BadgeDot>
+              <BadgeDot color="#10b981">Direct Owner</BadgeDot>
+              <BadgeDot color="#3b82f6">Agent listed</BadgeDot>
+              <BadgeDot color="#f59e0b">Exclusive</BadgeDot>
             </div>
           </div>
 
@@ -534,298 +532,292 @@ export default function BuyIntroPage() {
         {/* MAIN GRID */}
         <div className="mt-5 grid gap-4 md:grid-cols-[270px,1fr]">
           
-          {/* SIDEBAR FILTERS (RESTORED) */}
-          <aside className="rounded-2xl border border-slate-200 bg-white px-4 py-5 text-xs text-slate-700 shadow-sm h-fit">
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <h2 className="text-sm font-semibold text-slate-900">
-                  Filters
-                </h2>
-                <p className="text-[11px] text-slate-500">
-                  Refine your search results.
-                </p>
-              </div>
-              <button
-                onClick={handleClearFilters}
-                className="text-[11px] font-medium text-[#006B5B]"
-              >
-                Clear all
-              </button>
+          {/* SIDEBAR */}
+          <aside className="h-fit">
+            
+            {/* MAP PLACEHOLDER */}
+            <div className="mb-4 w-full aspect-square rounded-2xl border border-slate-200 bg-slate-100 overflow-hidden relative group cursor-pointer shadow-sm">
+                <img 
+                    src="https://images.pexels.com/photos/2565222/pexels-photo-2565222.jpeg?auto=compress&cs=tinysrgb&w=800"
+                    alt="Map view"
+                    className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-slate-900/10 flex items-center justify-center">
+                    <button className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-4 py-2.5 rounded-full shadow-lg text-slate-800 text-xs font-bold hover:bg-white transition-all">
+                        <MapIcon className="w-3.5 h-3.5" />
+                        View on Map
+                    </button>
+                </div>
             </div>
 
-            <div className="mt-4 space-y-4">
-              {/* City & Locality */}
-              <FilterBlock title="Location Mode">
-                <PillButton
-                  active={filters.locationMode === "city"}
-                  onClick={() =>
-                    setFilters((f) => ({ ...f, locationMode: "city" }))
-                  }
-                >
-                  City
-                </PillButton>
-                <PillButton
-                  active={filters.locationMode === "locality"}
-                  onClick={() =>
-                    setFilters((f) => ({ ...f, locationMode: "locality" }))
-                  }
-                >
-                  Locality
-                </PillButton>
-              </FilterBlock>
-
-              {/* Property type */}
-              <FilterBlock title="Property type">
-                {["Apartment", "Villa", "Bungalow", "Plot"].map(
-                  (type) => (
-                    <PillButton
-                      key={type}
-                      active={filters.propertyType === type}
-                      onClick={() =>
-                        setFilters((f) => ({
-                          ...f,
-                          propertyType:
-                            f.propertyType === type
-                              ? "any"
-                              : (type as PropertyType),
-                        }))
-                      }
-                    >
-                      {type}
-                    </PillButton>
-                  )
-                )}
-              </FilterBlock>
-
-              {/* Price range (₹) */}
-              <FilterBlock title="Price range (₹)">
-                <div className="flex gap-2 w-full">
-                  <input
-                    value={filters.priceMin}
-                    onChange={(e) =>
-                      setFilters((f) => ({
-                        ...f,
-                        priceMin: e.target.value,
-                      }))
-                    }
-                    placeholder="Min Cr"
-                    className="w-full rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] outline-none placeholder:text-slate-400 focus:border-emerald-500"
-                  />
-                  <input
-                    value={filters.priceMax}
-                    onChange={(e) =>
-                      setFilters((f) => ({
-                        ...f,
-                        priceMax: e.target.value,
-                      }))
-                    }
-                    placeholder="Max Cr"
-                    className="w-full rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] outline-none placeholder:text-slate-400 focus:border-emerald-500"
-                  />
+            {/* FILTERS CONTAINER */}
+            <div className="rounded-2xl border border-slate-200 bg-white px-4 py-5 text-xs text-slate-700 shadow-sm">
+                <div className="flex items-start justify-between gap-2">
+                <div>
+                    <h2 className="text-sm font-semibold text-slate-900">
+                    Filters
+                    </h2>
+                    <p className="text-[11px] text-slate-500">
+                    Refine your search results.
+                    </p>
                 </div>
-              </FilterBlock>
+                <button
+                    onClick={handleClearFilters}
+                    className="text-[11px] font-medium text-[#006B5B]"
+                >
+                    Clear all
+                </button>
+                </div>
 
-              {/* Bedrooms */}
-              <FilterBlock title="Bedrooms">
-                {["1+", "2+", "3+", "4+"].map((label, idx) => {
-                  const value = idx + 1;
-                  return (
+                <div className="mt-4 space-y-4">
+                
+                {/* UPDATED: Listed By Filter */}
+                <FilterBlock title="Listed by">
                     <PillButton
-                      key={label}
-                      active={filters.minBedrooms === value}
-                      onClick={() =>
-                        setFilters((f) => ({
-                          ...f,
-                          minBedrooms:
-                            f.minBedrooms === value ? 0 : value,
-                        }))
-                      }
+                      active={filters.listedBy === "owner"}
+                      onClick={() => setFilters(f => ({...f, listedBy: f.listedBy === "owner" ? "any" : "owner"}))}
                     >
-                      {label}
+                      Direct Owner
                     </PillButton>
-                  );
-                })}
-              </FilterBlock>
-
-              {/* Bathrooms */}
-              <FilterBlock title="Bathrooms">
-                {["1+", "2+", "3+"].map((label, idx) => {
-                  const value = idx + 1;
-                  return (
                     <PillButton
-                      key={label}
-                      active={filters.minBathrooms === value}
-                      onClick={() =>
-                        setFilters((f) => ({
-                          ...f,
-                          minBathrooms:
-                            f.minBathrooms === value ? 0 : value,
-                        }))
-                      }
+                      active={filters.listedBy === "partner"}
+                      onClick={() => setFilters(f => ({...f, listedBy: f.listedBy === "partner" ? "any" : "partner"}))}
                     >
-                      {label}
+                      Agent listed
                     </PillButton>
-                  );
-                })}
-              </FilterBlock>
+                </FilterBlock>
+                
+                {/* Property type */}
+                <FilterBlock title="Property type">
+                    {["Apartment", "Villa", "Bungalow", "Plot"].map(
+                    (type) => (
+                        <PillButton
+                        key={type}
+                        active={filters.propertyType === type}
+                        onClick={() =>
+                            setFilters((f) => ({
+                            ...f,
+                            propertyType:
+                                f.propertyType === type
+                                ? "any"
+                                : (type as PropertyType),
+                            }))
+                        }
+                        >
+                        {type}
+                        </PillButton>
+                    )
+                    )}
+                </FilterBlock>
 
-              {/* Furnishing */}
-              <FilterBlock title="Furnishing">
-                {[
-                  "Unfurnished",
-                  "Semi-furnished",
-                  "Fully furnished",
-                ].map((label) => (
-                  <PillButton
-                    key={label}
-                    active={filters.furnishing === label}
+                {/* Price range (₹) */}
+                <FilterBlock title="Price range (₹)">
+                    <div className="flex gap-2 w-full">
+                    <input
+                        value={filters.priceMin}
+                        onChange={(e) =>
+                        setFilters((f) => ({
+                            ...f,
+                            priceMin: e.target.value,
+                        }))
+                        }
+                        placeholder="Min Cr"
+                        className="w-full rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] outline-none placeholder:text-slate-400 focus:border-emerald-500"
+                    />
+                    <input
+                        value={filters.priceMax}
+                        onChange={(e) =>
+                        setFilters((f) => ({
+                            ...f,
+                            priceMax: e.target.value,
+                        }))
+                        }
+                        placeholder="Max Cr"
+                        className="w-full rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] outline-none placeholder:text-slate-400 focus:border-emerald-500"
+                    />
+                    </div>
+                </FilterBlock>
+
+                {/* Bedrooms */}
+                <FilterBlock title="Bedrooms">
+                    {["1+", "2+", "3+", "4+"].map((label, idx) => {
+                    const value = idx + 1;
+                    return (
+                        <PillButton
+                        key={label}
+                        active={filters.minBedrooms === value}
+                        onClick={() =>
+                            setFilters((f) => ({
+                            ...f,
+                            minBedrooms:
+                                f.minBedrooms === value ? 0 : value,
+                            }))
+                        }
+                        >
+                        {label}
+                        </PillButton>
+                    );
+                    })}
+                </FilterBlock>
+
+                {/* Bathrooms */}
+                <FilterBlock title="Bathrooms">
+                    {["1+", "2+", "3+"].map((label, idx) => {
+                    const value = idx + 1;
+                    return (
+                        <PillButton
+                        key={label}
+                        active={filters.minBathrooms === value}
+                        onClick={() =>
+                            setFilters((f) => ({
+                            ...f,
+                            minBathrooms:
+                                f.minBathrooms === value ? 0 : value,
+                            }))
+                        }
+                        >
+                        {label}
+                        </PillButton>
+                    );
+                    })}
+                </FilterBlock>
+
+                {/* Furnishing */}
+                <FilterBlock title="Furnishing">
+                    {[
+                    "Unfurnished",
+                    "Semi-furnished",
+                    "Fully furnished",
+                    ].map((label) => (
+                    <PillButton
+                        key={label}
+                        active={filters.furnishing === label}
+                        onClick={() =>
+                        setFilters((f) => ({
+                            ...f,
+                            furnishing:
+                            f.furnishing === label
+                                ? "any"
+                                : (label as Listing["furnishing"]),
+                        }))
+                        }
+                    >
+                        {label}
+                    </PillButton>
+                    ))}
+                </FilterBlock>
+
+                {/* Parking */}
+                <FilterBlock title="Parking">
+                    <PillButton
+                    active={filters.minParking === 0}
                     onClick={() =>
-                      setFilters((f) => ({
-                        ...f,
-                        furnishing:
-                          f.furnishing === label
-                            ? "any"
-                            : (label as Listing["furnishing"]),
-                      }))
+                        setFilters((f) => ({ ...f, minParking: 0 }))
                     }
-                  >
-                    {label}
-                  </PillButton>
-                ))}
-              </FilterBlock>
-
-              {/* Parking */}
-              <FilterBlock title="Parking">
-                <PillButton
-                  active={filters.minParking === 0}
-                  onClick={() =>
-                    setFilters((f) => ({ ...f, minParking: 0 }))
-                  }
-                >
-                  Any
-                </PillButton>
-                <PillButton
-                  active={filters.minParking === 1}
-                  onClick={() =>
-                    setFilters((f) => ({ ...f, minParking: 1 }))
-                  }
-                >
-                  1+
-                </PillButton>
-                <PillButton
-                  active={filters.minParking === 2}
-                  onClick={() =>
-                    setFilters((f) => ({ ...f, minParking: 2 }))
-                  }
-                >
-                  2+
-                </PillButton>
-              </FilterBlock>
-
-              {/* Size (sq ft) */}
-              <FilterBlock title="Size (sq ft)">
-                <div className="flex gap-2 w-full">
-                  <input
-                    value={filters.sizeMin}
-                    onChange={(e) =>
-                      setFilters((f) => ({
-                        ...f,
-                        sizeMin: e.target.value,
-                      }))
-                    }
-                    placeholder="Min size"
-                    className="w-full rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] outline-none placeholder:text-slate-400 focus:border-emerald-500"
-                  />
-                  <input
-                    value={filters.sizeMax}
-                    onChange={(e) =>
-                      setFilters((f) => ({
-                        ...f,
-                        sizeMax: e.target.value,
-                      }))
-                    }
-                    placeholder="Max size"
-                    className="w-full rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] outline-none placeholder:text-slate-400 focus:border-emerald-500"
-                  />
-                </div>
-              </FilterBlock>
-
-              {/* Age & availability */}
-              <FilterBlock title="Possession">
-                <PillButton
-                  active={filters.possession === "any"}
-                  onClick={() =>
-                    setFilters((f) => ({ ...f, possession: "any" }))
-                  }
-                >
-                  Any
-                </PillButton>
-                <PillButton
-                  active={filters.possession === "Immediate"}
-                  onClick={() =>
-                    setFilters((f) => ({
-                      ...f,
-                      possession: "Immediate",
-                    }))
-                  }
-                >
-                  Immediate
-                </PillButton>
-                <PillButton
-                  active={filters.possession === "After 1 Month"}
-                  onClick={() =>
-                    setFilters((f) => ({
-                      ...f,
-                      possession: "After 1 Month",
-                    }))
-                  }
-                >
-                  After 1 Month
-                </PillButton>
-              </FilterBlock>
-
-              {/* Amenities */}
-              <FilterBlock title="Amenities">
-                {["Lift", "Garden", "Security", "Gym"].map(
-                  (amenity) => (
-                    <PillButton
-                      key={amenity}
-                      active={filters.amenities.includes(amenity)}
-                      onClick={() => handleAmenityToggle(amenity)}
                     >
-                      {amenity}
+                    Any
                     </PillButton>
-                  )
-                )}
-              </FilterBlock>
+                    <PillButton
+                    active={filters.minParking === 1}
+                    onClick={() =>
+                        setFilters((f) => ({ ...f, minParking: 1 }))
+                    }
+                    >
+                    1+
+                    </PillButton>
+                    <PillButton
+                    active={filters.minParking === 2}
+                    onClick={() =>
+                        setFilters((f) => ({ ...f, minParking: 2 }))
+                    }
+                    >
+                    2+
+                    </PillButton>
+                </FilterBlock>
 
-              {/* Photos & documents */}
-              <FilterBlock title="Documents & Media">
-                <PillButton
-                  active={filters.photosDocs.includes("photos")}
-                  onClick={() => handlePhotosDocsToggle("photos")}
-                >
-                  Photos
-                </PillButton>
-                <PillButton
-                  active={filters.photosDocs.includes("video")}
-                  onClick={() => handlePhotosDocsToggle("video")}
-                >
-                  Video
-                </PillButton>
-                <PillButton
-                  active={filters.photosDocs.includes("saleDeed")}
-                  onClick={() => handlePhotosDocsToggle("saleDeed")}
-                >
-                  Sale deed
-                </PillButton>
-              </FilterBlock>
+                {/* Size (sq ft) */}
+                <FilterBlock title="Size (sq ft)">
+                    <div className="flex gap-2 w-full">
+                    <input
+                        value={filters.sizeMin}
+                        onChange={(e) =>
+                        setFilters((f) => ({
+                            ...f,
+                            sizeMin: e.target.value,
+                        }))
+                        }
+                        placeholder="Min size"
+                        className="w-full rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] outline-none placeholder:text-slate-400 focus:border-emerald-500"
+                    />
+                    <input
+                        value={filters.sizeMax}
+                        onChange={(e) =>
+                        setFilters((f) => ({
+                            ...f,
+                            sizeMax: e.target.value,
+                        }))
+                        }
+                        placeholder="Max size"
+                        className="w-full rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] outline-none placeholder:text-slate-400 focus:border-emerald-500"
+                    />
+                    </div>
+                </FilterBlock>
+
+                {/* Age & availability */}
+                <FilterBlock title="Possession">
+                    <PillButton
+                    active={filters.possession === "any"}
+                    onClick={() =>
+                        setFilters((f) => ({ ...f, possession: "any" }))
+                    }
+                    >
+                    Any
+                    </PillButton>
+                    <PillButton
+                    active={filters.possession === "Immediate"}
+                    onClick={() =>
+                        setFilters((f) => ({
+                        ...f,
+                        possession: "Immediate",
+                        }))
+                    }
+                    >
+                    Immediate
+                    </PillButton>
+                    <PillButton
+                    active={filters.possession === "After 1 Month"}
+                    onClick={() =>
+                        setFilters((f) => ({
+                        ...f,
+                        possession: "After 1 Month",
+                        }))
+                    }
+                    >
+                    After 1 Month
+                    </PillButton>
+                </FilterBlock>
+
+                {/* Amenities */}
+                <FilterBlock title="Amenities">
+                    {["Lift", "Garden", "Security", "Gym"].map(
+                    (amenity) => (
+                        <PillButton
+                        key={amenity}
+                        active={filters.amenities.includes(amenity)}
+                        onClick={() => handleAmenityToggle(amenity)}
+                        >
+                        {amenity}
+                        </PillButton>
+                    )
+                    )}
+                </FilterBlock>
+                </div>
             </div>
           </aside>
 
           {/* LISTINGS */}
           <section className="space-y-4">
-            {/* HEADER SECTION - UPDATED to Horizontal Layout */}
+            {/* HEADER SECTION */}
             <div className="flex items-center justify-between">
               <h2 className="text-base font-bold text-slate-900">
                 Showing properties in Gandhinagar
@@ -835,7 +827,7 @@ export default function BuyIntroPage() {
               </span>
             </div>
 
-            {/* UNIFIED LIST RENDERING (Exclusive -> Featured -> Regular) */}
+            {/* UNIFIED LIST RENDERING */}
             <div className="space-y-4">
               {filteredListings.map((item) => (
                 <ListingCard key={item.id} item={item} />
@@ -866,11 +858,14 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ value, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
+  // UPDATED: Exact sort options requested
   const options: { label: string; value: SortOption }[] = [
-    { label: "Newest", value: "Newest" },
-    { label: "Price (Low to High)", value: "PriceLowHigh" },
-    { label: "Price (High to Low)", value: "PriceHighLow" },
-    { label: "Size (Large to Small)", value: "SizeHighLow" },
+    { label: "Price low to high", value: "PriceLowHigh" },
+    { label: "Price high to low", value: "PriceHighLow" },
+    { label: "Size low to high", value: "SizeLowHigh" },
+    { label: "Size high to low", value: "SizeHighLow" },
+    { label: "Oldest to newest", value: "Oldest" },
+    { label: "Newest to oldest", value: "Newest" },
   ];
 
   const selectedLabel = options.find((o) => o.value === value)?.label;
@@ -911,7 +906,7 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ value, onChange }) => {
           <line x1="12" x2="3" y1="20" y2="20" />
         </svg>
         <span>
-          Sort by: <span className="font-semibold text-slate-900">{selectedLabel}</span>
+          Sort by: <span className="font-semibold text-slate-900 capitalize">{selectedLabel}</span>
         </span>
       </button>
 
@@ -925,7 +920,7 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ value, onChange }) => {
                   onChange(option.value);
                   setIsOpen(false);
                 }}
-                className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs transition-colors ${
+                className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs transition-colors capitalize ${
                   value === option.value
                     ? "bg-emerald-50 text-emerald-700 font-medium"
                     : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
@@ -1116,14 +1111,16 @@ function tierLabel(tier: Tier) {
 
 function tierBadgeClasses(tier: Tier) {
   if (tier === "exclusive")
-    return "bg-[#004D40] text-white"; // Updated to Dark Green background
+    return "bg-[#004D40] text-white"; 
   if (tier === "featured")
-    return "bg-[#F59E0B] text-white"; // Updated to Mustard/Gold background
+    return "bg-[#F59E0B] text-white"; 
   return "";
 }
 
-// --- LISTING CARD (UPDATED TO EXACT MATCH) ---
+// --- LISTING CARD (UPDATED) ---
 function ListingCard({ item }: { item: Listing }) {
+  const isOwner = item.source === "owner";
+
   return (
     <article className="flex flex-col md:flex-row gap-4 md:gap-6 p-4 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200">
       {/* LEFT: Image Section */}
@@ -1133,7 +1130,7 @@ function ListingCard({ item }: { item: Listing }) {
           alt={item.title}
           className="w-full h-full object-cover"
         />
-        {/* Badge Overlay */}
+        {/* Tier Badge (Exclusive/Featured) - Top Left */}
         {tierLabel(item.tier) && (
           <span
             className={`absolute top-3 left-3 px-3 py-1 text-[11px] font-semibold rounded-full shadow-sm ${tierBadgeClasses(
@@ -1143,6 +1140,21 @@ function ListingCard({ item }: { item: Listing }) {
             {tierLabel(item.tier)}
           </span>
         )}
+
+        {/* UPDATED: Direct Owner / Agent Badge - Top Right */}
+        <div className="absolute top-3 right-3">
+            {isOwner ? (
+                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/95 backdrop-blur-sm text-emerald-700 text-[10px] font-bold shadow-sm">
+                    <User className="w-3 h-3" />
+                    Direct Owner
+                </span>
+            ) : (
+                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/95 backdrop-blur-sm text-blue-700 text-[10px] font-bold shadow-sm">
+                    <ShieldCheck className="w-3 h-3" />
+                    Agent listed
+                </span>
+            )}
+        </div>
       </div>
 
       {/* CENTER: Info Section */}
@@ -1218,9 +1230,9 @@ function ListingCard({ item }: { item: Listing }) {
             {item.priceLabel}
           </div>
           <div className="mt-3">
-             <div className="text-xs text-slate-500">Seller access</div>
-             <div className="text-xs font-medium text-slate-700 mt-0.5">{item.phoneMasked}</div>
-             <div className="text-[10px] text-slate-400 leading-tight">full number after subscription</div>
+              <div className="text-xs text-slate-500">Seller access</div>
+              <div className="text-xs font-medium text-slate-700 mt-0.5">{item.phoneMasked}</div>
+              <div className="text-[10px] text-slate-400 leading-tight">full number after subscription</div>
           </div>
         </div>
 
