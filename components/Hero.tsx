@@ -111,8 +111,8 @@ const Hero = () => {
           <div className="absolute bottom-0 left-0 right-0 z-20 px-4 pb-6 animate-rise delay-300">
             <div className="max-w-5xl mx-auto bg-white/95 backdrop-blur-md rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-2.5 border border-gray-100">
               <div className="flex flex-col md:flex-row gap-2">
-                <input type="text" placeholder="Location (e.g. Sargasan, Kudasan...)" className="flex-1 px-6 py-3 rounded-full border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#056F5E] focus:bg-white transition-all text-gray-800 placeholder-gray-400 font-semibold tracking-tight" />
-                <div className="hidden md:flex gap-2">
+                <input type="text" placeholder="Location (e.g. Sargasan, Kudasan...)" className="min-w-0 flex-1 px-6 py-3 rounded-full border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#056F5E] focus:bg-white transition-all text-gray-800 placeholder-gray-400 font-semibold tracking-tight" />
+                <div className="hidden md:flex gap-2 flex-gap-2-fallback flex-no-shrink">
                   <Dropdown placeholder="Property Type" options={["Apartment","Villa","Plot","Penthouse"]} />
                   <Dropdown placeholder="Price Range" options={["Under ₹50 Lakhs","₹50L - ₹1 Cr","₹1 Cr - ₹2 Cr","Above ₹2 Cr"]} />
                   <Dropdown placeholder="Possession" options={["Ready to Move","Under Construction"]} />
@@ -132,15 +132,15 @@ const Hero = () => {
       <div className="bg-white py-10 flex justify-center animate-rise delay-300">
         {/* Added a subtle hover glow to the container itself */}
         <div className="bg-white rounded-[2.5rem] px-8 py-5 border border-gray-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] transition-shadow hover:shadow-[0_20px_50px_-10px_rgba(5,111,94,0.15)] inline-flex">
-          <div className="flex flex-col md:flex-row gap-6 items-center">
+          <div className="flex flex-col md:flex-row gap-6 flex-gap-6-fallback flex-no-shrink items-center">
             
             {/* Buy Button - Solid Green with new hover effect */}
-            <Link href="/buy" className={`inline-block ${BUTTON_BASE_CLASSES}`}>
+            <Link href="/buy" className={`inline-block flex-shrink-0 ${BUTTON_BASE_CLASSES}`}>
               Buy Property
             </Link>
             
             {/* Sell Button - Now ALSO Solid Green with same effect */}
-            <Link href="/sell" className={`inline-block ${BUTTON_BASE_CLASSES}`}>
+            <Link href="/sell" className={`inline-block flex-shrink-0 ${BUTTON_BASE_CLASSES}`}>
               Sell Property
             </Link>
 

@@ -230,7 +230,7 @@ const ExclusiveProperty: React.FC = () => {
 
   // Refs
   const listRef = useRef<HTMLDivElement | null>(null);
-  const itemRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const itemRefs = useRef<Array<HTMLElement | null>>([]);
 
   // Position calculation
   const getCircularDiff = useCallback(
@@ -358,6 +358,7 @@ const ExclusiveProperty: React.FC = () => {
         <div className="relative">
           {/* Navigation Buttons */}
           <button
+            type="button"
             aria-label="Previous property"
             onClick={() => handleNavigation(prevSlide)}
             className="absolute left-2 top-1/2 -translate-y-1/2 z-40 w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm border border-stone-200 shadow-lg flex items-center justify-center hover:scale-105 transition-all focus:outline-none focus:ring-2 focus:ring-[#B59E78]/60 disabled:opacity-50"
@@ -369,6 +370,7 @@ const ExclusiveProperty: React.FC = () => {
           </button>
 
           <button
+            type="button"
             aria-label="Next property"
             onClick={() => handleNavigation(nextSlide)}
             className="absolute right-2 top-1/2 -translate-y-1/2 z-40 w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm border border-stone-200 shadow-lg flex items-center justify-center hover:scale-105 transition-all focus:outline-none focus:ring-2 focus:ring-[#B59E78]/60 disabled:opacity-50"
@@ -410,7 +412,7 @@ const ExclusiveProperty: React.FC = () => {
                 return (
                   <article
                     key={property.id}
-                    ref={(el) => (itemRefs.current[index] = el)}
+                    ref={(el) => { itemRefs.current[index] = el; }}
                     className="flex-none w-[320px] md:w-[350px] px-0"
                     role="group"
                     aria-roledescription="slide"
@@ -510,6 +512,7 @@ const ExclusiveProperty: React.FC = () => {
 
                           {/* Action Button */}
                           <button
+                            type="button"
                             onClick={() => {
                               // Add your navigation or modal logic here
                               console.log('View details:', property.id);
@@ -544,6 +547,7 @@ const ExclusiveProperty: React.FC = () => {
               {properties.map((_, idx) => (
                 <button
                   key={idx}
+                  type="button"
                   onClick={() => handleNavigation(() => goToSlide(idx))}
                   aria-label={`Go to property ${idx + 1}`}
                   className={`w-2 h-2 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-[#B59E78]/50 ${

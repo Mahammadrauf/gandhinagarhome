@@ -2,6 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  /* Reserve space for the scrollbar to prevent layout shifts across OSes */
+  scrollbar-gutter: stable;
+}
+
+/* Flex-gap fallbacks for older WebKit (Safari) that didn't support gap on flex containers.
+   These only apply when the browser does NOT support the `gap` property for flexbox. */
+.flex-gap-2-fallback { --gap: 0.5rem; }
+.flex-gap-6-fallback { --gap: 1.5rem; }
+
+@supports not (gap: 1rem) {
+  .flex-gap-2-fallback > * + * { margin-left: var(--gap); }
+  .flex-gap-6-fallback > * + * { margin-left: var(--gap); }
+}
+
+/* Helper to ensure children do not shrink in older browsers. Add this to a flex container
+   when you want each immediate child to preserve its intrinsic size (equivalent to
+   applying `flex-shrink: 0` to each child). */
+.flex-no-shrink > * { flex-shrink: 0; }
+
 * {
   margin: 0;
   padding: 0;
@@ -114,11 +134,11 @@ body {
 /* /styles/globals.css (or your main css file) */
 
 @keyframes ringProgress {
-    from { background: conic-gradient(var(--ring-color) 0deg, transparent 0deg); }
-    to   { background: conic-gradient(var(--ring-color) 360deg, transparent 360deg); }
+  from { background: conic-gradient(var(--ring-color) 0deg, transparent 0deg); }
+  to { background: conic-gradient(var(--ring-color) 360deg, transparent 360deg); }
 }
-  
+
 @keyframes liftIn {
-    0% { transform: translateY(10px) scale(0.985); opacity: 0.6; }
-    100% { transform: translateY(0) scale(1); opacity: 1; }
+  0% { transform: translateY(10px) scale(0.985); opacity: 0.6; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
 }
