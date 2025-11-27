@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 
 const TIMER_MS = 2000; // 2 seconds
 
@@ -19,7 +19,6 @@ type Property = {
 
 /** ========= Data: 12 Featured Properties (Updated Order) ========= */
 const ALL_FEATURED_PROPERTIES: Property[] = [
-  // First 3 (from screenshot)
   {
     id: "e1",
     image:
@@ -56,8 +55,6 @@ const ALL_FEATURED_PROPERTIES: Property[] = [
     features: ["Garden View", "Home Office"],
     tag: { text: "New", color: "bg-primary text-white" },
   },
-
-  // Remaining properties
   {
     id: "e4",
     image:
@@ -173,110 +170,164 @@ const FeaturedProperties: React.FC = () => {
   const totalSlides = featuredList.length;
 
   const [centerIndex, setCenterIndex] = useState(1);
-  const [isHovered, setIsHovered] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
 
   const listRef = useRef<HTMLDivElement | null>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const autoAdvanceRef = useRef<number | null>(null);
+  const timeoutRef = useRef<number | null>(null);
 
-  const scrollToActive = (idx: number) => {
-    const container = listRef.current;
-    const target = itemRefs.current[idx];
-
-    if (container && target) {
-      const targetOffsetLeft = target.offsetLeft;
-      const offset =
-        targetOffsetLeft - container.offsetWidth / 2 + target.offsetWidth / 2;
-
-      container.scrollTo({ left: offset, behavior: "smooth" });
-    }
-  };
-
-  const wrapIndex = (idx: number) => {
-    return ((idx % totalSlides) + totalSlides) % totalSlides;
-  };
-
-  const goToSlide = (idx: number) => {
-    if (autoAdvanceRef.current) window.clearInterval(autoAdvanceRef.current);
-    setCenterIndex(wrapIndex(idx));
-  };
-
-  const prevSlide = () => goToSlide(centerIndex - 1);
-  const nextSlide = () => goToSlide(centerIndex + 1);
-
+  // keep refs for avoiding stale closures
+  const isPausedRef = useRef(isPaused);
+  const totalRef = useRef(totalSlides);
   useEffect(() => {
-    if (isHovered) {
-      if (autoAdvanceRef.current) window.clearInterval(autoAdvanceRef.current);
-      return;
+    isPausedRef.current = isPaused;
+  }, [isPaused]);
+  useEffect(() => {
+    totalRef.current = totalSlides;
+  }, [totalSlides]);
+
+  const wrapIndex = useCallback((idx: number) => ((idx % totalRef.current) + totalRef.current) % totalRef.current, []);
+
+  const clearTimer = useCallback(() => {
+    if (timeoutRef.current != null) {
+      window.clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
     }
+  }, []);
 
-    if (autoAdvanceRef.current) window.clearInterval(autoAdvanceRef.current);
-
-    const id = window.setInterval(() => {
+  // scheduler using setTimeout loop for robust behavior (no overlapping intervals)
+  const scheduleNext = useCallback(() => {
+    clearTimer();
+    if (isPausedRef.current || totalRef.current <= 1) return;
+    timeoutRef.current = window.setTimeout(() => {
       setCenterIndex((prev) => wrapIndex(prev + 1));
+      scheduleNext();
     }, TIMER_MS);
+  }, [clearTimer, wrapIndex]);
 
-    autoAdvanceRef.current = id;
+  // start/stop scheduler when paused or when component mounts/unmounts
+  useEffect(() => {
+    clearTimer();
+    if (!isPaused && totalSlides > 1) {
+      // slight initial delay to avoid jump if user just interacted
+      timeoutRef.current = window.setTimeout(() => {
+        setCenterIndex((prev) => wrapIndex(prev + 1));
+        scheduleNext();
+      }, TIMER_MS);
+    }
+    return () => clearTimer();
+  }, [isPaused, totalSlides, clearTimer, scheduleNext, wrapIndex]);
 
-    return () => {
-      if (autoAdvanceRef.current) window.clearInterval(autoAdvanceRef.current);
-      autoAdvanceRef.current = null;
+  // Pause when tab hidden (prevents throttling issues) and resume when visible
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.hidden) {
+        setIsPaused(true);
+      } else {
+        // small delay to let layout settle
+        window.setTimeout(() => setIsPaused(false), 300);
+      }
     };
-  }, [isHovered, totalSlides]);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, []);
+
+  // scroll to active card
+  const scrollToActive = useCallback(
+    (idx: number) => {
+      const container = listRef.current;
+      const target = itemRefs.current[idx];
+
+      if (container && target) {
+        const targetOffsetLeft = target.offsetLeft;
+        const offset =
+          targetOffsetLeft - container.offsetWidth / 2 + target.offsetWidth / 2;
+
+        container.scrollTo({ left: offset, behavior: "smooth" });
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     scrollToActive(centerIndex);
+  }, [centerIndex, scrollToActive]);
 
+  useEffect(() => {
     const onResize = () => scrollToActive(centerIndex);
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
-  }, [centerIndex]);
+  }, [centerIndex, scrollToActive]);
 
-  const getCircularDiff = (index: number) => {
-    const rawDiff = index - centerIndex;
-    const altDiff = rawDiff > 0 ? rawDiff - totalSlides : rawDiff + totalSlides;
-    return Math.abs(altDiff) < Math.abs(rawDiff) ? altDiff : rawDiff;
-  };
+  // navigation helpers — clear timers and pause temporarily after manual nav
+  const pauseTemporarily = useCallback(() => {
+    setIsPaused(true);
+    const id = window.setTimeout(() => setIsPaused(false), 2500);
+    return () => window.clearTimeout(id);
+  }, []);
 
-  const getCardPositionClasses = (index: number) => {
-    const diff = getCircularDiff(index);
+  const goToSlide = useCallback((idx: number) => {
+    clearTimer();
+    setCenterIndex(wrapIndex(idx));
+  }, [clearTimer, wrapIndex]);
 
-    if (diff === 0) {
-      return {
-        wrapper:
-          "z-30 scale-[1.05] translate-x-0 shadow-2xl ring-2 ring-green-200 bg-white",
-        tagText: featuredList[index].tag.text,
-      };
-    } else if (diff === -1) {
-      return {
-        wrapper: "z-20 scale-[0.9] -translate-x-10",
-        tagText: featuredList[index].tag.text,
-      };
-    } else if (diff === 1) {
-      return {
-        wrapper: "z-20 scale-[0.9] translate-x-10",
-        tagText: featuredList[index].tag.text,
-      };
-    } else {
-      return {
-        wrapper: "z-0 opacity-0 scale-[0.7] translate-x-0 pointer-events-none",
-        tagText: featuredList[index].tag.text,
-      };
-    }
-  };
+  const prevSlide = useCallback(() => {
+    goToSlide(centerIndex - 1);
+    pauseTemporarily();
+  }, [centerIndex, goToSlide, pauseTemporarily]);
 
-  // map tag text to styled classes — keep content untouched but display with green themed highlight when centered
-  const resolvedTagClass = (tagText: string, isCenter: boolean) => {
+  const nextSlide = useCallback(() => {
+    goToSlide(centerIndex + 1);
+    pauseTemporarily();
+  }, [centerIndex, goToSlide, pauseTemporarily]);
+
+  // position helpers (same logic you had)
+  const getCircularDiff = useCallback(
+    (index: number) => {
+      const rawDiff = index - centerIndex;
+      const altDiff = rawDiff > 0 ? rawDiff - totalSlides : rawDiff + totalSlides;
+      return Math.abs(altDiff) < Math.abs(rawDiff) ? altDiff : rawDiff;
+    },
+    [centerIndex, totalSlides]
+  );
+
+  const getCardPositionClasses = useCallback(
+    (index: number) => {
+      const diff = getCircularDiff(index);
+
+      if (diff === 0) {
+        return {
+          wrapper:
+            "z-30 scale-[1.05] translate-x-0 shadow-2xl ring-2 ring-green-200 bg-white",
+          tagText: featuredList[index].tag.text,
+        };
+      } else if (diff === -1) {
+        return {
+          wrapper: "z-20 scale-[0.9] -translate-x-10",
+          tagText: featuredList[index].tag.text,
+        };
+      } else if (diff === 1) {
+        return {
+          wrapper: "z-20 scale-[0.9] translate-x-10",
+          tagText: featuredList[index].tag.text,
+        };
+      } else {
+        return {
+          wrapper: "z-0 opacity-0 scale-[0.7] translate-x-0 pointer-events-none",
+          tagText: featuredList[index].tag.text,
+        };
+      }
+    },
+    [featuredList, getCircularDiff]
+  );
+
+  const resolvedTagClass = useCallback((tagText: string, isCenter: boolean) => {
     if (isCenter) return "px-4 py-1.5 rounded-full text-xs font-semibold shadow-lg bg-green-800 text-white";
-
-    // preserve some original distinct colors for certain tags to keep recognizability
     if (tagText === "Exclusive") return "px-4 py-1.5 rounded-full text-xs font-semibold shadow-lg bg-yellow-500 text-white";
     if (tagText === "Private") return "px-4 py-1.5 rounded-full text-xs font-semibold shadow-lg bg-purple-500 text-white";
     if (tagText === "Hot Deal") return "px-4 py-1.5 rounded-full text-xs font-semibold shadow-lg bg-red-500 text-white";
-
-    // default subtle green-muted tag
     return "px-4 py-1.5 rounded-full text-xs font-semibold shadow-lg bg-green-600 text-white";
-  };
+  }, []);
 
   return (
     <section className="py-20 bg-gradient-to-b from-[#acd8a7]/20 via-[#acd8a7]/40 to-gray-50 relative overflow-hidden">
@@ -287,7 +338,6 @@ const FeaturedProperties: React.FC = () => {
           <h2 className="text-4xl font-bold text-stone-800 mb-3 font-serif">Featured Properties</h2>
           <p className="text-gray-600 text-lg">Curated interiors from Gandhinagar&apos;s finest homes.</p>
 
-          {/* === THE INTERACTIVE EXPANDING LINE (GREEN PALETTE) === */}
           <div
             className="h-1.5 bg-gradient-to-r from-green-600 to-green-700 mx-auto mt-5 rounded-full w-24 hover:w-64 transition-all duration-500 ease-in-out cursor-pointer"
             aria-hidden
@@ -324,8 +374,8 @@ const FeaturedProperties: React.FC = () => {
             role="region"
             aria-roledescription="carousel"
             aria-label="Featured properties carousel"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
           >
             <div className="flex gap-0 min-w-full py-8 justify-start">
               <div className="flex-none w-[320px] md:w-[350px] opacity-0 pointer-events-none" />
@@ -439,13 +489,9 @@ const FeaturedProperties: React.FC = () => {
             {Array.from({ length: totalSlides }).map((_, idx) => (
               <button
                 key={idx}
-                onClick={() => goToSlide(idx)}
+                onClick={() => { goToSlide(idx); pauseTemporarily(); }}
                 aria-label={`Go to property ${idx + 1}: ${featuredList[idx].location}`}
-                className={`w-3 h-3 rounded-full transition-all ${
-                  centerIndex === idx
-                    ? "scale-125 bg-green-700 shadow-md"
-                    : "bg-gray-300 hover:bg-gray-400"
-                }`}
+                className={`w-3 h-3 rounded-full transition-all ${centerIndex === idx ? "scale-125 bg-green-700 shadow-md" : "bg-gray-300 hover:bg-gray-400"}`}
               />
             ))}
           </div>
@@ -478,7 +524,6 @@ const FeaturedProperties: React.FC = () => {
           height: 0;
         }
 
-        /* subtle glass/outline when centered to give premium look */
         .ring-green-200 {
           box-shadow: 0 10px 30px rgba(5,111,94,0.08), 0 2px 6px rgba(5,111,94,0.06);
         }

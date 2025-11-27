@@ -9,16 +9,14 @@ import React, {
 } from "react";
 
 /**
- * Enhanced ExclusiveProperty Carousel
- * - Better performance with optimized re-renders
- * - Improved accessibility with proper ARIA labels
- * - Smother animations and gestures
- * - Better code organization with custom hooks
- * - Enhanced responsive behavior
+ * Enhanced ExclusiveProperty Carousel (fixed auto-scroll)
+ * - Uses a reliable setTimeout loop for auto-advance
+ * - Pauses when document is hidden, on hover/focus, and after manual nav
+ * - Auto-advance every 2000ms (2s) by default
  */
 
 const CAROUSEL_CONFIG = {
-  AUTO_ADVANCE_MS: 4000,
+  AUTO_ADVANCE_MS: 2000, // 2 seconds auto-advance as requested
   SWIPE_THRESHOLD_PX: 48,
   TRANSITION_DURATION_MS: 500,
   PAUSE_RESUME_DELAY_MS: 2500,
@@ -40,62 +38,112 @@ type PositionClasses = {
   wrapper: string;
 };
 
-// Custom hook for carousel state management
+// Custom hook for carousel state management (robust auto-advance)
 const useCarousel = (totalSlides: number, autoAdvanceMs: number) => {
   const [centerIndex, setCenterIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const autoAdvanceRef = useRef<number | null>(null);
+
+  // refs for stable access inside timers
+  const timeoutRef = useRef<number | null>(null);
+  const isPausedRef = useRef(isPaused);
+  const totalSlidesRef = useRef(totalSlides);
+  const wrapIndexRef = useRef<(n: number) => number>(
+    (n: number): number => n
+  );
+
+  useEffect(() => {
+    isPausedRef.current = isPaused;
+  }, [isPaused]);
+
+  useEffect(() => {
+    totalSlidesRef.current = totalSlides;
+  }, [totalSlides]);
 
   const wrapIndex = useCallback(
     (idx: number) => ((idx % totalSlides) + totalSlides) % totalSlides,
     [totalSlides]
   );
+  // keep wrapIndex available in ref
+  useEffect(() => {
+    wrapIndexRef.current = wrapIndex;
+  }, [wrapIndex]);
+
+  const clearTimer = useCallback(() => {
+    if (timeoutRef.current != null) {
+      window.clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }, []);
 
   const goToSlide = useCallback(
     (idx: number) => {
-      if (autoAdvanceRef.current) {
-        window.clearInterval(autoAdvanceRef.current);
-        autoAdvanceRef.current = null;
-      }
-      setCenterIndex(wrapIndex(idx));
+      clearTimer(); // ensure no leftover timer
+      setCenterIndex((prev) => {
+        // ensure wrap
+        return wrapIndexRef.current(idx);
+      });
     },
-    [wrapIndex]
+    [clearTimer]
   );
 
   const prevSlide = useCallback(() => goToSlide(centerIndex - 1), [centerIndex, goToSlide]);
   const nextSlide = useCallback(() => goToSlide(centerIndex + 1), [centerIndex, goToSlide]);
 
-  // Auto-advance with cleanup
-  useEffect(() => {
-    if (isPaused || totalSlides <= 1) {
-      if (autoAdvanceRef.current) {
-        window.clearInterval(autoAdvanceRef.current);
-        autoAdvanceRef.current = null;
-      }
-      return;
-    }
-
-    const id = window.setInterval(() => {
-      setCenterIndex((prev) => wrapIndex(prev + 1));
+  // Scheduler: schedules next advance only when not paused and more than 1 slide
+  const scheduleNext = useCallback(() => {
+    clearTimer();
+    if (isPausedRef.current || totalSlidesRef.current <= 1) return;
+    timeoutRef.current = window.setTimeout(() => {
+      // advance using ref'd wrap to avoid stale closure
+      setCenterIndex((prev) => wrapIndexRef.current(prev + 1));
+      // re-schedule
+      scheduleNext();
     }, autoAdvanceMs);
+  }, [autoAdvanceMs, clearTimer]);
 
-    autoAdvanceRef.current = id;
+  // Start/stop scheduler when paused or when totalSlides changes
+  useEffect(() => {
+    // clear existing and schedule if not paused
+    clearTimer();
+    if (!isPaused && totalSlides > 1) {
+      // small delay to avoid immediate jump after user clicks
+      timeoutRef.current = window.setTimeout(() => {
+        setCenterIndex((prev) => wrapIndexRef.current(prev + 1));
+        scheduleNext();
+      }, autoAdvanceMs);
+    }
+    return () => clearTimer();
+  }, [isPaused, totalSlides, autoAdvanceMs, clearTimer, scheduleNext]);
 
-    return () => {
-      if (autoAdvanceRef.current) {
-        window.clearInterval(autoAdvanceRef.current);
-      }
-    };
-  }, [isPaused, wrapIndex, totalSlides, autoAdvanceMs]);
-
+  // Pause/resume helpers
   const pauseTemporarily = useCallback(() => {
     setIsPaused(true);
-    const resumeTimer = window.setTimeout(
-      () => setIsPaused(false),
-      CAROUSEL_CONFIG.PAUSE_RESUME_DELAY_MS
-    );
-    return () => window.clearTimeout(resumeTimer);
+    const resumeId = window.setTimeout(() => {
+      setIsPaused(false);
+    }, CAROUSEL_CONFIG.PAUSE_RESUME_DELAY_MS);
+    return () => window.clearTimeout(resumeId);
   }, []);
+
+  // Listen to document visibility to pause when tab hidden (prevents throttling issues)
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.hidden) {
+        setIsPaused(true);
+      } else {
+        // resume after a small delay so layout settles
+        window.setTimeout(() => setIsPaused(false), 300);
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, []);
+
+  // cleanup on unmount
+  useEffect(() => {
+    return () => {
+      clearTimer();
+    };
+  }, [clearTimer]);
 
   return {
     centerIndex,
@@ -108,7 +156,7 @@ const useCarousel = (totalSlides: number, autoAdvanceMs: number) => {
   };
 };
 
-// Custom hook for swipe gestures
+// Custom hook for swipe gestures (unchanged)
 const useSwipe = (onSwipeLeft: () => void, onSwipeRight: () => void) => {
   const pointerStartX = useRef<number | null>(null);
   const pointerDeltaX = useRef<number>(0);
@@ -140,7 +188,7 @@ const useSwipe = (onSwipeLeft: () => void, onSwipeRight: () => void) => {
   return { onPointerDown, onPointerMove, onPointerUp };
 };
 
-// Property data
+// Property data (kept same)
 const PROPERTY_DATA: Property[] = [
   {
     id: "f1",

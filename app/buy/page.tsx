@@ -45,6 +45,7 @@ interface Listing {
 
 interface Filters {
   location: string;
+  city: string;
   propertyType: "any" | PropertyType;
   priceRange: PriceRangeValue;
   possession: "any" | Possession;
@@ -210,6 +211,7 @@ const listings: Listing[] = [
 
 const initialFilters: Filters = {
   location: "",
+  city: "",
   propertyType: "any",
   priceRange: "any",
   possession: "any",
@@ -572,7 +574,30 @@ export default function BuyIntroPage() {
                 <div className="mt-4 space-y-4">
                 
                 {/* UPDATED: Listed By Filter */}
-                
+                {/* City (NEW) - pill buttons like other filters */}
+<FilterBlock title="City">
+  <PillButton
+    active={filters.city === "Gandhinagar"}
+    onClick={() => setFilters((f) => ({ ...f, city: f.city === "Gandhinagar" ? "any" : "Gandhinagar" }))} // note: filters.city field is not in type, but original code used it - left as-is
+  >
+    Gandhinagar
+  </PillButton>
+
+  <PillButton
+    active={filters.city === "Gift City"}
+    onClick={() => setFilters((f) => ({ ...f, city: f.city === "Gift City" ? "any" : "Gift City" }))}
+  >
+    Gift City
+  </PillButton>
+
+  <PillButton
+    active={filters.city === "Ahmedabad"}
+    onClick={() => setFilters((f) => ({ ...f, city: f.city === "Ahmedabad" ? "any" : "Ahmedabad" }))}
+  >
+    Ahmedabad
+  </PillButton>
+</FilterBlock>
+
                 <FilterBlock title="Listed by">
                     <PillButton
                       active={filters.listedBy === "owner"}
@@ -979,7 +1004,7 @@ const SmartDropdown: React.FC<SmartDropdownProps> = ({
     <div className="relative flex-1 min-w-[140px]" ref={wrapperRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`group flex h-8 w-full items-center justify-between rounded-full border px-3 transition-all duration-200 ${/* ADJUSTED: h-9 -> h-8, px reduced */ ""} ${
+        className={`group flex h-8 w-full items-center justify-between rounded-full border px-3 transition-all duration-200 ${
           isOpen
             ? "border-emerald-500 ring-1 ring-emerald-500 bg-white"
             : isActive
@@ -1111,37 +1136,90 @@ function tierLabel(tier: Tier) {
   return "";
 }
 
-function tierBadgeClasses(tier: Tier) {
-  if (tier === "exclusive")
-    return "bg-[#004D40] text-white"; 
-  if (tier === "featured")
-    return "bg-[#F59E0B] text-white"; 
-  return "";
+/**
+ * Provide theme classes for important UI elements based on tier.
+ * We're intentionally only changing visual classes for:
+ * - badge (top-left)
+ * - price chip (left of image)
+ * - tags pill background & text
+ * - primary button (View details)
+ * - card background/accent (NEW)
+ *
+ * This keeps the rest of the markup/logic untouched.
+ */
+function themeForTier(tier: Tier) {
+  // Exclusive palette (beige premium)
+  const exclusive = {
+    badge: "bg-[#DCCEB9] text-[#5A4A2E] shadow-sm", // beige bg + brown text
+    priceChip: "bg-white text-[#5A4A2E] border border-[#E6D9C4] shadow-sm", // white chip with brown text & soft beige border
+    tagBg: "bg-[#F5EFE7] text-[#6B5A41] border border-[#E6D9C4]",
+    viewBtn: "bg-[#BFA97F] hover:bg-[#a89064] text-white shadow", // beige button
+    cardAccent: "ring-1 ring-[#EAE0CF]/40", // subtle card ring
+    cardBg: "bg-gradient-to-r from-[#fffaf4] to-white",
+  };
+
+  // Featured palette (light green accents)
+  const featured = {
+    badge: "bg-[#155E34] text-white shadow-sm", // deep green
+    priceChip: "bg-white text-[#0F694F] border border-[#CDEDE4] shadow-sm", // white chip with green text
+    tagBg: "bg-[#E9FAF6] text-[#006B53] border border-[#D1F0E7]",
+    viewBtn: "bg-[#0F4C3E] hover:bg-[#0b3b30] text-white shadow", // existing green
+    cardAccent: "ring-1 ring-[#D7F3EA]/40",
+    // new: pale inner background (keeps card white but gives a gentle green tint)
+    cardBg: "bg-gradient-to-r from-[#F6FFF9] to-white",
+  };
+
+  const regular = {
+    badge: "bg-[#004D40] text-white", // fallback (kept similar to previous)
+    priceChip: "bg-white text-slate-800 border border-slate-100 shadow-sm",
+    tagBg: "bg-[#E5F6F2] text-[#006B5B]",
+    viewBtn: "bg-[#0F4C3E] hover:bg-[#0b3b30] text-white shadow",
+    cardAccent: "",
+    cardBg: "bg-white",
+  };
+
+  if (tier === "exclusive") return exclusive;
+  if (tier === "featured") return featured;
+  return regular;
 }
 
-// --- LISTING CARD (UNCHANGED except tiny spacing reductions kept earlier) ---
+// --- LISTING CARD (unchanged structure; styled by themeForTier) ---
 function ListingCard({ item }: { item: Listing }) {
   const isOwner = item.source === "owner";
+  const theme = themeForTier(item.tier);
 
   return (
-    <article className="flex flex-col md:flex-row gap-3 md:gap-5 p-3 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200"> {/* ADJUSTED: slightly reduced gaps/padding */}
+    <article
+      className={`relative overflow-hidden flex flex-col md:flex-row gap-3 md:gap-5 p-3 border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 ${theme.cardAccent} ${theme.cardBg ? theme.cardBg : "bg-white"}`}
+    >
+      {/* left accent bar for featured */}
+      {item.tier === "featured" && (
+        <div className="absolute left-0 top-0 bottom-0 w-2 rounded-l-2xl bg-gradient-to-b from-[#E8F8F0] to-[#F5FFF9] pointer-events-none" />
+      )}
+
       {/* LEFT: Image Section */}
-      <div className="w-full md:w-[288px] h-[190px] relative rounded-xl overflow-hidden shrink-0 bg-slate-100"> {/* ADJUSTED: h-200 -> h-190 */}
+      <div className="w-full md:w-[288px] h-[190px] relative rounded-xl overflow-hidden shrink-0 bg-slate-100">
         <img
           src={item.image}
           alt={item.title}
           className="w-full h-full object-cover"
         />
+
         {/* Tier Badge (Exclusive/Featured) - Top Left */}
         {tierLabel(item.tier) && (
           <span
-            className={`absolute top-3 left-3 px-3 py-1 text-[11px] font-semibold rounded-full shadow-sm ${tierBadgeClasses(
-              item.tier
-            )}`}
+            className={`absolute top-3 left-3 px-3 py-1 text-[11px] font-semibold rounded-full ${theme.badge}`}
           >
             {tierLabel(item.tier)}
           </span>
         )}
+
+        {/* Price chip at bottom-left of image */}
+        <div className="absolute left-4 bottom-4">
+          <span className={`px-3 py-1.5 text-[13px] rounded-lg font-semibold ${theme.priceChip}`}>
+            {item.priceLabel}
+          </span>
+        </div>
 
         {/* UPDATED: Direct Owner / Agent Badge - Top Right */}
         <div className="absolute top-3 right-3">
@@ -1160,10 +1238,10 @@ function ListingCard({ item }: { item: Listing }) {
       </div>
 
       {/* CENTER: Info Section */}
-      <div className="flex-1 flex flex-col gap-2"> {/* ADJUSTED: gap reduced */}
+      <div className="flex-1 flex flex-col gap-2">
         {/* Title */}
         <div>
-          <h3 className="text-lg font-bold text-slate-900 leading-tight"> {/* ADJUSTED: text-xl -> text-lg */}
+          <h3 className="text-lg font-bold text-slate-900 leading-tight">
             {item.title}
           </h3>
         </div>
@@ -1189,7 +1267,7 @@ function ListingCard({ item }: { item: Listing }) {
         </div>
 
         {/* Row 3: Meta Info (Icons) */}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-1 text-sm text-slate-500"> {/* ADJUSTED: gap-x reduced */}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-1 text-sm text-slate-500">
           <div className="flex items-center gap-1.5">
             <Clock className="w-4 h-4 text-slate-400" />
             <span>{item.readyStatus}</span>
@@ -1209,7 +1287,7 @@ function ListingCard({ item }: { item: Listing }) {
           {item.tags.map((tag) => (
             <span
               key={tag}
-              className="px-2.5 py-1 bg-[#E5F6F2] rounded-md text-[11px] font-medium text-[#006B5B]"
+              className={`px-2.5 py-1 rounded-md text-[11px] font-medium ${theme.tagBg}`}
             >
               {tag}
             </span>
@@ -1223,15 +1301,15 @@ function ListingCard({ item }: { item: Listing }) {
       </div>
 
       {/* RIGHT: Price & Actions */}
-      <div className="w-full md:w-48 shrink-0 flex flex-col justify-between md:border-l md:border-slate-100 md:pl-4 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100"> {/* ADJUSTED: pl reduced, pt reduced */}
+      <div className="w-full md:w-48 shrink-0 flex flex-col justify-between md:border-l md:border-slate-100 md:pl-4 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100">
         
         {/* Top: Price */}
         <div>
           <div className="text-xs font-medium text-slate-500">Price</div>
-          <div className="text-xl font-bold text-slate-900 mt-0.5"> {/* ADJUSTED: text-2xl -> text-xl */}
+          <div className="text-xl font-bold text-slate-900 mt-0.5">
             {item.priceLabel}
           </div>
-          <div className="mt-2"> {/* ADJUSTED: mt reduced */}
+          <div className="mt-2">
               <div className="text-xs text-slate-500">Seller access</div>
               <div className="text-xs font-medium text-slate-700 mt-0.5">{item.phoneMasked}</div>
               <div className="text-[10px] text-slate-400 leading-tight">full number after subscription</div>
@@ -1239,8 +1317,8 @@ function ListingCard({ item }: { item: Listing }) {
         </div>
 
         {/* Bottom: Buttons */}
-        <div className="flex flex-col gap-2 mt-4"> {/* ADJUSTED: gap & mt reduced */}
-          <button className="w-full py-2 rounded-full bg-[#0F4C3E] hover:bg-[#0b3b30] text-white text-sm font-bold shadow-sm transition-all active:scale-95">
+        <div className="flex flex-col gap-2 mt-4">
+          <button className={`w-full py-2 rounded-full text-white text-sm font-bold shadow-sm transition-all active:scale-95 ${theme.viewBtn}`}>
             View details
           </button>
           <button className="w-full py-2 rounded-full border border-slate-300 bg-white hover:border-slate-400 text-slate-800 text-sm font-bold transition-all active:scale-95">
