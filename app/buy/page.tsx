@@ -1155,7 +1155,7 @@ function themeForTier(tier: Tier) {
     tagBg: "bg-[#F5EFE7] text-[#6B5A41] border border-[#E6D9C4]",
     viewBtn: "bg-[#BFA97F] hover:bg-[#a89064] text-white shadow", // beige button
     cardAccent: "ring-1 ring-[#EAE0CF]/40", // subtle card ring
-    cardBg: "bg-gradient-to-r from-[#fffaf4] to-white",
+    cardBg: "bg-gradient-to-r from-[#E8DEC9] to-white",
   };
 
   // Featured palette (light green accents)
@@ -1166,7 +1166,7 @@ function themeForTier(tier: Tier) {
     viewBtn: "bg-[#0F4C3E] hover:bg-[#0b3b30] text-white shadow", // existing green
     cardAccent: "ring-1 ring-[#D7F3EA]/40",
     // new: pale inner background (keeps card white but gives a gentle green tint)
-    cardBg: "bg-gradient-to-r from-[#F6FFF9] to-white",
+    cardBg: "bg-gradient-to-r from-[#ECF7E9] to-white",
   };
 
   const regular = {
