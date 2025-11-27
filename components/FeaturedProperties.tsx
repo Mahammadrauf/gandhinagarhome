@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
-const TIMER_MS = 2000; // 5 seconds
+const TIMER_MS = 2000; // 2 seconds
 
 /** ========= Types ========= */
 type Property = {
@@ -244,7 +244,7 @@ const FeaturedProperties: React.FC = () => {
     if (diff === 0) {
       return {
         wrapper:
-          "z-30 scale-[1.05] translate-x-0 shadow-2xl ring-2 ring-primary/50 bg-white",
+          "z-30 scale-[1.05] translate-x-0 shadow-2xl ring-2 ring-green-200 bg-white",
         tagText: featuredList[index].tag.text,
       };
     } else if (diff === -1) {
@@ -259,31 +259,39 @@ const FeaturedProperties: React.FC = () => {
       };
     } else {
       return {
-        wrapper:
-          "z-0 opacity-0 scale-[0.7] translate-x-0 pointer-events-none",
+        wrapper: "z-0 opacity-0 scale-[0.7] translate-x-0 pointer-events-none",
         tagText: featuredList[index].tag.text,
       };
     }
   };
 
+  // map tag text to styled classes — keep content untouched but display with green themed highlight when centered
+  const resolvedTagClass = (tagText: string, isCenter: boolean) => {
+    if (isCenter) return "px-4 py-1.5 rounded-full text-xs font-semibold shadow-lg bg-green-800 text-white";
+
+    // preserve some original distinct colors for certain tags to keep recognizability
+    if (tagText === "Exclusive") return "px-4 py-1.5 rounded-full text-xs font-semibold shadow-lg bg-yellow-500 text-white";
+    if (tagText === "Private") return "px-4 py-1.5 rounded-full text-xs font-semibold shadow-lg bg-purple-500 text-white";
+    if (tagText === "Hot Deal") return "px-4 py-1.5 rounded-full text-xs font-semibold shadow-lg bg-red-500 text-white";
+
+    // default subtle green-muted tag
+    return "px-4 py-1.5 rounded-full text-xs font-semibold shadow-lg bg-green-600 text-white";
+  };
+
   return (
-    <section className="py-20 bg-gradient-to-b from-white to-gray-50 relative overflow-hidden">
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+    <section className="py-20 bg-gradient-to-b from-[#acd8a7]/20 via-[#acd8a7]/40 to-gray-50 relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-green-300 to-transparent" />
       <div className="container mx-auto">
         {/* Heading */}
         <div className="mb-12 text-center px-4">
-          <h2 className="text-4xl font-bold text-gray-800 mb-3">
-            Featured Properties
-          </h2>
-          <p className="text-gray-600 text-lg">
-            Curated interiors from Gandhinagar&apos;s finest homes.
-          </p>
-          
-          {/* === THE INTERACTIVE EXPANDING LINE === */}
-          <div 
-            className="h-1.5 bg-[#056F5E] mx-auto mt-5 rounded-full w-24 hover:w-64 transition-all duration-500 ease-in-out cursor-pointer" 
+          <h2 className="text-4xl font-bold text-stone-800 mb-3 font-serif">Featured Properties</h2>
+          <p className="text-gray-600 text-lg">Curated interiors from Gandhinagar&apos;s finest homes.</p>
+
+          {/* === THE INTERACTIVE EXPANDING LINE (GREEN PALETTE) === */}
+          <div
+            className="h-1.5 bg-gradient-to-r from-green-600 to-green-700 mx-auto mt-5 rounded-full w-24 hover:w-64 transition-all duration-500 ease-in-out cursor-pointer"
+            aria-hidden
           />
-          
         </div>
 
         <div className="relative">
@@ -291,20 +299,10 @@ const FeaturedProperties: React.FC = () => {
           <button
             aria-label="Previous properties"
             onClick={prevSlide}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-40 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:scale-105 transition transform focus:outline-none focus:ring-2 focus:ring-primary/60"
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-40 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:scale-105 transition transform focus:outline-none focus:ring-2 focus:ring-green-200"
           >
-            <svg
-              className="w-5 h-5 text-gray-700"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
+            <svg className="w-5 h-5 text-gray-700" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
 
@@ -312,20 +310,10 @@ const FeaturedProperties: React.FC = () => {
           <button
             aria-label="Next properties"
             onClick={nextSlide}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-40 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:scale-105 transition transform focus:outline-none focus:ring-2 focus:ring-primary/60"
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-40 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center hover:scale-105 transition transform focus:outline-none focus:ring-2 focus:ring-green-200"
           >
-            <svg
-              className="w-5 h-5 text-gray-700"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
+            <svg className="w-5 h-5 text-gray-700" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
 
@@ -344,8 +332,7 @@ const FeaturedProperties: React.FC = () => {
 
               {featuredList.map((property, index) => {
                 const isCenterCard = index === centerIndex;
-                const { wrapper: cardWrapperClasses, tagText } =
-                  getCardPositionClasses(index);
+                const { wrapper: cardWrapperClasses, tagText } = getCardPositionClasses(index);
 
                 return (
                   <div
@@ -366,6 +353,7 @@ const FeaturedProperties: React.FC = () => {
                           ? ({
                               animation: "liftIn 480ms ease forwards",
                               willChange: "transform, opacity",
+                              boxShadow: "0 30px 40px rgba(5,111,94,0.14)",
                             } as React.CSSProperties)
                           : undefined
                       }
@@ -378,81 +366,41 @@ const FeaturedProperties: React.FC = () => {
                             className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                           />
 
-                          <div
-                            className={`absolute top-4 ${
-                              isCenterCard ? "right-4" : "left-4"
-                            } px-4 py-1.5 rounded-full text-xs font-semibold shadow-lg ${property.tag.color}`}
-                          >
+                          <div className={resolvedTagClass(tagText, isCenterCard)} style={{ position: 'absolute', top: 12, right: isCenterCard ? 16 : 'auto', left: isCenterCard ? 'auto' : 16 }}>
                             {tagText}
                           </div>
 
                           <div className="absolute bottom-4 left-4 bg-white/95 px-3 py-2 rounded-lg shadow-md">
-                            <span className="text-lg font-bold text-primary">
-                              {property.price}
-                            </span>
+                            <span className="text-lg font-bold text-[var(--green-700)]">{property.price}</span>
                           </div>
                         </div>
 
                         <div className="p-5">
                           <div className="flex items-center justify-between mb-3">
                             <div>
-                              <h3 className="text-lg font-semibold text-gray-800 group-hover:text-primary transition-colors">
-                                {property.location}
-                              </h3>
-                              <p className="text-xs text-gray-500">
-                                Gandhinagar · Prime locality
-                              </p>
+                              <h3 className="text-lg font-semibold text-gray-800 group-hover:text-[var(--green-700)] transition-colors">{property.location}</h3>
+                              <p className="text-xs text-gray-500">Gandhinagar · Prime locality</p>
                             </div>
                           </div>
 
                           <div className="flex items-center gap-3 mb-3 text-sm text-gray-600">
                             <span className="flex items-center gap-1">
-                              <svg
-                                className="w-4 h-4 text-primary"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                                />
+                              <svg className="w-4 h-4 text-[var(--green-700)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                               </svg>
                               {property.beds} bd
                             </span>
 
                             <span className="flex items-center gap-1">
-                              <svg
-                                className="w-4 h-4 text-primary"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"
-                                />
+                              <svg className="w-4 h-4 text-[var(--green-700)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
                               </svg>
                               {property.baths} ba
                             </span>
 
                             <span className="flex items-center gap-1">
-                              <svg
-                                className="w-4 h-4 text-primary"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-                                />
+                              <svg className="w-4 h-4 text-[var(--green-700)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
                               </svg>
                               {property.sqft} sq ft
                             </span>
@@ -460,10 +408,7 @@ const FeaturedProperties: React.FC = () => {
 
                           <div className="flex flex-wrap gap-2 mb-4">
                             {property.features.map((feature, idx) => (
-                              <span
-                                key={idx}
-                                className="px-3 py-1 bg-primary/10 text-primary text-xs rounded-full font-medium"
-                              >
+                              <span key={idx} className="px-3 py-1 bg-green-50 text-[var(--green-700)] text-xs rounded-full font-medium">
                                 {feature}
                               </span>
                             ))}
@@ -472,7 +417,7 @@ const FeaturedProperties: React.FC = () => {
                           <button
                             className={`w-full py-2.5 rounded-lg font-medium hover:shadow-lg transition-all transform hover:scale-[1.02] ${
                               isCenterCard
-                                ? "bg-gradient-to-r from-primary to-primary-dark text-white"
+                                ? "bg-gradient-to-r from-green-700 to-green-800 text-white"
                                 : "bg-gray-200 text-gray-700"
                             }`}
                           >
@@ -495,12 +440,10 @@ const FeaturedProperties: React.FC = () => {
               <button
                 key={idx}
                 onClick={() => goToSlide(idx)}
-                aria-label={`Go to property ${
-                  idx + 1
-                }: ${featuredList[idx].location}`}
+                aria-label={`Go to property ${idx + 1}: ${featuredList[idx].location}`}
                 className={`w-3 h-3 rounded-full transition-all ${
                   centerIndex === idx
-                    ? "scale-125 bg-primary shadow-md"
+                    ? "scale-125 bg-green-700 shadow-md"
                     : "bg-gray-300 hover:bg-gray-400"
                 }`}
               />
@@ -510,6 +453,10 @@ const FeaturedProperties: React.FC = () => {
       </div>
 
       <style jsx global>{`
+        :root {
+          --green-700: #056F5E;
+        }
+
         @keyframes liftIn {
           0% {
             transform: translateY(10px) scale(0.985);
@@ -529,6 +476,11 @@ const FeaturedProperties: React.FC = () => {
           display: none;
           width: 0;
           height: 0;
+        }
+
+        /* subtle glass/outline when centered to give premium look */
+        .ring-green-200 {
+          box-shadow: 0 10px 30px rgba(5,111,94,0.08), 0 2px 6px rgba(5,111,94,0.06);
         }
       `}</style>
     </section>

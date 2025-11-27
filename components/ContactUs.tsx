@@ -96,7 +96,12 @@ export default function ContactUs() {
           <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">
             Contact Us
           </h2>
-          <div className="mt-3 w-16 h-1.5 bg-[#0b6b53] mx-auto rounded-full" />
+
+          {/* === REPLACED: exact expanding green line from WhyInvest / ExploreLocation === */}
+          <div
+            className="h-1.5 bg-[#056F5E] mx-auto mt-4 rounded-full w-24 hover:w-64 transition-all duration-500 ease-in-out cursor-pointer"
+          />
+
           <p className="text-black/70 mt-4">
             Have a question about buying, selling, or listing? Tell us a bit
             about you.
@@ -226,8 +231,7 @@ export default function ContactUs() {
               {status && (
                 <p
                   className={
-                    "text-sm " +
-                    (status.ok ? "text-emerald-700" : "text-red-600")
+                    "text-sm " + (status.ok ? "text-emerald-700" : "text-red-600")
                   }
                 >
                   {status.msg}

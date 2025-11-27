@@ -376,33 +376,33 @@ export default function BuyIntroPage() {
       <section className="w-full px-3 sm:px-4 lg:px-6 xl:px-10 py-6">
         
         {/* --- TOP SEARCH CARD --- */}
-        <div className="rounded-2xl border border-slate-200 bg-white px-4 sm:px-6 py-5 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white px-3 sm:px-4 py-2 shadow-sm"> {/* ADJUSTED: py-3 -> py-2, px reduced */}
           {/* Header & Badges */}
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-5">
+          <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between mb-3"> {/* ADJUSTED: gap-2 -> gap-1, mb-4 -> mb-3 */}
             <div>
-              <h1 className="text-lg font-semibold text-slate-900">
+              <h1 className="text-sm font-semibold text-slate-900"> {/* ADJUSTED: text-base -> text-sm */}
                 Find your next home
               </h1>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-slate-500 mt-0.5"> {/* ADJUSTED: mt-1 -> mt-0.5 */}
                 Search by city, locality, type, and budget.
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-500">
-              <BadgeDot color="#059669">Seller OTP verified</BadgeDot>
-              <BadgeDot color="#10b981">Direct Owner</BadgeDot>
-              <BadgeDot color="#3b82f6">Agent listed</BadgeDot>
-              <BadgeDot color="#f59e0b">Exclusive</BadgeDot>
+            <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500"> {/* ADJUSTED: gap-3 -> gap-2 */}
+              <BadgeDot color="#808080">Seller OTP verified</BadgeDot>
+              <BadgeDot color="#808080">Direct Owner</BadgeDot>
+              <BadgeDot color="#808080">Agent listed</BadgeDot>
+              <BadgeDot color="#808080">Exclusive</BadgeDot>
             </div>
           </div>
 
           {/* SEARCH ROW */}
-          <div className="flex flex-col gap-3 lg:flex-row">
+          <div className="flex flex-col gap-1 lg:flex-row"> {/* ADJUSTED: gap-2 -> gap-1 */}
             
             {/* 1. Location Input */}
-            <div className="relative flex min-w-[240px] flex-[1.2] items-center rounded-full border border-slate-200 bg-slate-50 px-4 transition-colors hover:border-slate-300 focus-within:border-emerald-500 focus-within:bg-white focus-within:ring-1 focus-within:ring-emerald-500 h-11">
+            <div className="relative flex min-w-[240px] flex-[1.2] items-center rounded-full border border-slate-200 bg-slate-50 px-2 transition-colors hover:border-slate-300 focus-within:border-emerald-500 focus-within:bg-white focus-within:ring-1 focus-within:ring-emerald-500 h-8"> {/* ADJUSTED: px-3 -> px-2, h-9 -> h-8 */}
               <svg
-                className="mr-2 h-4 w-4 text-slate-400"
+                className="mr-2 h-3.5 w-3.5 text-slate-400" /* ADJUSTED: h-4 -> h-3.5 */
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -425,7 +425,7 @@ export default function BuyIntroPage() {
             </div>
 
             {/* 2. Horizontal Filters */}
-            <div className="flex flex-1 flex-col gap-2 sm:flex-row">
+            <div className="flex flex-1 flex-col gap-1 sm:flex-row"> {/* ADJUSTED: gap-2 -> gap-1 */}
               <SmartDropdown
                 label="Type"
                 value={filters.propertyType}
@@ -470,17 +470,17 @@ export default function BuyIntroPage() {
             </div>
 
             {/* 3. Search Button */}
-            <button className="h-11 shrink-0 rounded-full bg-[#006B5B] px-8 text-sm font-bold text-white shadow-lg shadow-emerald-900/10 transition-all hover:bg-[#005347] active:scale-95">
+            <button className="h-8 shrink-0 rounded-full bg-[#006B5B] px-5 text-sm font-semibold text-white shadow transition-all hover:bg-[#005347] active:scale-95"> {/* ADJUSTED: h-9 -> h-8, px-6 -> px-5, font-bold -> font-semibold */}
               Search
             </button>
           </div>
 
           {/* --- FOOTER & SORTING --- */}
-          <div className="mt-5 flex flex-col gap-3 border-t border-slate-100 pt-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="mt-3 flex flex-col gap-1 border-t border-slate-100 pt-3 lg:flex-row lg:items-center lg:justify-between"> {/* ADJUSTED: mt-4 -> mt-3, gap-2 -> gap-1, pt-4 -> pt-3 */}
             
             {/* LEFT SIDE: Info Pills */}
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5 text-[11px] font-medium text-slate-600">
+            <div className="flex flex-wrap items-center gap-1">
+              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[11px] font-medium text-slate-600"> {/* ADJUSTED: px,py reduced */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="14"
@@ -498,7 +498,7 @@ export default function BuyIntroPage() {
                 Order: Exclusive first, then Featured, then all others.
               </div>
 
-              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5 text-[11px] font-medium text-slate-600">
+              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[11px] font-medium text-slate-600"> {/* ADJUSTED: px,py reduced */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="14"
@@ -519,7 +519,7 @@ export default function BuyIntroPage() {
             </div>
 
             {/* RIGHT SIDE: CUSTOM Sort Dropdown */}
-            <div className="relative mt-2 lg:mt-0">
+            <div className="relative mt-0.5 lg:mt-0"> {/* ADJUSTED: mt-1 -> mt-0.5 */}
                <SortDropdown 
                  value={sortBy}
                  onChange={setSortBy}
@@ -530,21 +530,21 @@ export default function BuyIntroPage() {
         </div>
 
         {/* MAIN GRID */}
-        <div className="mt-5 grid gap-4 md:grid-cols-[270px,1fr]">
+        <div className="mt-2 grid gap-3 md:grid-cols-[270px,1fr]"> {/* ADJUSTED: mt-3 -> mt-2, gap slightly reduced */}
           
           {/* SIDEBAR */}
           <aside className="h-fit">
             
             {/* MAP PLACEHOLDER */}
-            <div className="mb-4 w-full aspect-square rounded-2xl border border-slate-200 bg-slate-100 overflow-hidden relative group cursor-pointer shadow-sm">
+            <div className="mb-3 w-full aspect-square rounded-2xl border border-slate-200 bg-slate-100 overflow-hidden relative group cursor-pointer shadow-sm"> {/* ADJUSTED: mb-4 -> mb-3 */}
                 <img 
-                    src="https://images.pexels.com/photos/2565222/pexels-photo-2565222.jpeg?auto=compress&cs=tinysrgb&w=800"
+                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScDLQeIDVShuT2tL3g-BkmQUdq0tId_aQP9g&s"
                     alt="Map view"
                     className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-slate-900/10 flex items-center justify-center">
-                    <button className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-4 py-2.5 rounded-full shadow-lg text-slate-800 text-xs font-bold hover:bg-white transition-all">
-                        <MapIcon className="w-3.5 h-3.5" />
+                    <button className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-full shadow-lg text-slate-800 text-xs font-bold hover:bg-white transition-all">
+                        <MapIcon className="w-3 h-3" />
                         View on Map
                     </button>
                 </div>
@@ -572,6 +572,7 @@ export default function BuyIntroPage() {
                 <div className="mt-4 space-y-4">
                 
                 {/* UPDATED: Listed By Filter */}
+                
                 <FilterBlock title="Listed by">
                     <PillButton
                       active={filters.listedBy === "owner"}
@@ -586,6 +587,7 @@ export default function BuyIntroPage() {
                       Agent listed
                     </PillButton>
                 </FilterBlock>
+                
                 
                 {/* Property type */}
                 <FilterBlock title="Property type">
@@ -816,7 +818,7 @@ export default function BuyIntroPage() {
           </aside>
 
           {/* LISTINGS */}
-          <section className="space-y-4">
+          <section className="space-y-3"> {/* ADJUSTED: space-y-4 -> space-y-3 */}
             {/* HEADER SECTION */}
             <div className="flex items-center justify-between">
               <h2 className="text-base font-bold text-slate-900">
@@ -828,7 +830,7 @@ export default function BuyIntroPage() {
             </div>
 
             {/* UNIFIED LIST RENDERING */}
-            <div className="space-y-4">
+            <div className="space-y-3"> {/* ADJUSTED */}
               {filteredListings.map((item) => (
                 <ListingCard key={item.id} item={item} />
               ))}
@@ -860,10 +862,10 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ value, onChange }) => {
 
   // UPDATED: Exact sort options requested
   const options: { label: string; value: SortOption }[] = [
-    { label: "Price low to high", value: "PriceLowHigh" },
-    { label: "Price high to low", value: "PriceHighLow" },
-    { label: "Size low to high", value: "SizeLowHigh" },
-    { label: "Size high to low", value: "SizeHighLow" },
+    { label: "Price (low to high)", value: "PriceLowHigh" },
+    { label: "Price (high to low)", value: "PriceHighLow" },
+    { label: "Size (small to large)", value: "SizeLowHigh" },
+    { label: "Size (large to small)", value: "SizeHighLow" },
     { label: "Oldest to newest", value: "Oldest" },
     { label: "Newest to oldest", value: "Newest" },
   ];
@@ -884,7 +886,7 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ value, onChange }) => {
     <div className="relative" ref={wrapperRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="group inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5 text-[11px] font-medium text-slate-600 transition-all hover:border-slate-300 hover:bg-white"
+        className="group inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-medium text-slate-600 transition-all hover:border-slate-300 hover:bg-white" /* ADJUSTED: px,py reduced */
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -977,7 +979,7 @@ const SmartDropdown: React.FC<SmartDropdownProps> = ({
     <div className="relative flex-1 min-w-[140px]" ref={wrapperRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`group flex h-11 w-full items-center justify-between rounded-full border px-4 transition-all duration-200 ${
+        className={`group flex h-8 w-full items-center justify-between rounded-full border px-3 transition-all duration-200 ${/* ADJUSTED: h-9 -> h-8, px reduced */ ""} ${
           isOpen
             ? "border-emerald-500 ring-1 ring-emerald-500 bg-white"
             : isActive
@@ -1117,14 +1119,14 @@ function tierBadgeClasses(tier: Tier) {
   return "";
 }
 
-// --- LISTING CARD (UPDATED) ---
+// --- LISTING CARD (UNCHANGED except tiny spacing reductions kept earlier) ---
 function ListingCard({ item }: { item: Listing }) {
   const isOwner = item.source === "owner";
 
   return (
-    <article className="flex flex-col md:flex-row gap-4 md:gap-6 p-4 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200">
+    <article className="flex flex-col md:flex-row gap-3 md:gap-5 p-3 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200"> {/* ADJUSTED: slightly reduced gaps/padding */}
       {/* LEFT: Image Section */}
-      <div className="w-full md:w-[288px] h-[200px] relative rounded-xl overflow-hidden shrink-0 bg-slate-100">
+      <div className="w-full md:w-[288px] h-[190px] relative rounded-xl overflow-hidden shrink-0 bg-slate-100"> {/* ADJUSTED: h-200 -> h-190 */}
         <img
           src={item.image}
           alt={item.title}
@@ -1144,8 +1146,8 @@ function ListingCard({ item }: { item: Listing }) {
         {/* UPDATED: Direct Owner / Agent Badge - Top Right */}
         <div className="absolute top-3 right-3">
             {isOwner ? (
-                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/95 backdrop-blur-sm text-emerald-700 text-[10px] font-bold shadow-sm">
-                    <User className="w-3 h-3" />
+                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/95 backdrop-blur-sm text-green-700 text-[10px] font-bold shadow-sm">
+                    <ShieldCheck className="w-3 h-3" />
                     Direct Owner
                 </span>
             ) : (
@@ -1158,10 +1160,10 @@ function ListingCard({ item }: { item: Listing }) {
       </div>
 
       {/* CENTER: Info Section */}
-      <div className="flex-1 flex flex-col gap-3">
+      <div className="flex-1 flex flex-col gap-2"> {/* ADJUSTED: gap reduced */}
         {/* Title */}
         <div>
-          <h3 className="text-xl font-bold text-slate-900 leading-tight">
+          <h3 className="text-lg font-bold text-slate-900 leading-tight"> {/* ADJUSTED: text-xl -> text-lg */}
             {item.title}
           </h3>
         </div>
@@ -1187,7 +1189,7 @@ function ListingCard({ item }: { item: Listing }) {
         </div>
 
         {/* Row 3: Meta Info (Icons) */}
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-1 text-sm text-slate-500">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-1 text-sm text-slate-500"> {/* ADJUSTED: gap-x reduced */}
           <div className="flex items-center gap-1.5">
             <Clock className="w-4 h-4 text-slate-400" />
             <span>{item.readyStatus}</span>
@@ -1221,15 +1223,15 @@ function ListingCard({ item }: { item: Listing }) {
       </div>
 
       {/* RIGHT: Price & Actions */}
-      <div className="w-full md:w-48 shrink-0 flex flex-col justify-between md:border-l md:border-slate-100 md:pl-6 pt-4 md:pt-0 border-t md:border-t-0 border-slate-100">
+      <div className="w-full md:w-48 shrink-0 flex flex-col justify-between md:border-l md:border-slate-100 md:pl-4 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100"> {/* ADJUSTED: pl reduced, pt reduced */}
         
         {/* Top: Price */}
         <div>
           <div className="text-xs font-medium text-slate-500">Price</div>
-          <div className="text-2xl font-bold text-slate-900 mt-0.5">
+          <div className="text-xl font-bold text-slate-900 mt-0.5"> {/* ADJUSTED: text-2xl -> text-xl */}
             {item.priceLabel}
           </div>
-          <div className="mt-3">
+          <div className="mt-2"> {/* ADJUSTED: mt reduced */}
               <div className="text-xs text-slate-500">Seller access</div>
               <div className="text-xs font-medium text-slate-700 mt-0.5">{item.phoneMasked}</div>
               <div className="text-[10px] text-slate-400 leading-tight">full number after subscription</div>
@@ -1237,11 +1239,11 @@ function ListingCard({ item }: { item: Listing }) {
         </div>
 
         {/* Bottom: Buttons */}
-        <div className="flex flex-col gap-3 mt-6">
-          <button className="w-full py-2.5 rounded-full bg-[#0F4C3E] hover:bg-[#0b3b30] text-white text-sm font-bold shadow-sm transition-all active:scale-95">
+        <div className="flex flex-col gap-2 mt-4"> {/* ADJUSTED: gap & mt reduced */}
+          <button className="w-full py-2 rounded-full bg-[#0F4C3E] hover:bg-[#0b3b30] text-white text-sm font-bold shadow-sm transition-all active:scale-95">
             View details
           </button>
-          <button className="w-full py-2.5 rounded-full border border-slate-300 bg-white hover:border-slate-400 text-slate-800 text-sm font-bold transition-all active:scale-95">
+          <button className="w-full py-2 rounded-full border border-slate-300 bg-white hover:border-slate-400 text-slate-800 text-sm font-bold transition-all active:scale-95">
             Unlock seller
           </button>
         </div>

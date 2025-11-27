@@ -1,9 +1,7 @@
 'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
-// --- REMOVED: Image import is no longer needed ---
-// import Image from 'next/image'; 
-import { Home } from 'lucide-react'; 
+import { Home } from 'lucide-react';
 import { motion, Variants } from 'framer-motion';
 
 const ExploreLocation = () => {
@@ -11,32 +9,12 @@ const ExploreLocation = () => {
   const [hasAnimated, setHasAnimated] = useState(false);
 
   const locations = [
-    {
-      name: 'Sargasan',
-      properties: 120,
-      // --- REMOVED: Image property no longer needed ---
-      // image: '...',
-    },
-    {
-      name: 'Kudasan',
-      properties: 90,
-    },
-    {
-      name: 'Raysan',
-      properties: 75,
-    },
-    {
-      name: 'Motera',
-      properties: 150,
-    },
-    {
-      name: 'Infocity',
-      properties: 80,
-    },
-    {
-      name: 'Koba',
-      properties: 60,
-    },
+    { name: 'Sargasan', properties: 120 },
+    { name: 'Kudasan', properties: 90 },
+    { name: 'Raysan', properties: 75 },
+    { name: 'Motera', properties: 150 },
+    { name: 'Infocity', properties: 80 },
+    { name: 'Koba', properties: 60 },
   ];
 
   useEffect(() => {
@@ -48,7 +26,7 @@ const ExploreLocation = () => {
           }
         });
       },
-      { threshold: 0.2 } // Trigger when 20% of the section is visible
+      { threshold: 0.2 }
     );
 
     if (sectionRef.current) {
@@ -73,7 +51,7 @@ const ExploreLocation = () => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1, // Stagger each card
+        staggerChildren: 0.1,
         delayChildren: 0.2,
       },
     },
@@ -81,32 +59,32 @@ const ExploreLocation = () => {
 
   const itemBounceIn: Variants = {
     hidden: { opacity: 0, y: 50, scale: 0.8 },
-    visible: { 
-      opacity: 1, 
-      y: 0, 
-      scale: 1, 
-      transition: { type: 'spring', stiffness: 120, damping: 10 } 
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: { type: 'spring', stiffness: 120, damping: 10 },
     },
   };
 
   return (
-    <motion.section 
-      ref={sectionRef} 
+    <motion.section
+      ref={sectionRef}
       className="py-12 bg-white relative overflow-hidden"
       initial="hidden"
-      animate={hasAnimated ? "visible" : "hidden"}
+      animate={hasAnimated ? 'visible' : 'hidden'}
       variants={fadeInSlideUp}
     >
       {/* Animated Background Blobs */}
-      <motion.div 
+      <motion.div
         className="pointer-events-none absolute -top-10 -left-10 w-80 h-80 bg-primary/5 rounded-full blur-3xl opacity-50"
         animate={{ x: [0, -20, 0], y: [0, 30, 0] }}
-        transition={{ duration: 18, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
+        transition={{ duration: 18, repeat: Infinity, repeatType: 'mirror', ease: 'easeInOut' }}
       />
-      <motion.div 
+      <motion.div
         className="pointer-events-none absolute -bottom-10 -right-10 w-96 h-96 bg-primary-light/5 rounded-full blur-3xl opacity-50"
         animate={{ x: [0, 20, 0], y: [0, -30, 0] }}
-        transition={{ duration: 22, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
+        transition={{ duration: 22, repeat: Infinity, repeatType: 'mirror', ease: 'easeInOut' }}
       />
 
       <div className="container mx-auto px-4 relative z-10">
@@ -117,17 +95,20 @@ const ExploreLocation = () => {
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">
             Find your ideal home in Gandhinagar's most sought-after neighborhoods.
           </p>
-          <div className="w-20 h-1 bg-gradient-to-r from-primary to-primary-light mx-auto mt-4 rounded-full" />
+
+          {/* === REPLACED: exact expanding green line from WhyInvest === */}
+          <div
+            className="h-1.5 bg-[#056F5E] mx-auto mt-4 rounded-full w-24 hover:w-64 transition-all duration-500 ease-in-out cursor-pointer"
+          />
         </motion.div>
 
-        <motion.div 
+        <motion.div
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
           variants={staggerContainer}
           initial="hidden"
-          animate={hasAnimated ? "visible" : "hidden"}
+          animate={hasAnimated ? 'visible' : 'hidden'}
         >
           {locations.map((location, index) => (
-            // --- UPDATED: Card style without background image ---
             <motion.div
               key={index}
               variants={itemBounceIn}
@@ -137,7 +118,6 @@ const ExploreLocation = () => {
                          cursor-pointer p-6"
             >
               <div className="flex items-center justify-between gap-4">
-                {/* Text content */}
                 <div>
                   <h3 className="text-xl md:text-2xl font-bold text-gray-800 
                              group-hover:text-primary transition-colors duration-300">
@@ -148,14 +128,14 @@ const ExploreLocation = () => {
                     {location.properties} Properties
                   </p>
                 </div>
-                
-                {/* Icon (Logo) */}
-                <div className="flex-shrink-0
-                            p-4 rounded-full bg-primary/10 
-                            border border-primary/20
-                            group-hover:bg-primary
-                            transition-all duration-300 ease-in-out">
-                  <Home 
+
+                <div
+                  className="flex-shrink-0 p-4 rounded-full bg-primary/10 
+                             border border-primary/20
+                             group-hover:bg-primary
+                             transition-all duration-300 ease-in-out"
+                >
+                  <Home
                     className="w-6 h-6 text-primary 
                                group-hover:text-white 
                                transition-all duration-300"

@@ -100,6 +100,45 @@ const HorizontalList: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
   const items = React.Children.toArray(children);
 
+  // Inject custom scrollbar CSS once (keeps your file untouched elsewhere)
+  useEffect(() => {
+    const id = "explore-listing-custom-scrollbar";
+    if (document.getElementById(id)) return;
+    const style = document.createElement("style");
+    style.id = id;
+    style.innerHTML = `
+      /* custom horizontal scrollbar for the scroll container */
+      .custom-scrollbar {
+        /* allow visible scrollbar */
+      }
+      .custom-scrollbar::-webkit-scrollbar {
+        height: 10px; /* thickness of the bar */
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+        margin: 6px 0; /* so track doesn't butt the edges */
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #0b6b53;
+        border-radius: 999px;
+        border: 2px solid transparent; /* gives a small padding look */
+        background-clip: padding-box;
+      }
+      /* firefox */
+      .custom-scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: #0b6b53 transparent;
+      }
+      /* small rounded appearance on all platforms with an overlay */
+      @media (hover: hover) {
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          transform: scale(1.02);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }, []);
+
   const goTo = (i: number) => {
     setIndex(i);
 
@@ -131,8 +170,9 @@ const HorizontalList: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
           setIndex(activeIdx);
         }}
-        className="overflow-x-auto overflow-y-visible px-4 sm:px-6 lg:px-4 snap-x snap-mandatory
-                   [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="overflow-x-auto overflow-y-visible px-4 sm:px-6 lg:px-4 snap-x snap-mandatory custom-scrollbar"
+        /* Removed the hidden-scrollbar classes so native scrollbar is available.
+           Added `custom-scrollbar` class so injected CSS styles it like your image. */
       >
         <div ref={innerRef} className="flex gap-4 min-w-full py-6">
           {children}
@@ -185,18 +225,7 @@ const HorizontalList: React.FC<{ children: React.ReactNode }> = ({ children }) =
   </svg>
 </button>
 
-      {/* Dots */}
-      <div className="mt-4 flex justify-center gap-2">
-        {items.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => goTo(i)}
-            className={`w-3 h-3 rounded-full ${
-              i === index ? "bg-[#0b6b53]" : "bg-gray-300"
-            }`}
-          />
-        ))}
-      </div>
+      {/* Dots removed - using scrollbar instead */}
     </div>
   );
 };
@@ -349,8 +378,11 @@ const prev = () => {
     Explore Listing
   </h2>
 
-  {/* green underline like the image */}
-  <div className="mt-3 w-16 h-1.5 bg-[#0b6b53] mx-auto rounded-full" />
+  {/* === Exact expanding green line used everywhere === */}
+<div 
+  className="h-1.5 bg-[#056F5E] mx-auto mt-4 rounded-full w-24 hover:w-64 transition-all duration-500 ease-in-out cursor-pointer" 
+/>
+
   
   {/* */}
   <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
