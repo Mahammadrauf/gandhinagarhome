@@ -42,9 +42,12 @@ const CAROUSEL_CONFIG = {
  * Calculates available width for cards based on window size
  */
 const useCardWidth = () => {
-  const [width, setWidth] = useState(CAROUSEL_CONFIG.DESKTOP_CARD_WIDTH);
+  const [width, setWidth] = useState<number>(CAROUSEL_CONFIG.DESKTOP_CARD_WIDTH);
 
   useEffect(() => {
+    // Check if window is defined (client-side only)
+    if (typeof window === "undefined") return;
+
     const handleResize = () => {
       // On mobile (less than 640px), make card 85% of screen width
       // On desktop, stick to fixed 350px

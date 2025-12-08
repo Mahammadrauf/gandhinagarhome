@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useRef, useEffect } from "react";
-import Link from "next/link";
+import React, { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import Header from "@/components/Header";
 import { MapPin, Clock, Car, Calendar, Map as MapIcon, ShieldCheck, User } from "lucide-react";
 
@@ -22,7 +21,7 @@ type SortOption =
 interface Listing {
   id: number;
   tier: Tier;
-  source: "owner" | "partner"; // owner = Owner, partner = Agent
+  source: "owner" | "partner"; 
   title: string;
   locality: string;
   city: string;
@@ -45,9 +44,10 @@ interface Listing {
 
 interface Filters {
   location: string;
-  city: string;
+  city: string; 
+  localities: string[]; 
   propertyType: "any" | PropertyType;
-  priceRange: PriceRangeValue;
+  priceRange: PriceRangeValue; 
   possession: "any" | Possession;
   listedBy: "any" | "owner" | "partner"; 
   minBedrooms: number;
@@ -55,18 +55,25 @@ interface Filters {
   furnishing: "any" | Listing["furnishing"];
   minParking: number;
   amenities: string[];
-  priceMin: string;
-  priceMax: string;
+  priceMin: number; 
+  priceMax: number; 
   sizeMin: string;
   sizeMax: string;
 }
 
-// --- DATA ---
-const listings: Listing[] = [
+// --- DATA CONSTANTS ---
+const CITY_AREAS: Record<string, string[]> = {
+  Gandhinagar: ["Raysan", "Randesan", "Sargasan", "Kudasan", "Koba", "Sectors"],
+  Ahmedabad: ["Motera", "Chandkheda", "Zundal", "Adalaj", "Bhat"],
+};
+
+// --- EXPANDED DATASET (Source of Truth) ---
+const ALL_LISTINGS: Listing[] = [
+  // === 6 EXCLUSIVE PROPERTIES ===
   {
-    id: 6,
+    id: 101,
     tier: "exclusive",
-    source: "owner", 
+    source: "owner",
     title: "Raysan Luxury Villa • Corner Plot",
     locality: "Raysan",
     city: "Gandhinagar",
@@ -80,39 +87,131 @@ const listings: Listing[] = [
     ageLabel: "5–10 years",
     priceCr: 3.1,
     priceLabel: "₹3.10 Cr",
-    media: "8 photos • Video • Floor plan",
-    phoneMasked: "+91 8XXX-XXX000",
-    image:
-      "https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    tags: ["Vaastu friendly", "Smart home", "Private garden"],
-    amenities: ["Garden", "Security", "Parking"],
+    media: "Video • Floor plan",
+    phoneMasked: "+91 8XXX-XXX001",
+    image: "https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    tags: ["Vaastu friendly", "Private garden"],
+    amenities: ["Garden", "Security"],
   },
   {
-    id: 5,
+    id: 102,
+    tier: "exclusive",
+    source: "owner",
+    title: "Adalaj Green Farmhouse",
+    locality: "Adalaj",
+    city: "Ahmedabad",
+    bedrooms: 5,
+    bathrooms: 6,
+    areaSqft: 5000,
+    type: "Villa",
+    furnishing: "Fully furnished",
+    readyStatus: "Immediate",
+    parking: 4,
+    ageLabel: "New",
+    priceCr: 5.5,
+    priceLabel: "₹5.50 Cr",
+    media: "Video • Tour",
+    phoneMasked: "+91 8XXX-XXX002",
+    image: "https://images.pexels.com/photos/259588/pexels-photo-259588.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    tags: ["Pool", "Large Garden"],
+    amenities: ["Pool", "Security"],
+  },
+  {
+    id: 103,
     tier: "exclusive",
     source: "partner",
-    title: "Sargasan Bungalow • Private Terrace",
-    locality: "Sargasan",
-    city: "Gandhinagar",
+    title: "Gift City Penthouse • Sky View",
+    locality: "Gift City",
+    city: "Gift City",
     bedrooms: 4,
     bathrooms: 4,
-    areaSqft: 3000,
+    areaSqft: 4200,
+    type: "Apartment",
+    furnishing: "Fully furnished",
+    readyStatus: "Ready to move",
+    parking: 3,
+    ageLabel: "0-1 years",
+    priceCr: 4.2,
+    priceLabel: "₹4.20 Cr",
+    media: "Video",
+    phoneMasked: "+91 8XXX-XXX003",
+    image: "https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    tags: ["River view", "Penthouse"],
+    amenities: ["Gym", "Club house"],
+  },
+  {
+    id: 104,
+    tier: "exclusive",
+    source: "owner",
+    title: "Sargasan Royal Bungalow",
+    locality: "Sargasan",
+    city: "Gandhinagar",
+    bedrooms: 5,
+    bathrooms: 5,
+    areaSqft: 3800,
     type: "Bungalow",
     furnishing: "Semi-furnished",
     readyStatus: "After 1 Month",
-    parking: 2,
-    ageLabel: "10+ years",
-    priceCr: 2.4,
-    priceLabel: "₹2.40 Cr",
-    media: "7 photos • No video",
-    phoneMasked: "+91 9XXX-XXX000",
-    image:
-      "https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    tags: ["Terrace", "Corner unit", "Modular kitchen"],
-    amenities: ["Terrace", "Parking", "Garden"],
+    parking: 3,
+    ageLabel: "2-5 years",
+    priceCr: 3.8,
+    priceLabel: "₹3.80 Cr",
+    media: "Photos only",
+    phoneMasked: "+91 8XXX-XXX004",
+    image: "https://images.pexels.com/photos/53610/large-home-residential-house-architecture-53610.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    tags: ["Corner unit", "Theater room"],
+    amenities: ["Garden", "Theater"],
   },
   {
-    id: 4,
+    id: 105,
+    tier: "exclusive",
+    source: "partner",
+    title: "Ambli-Bopal Luxury Apartment",
+    locality: "Bhat", 
+    city: "Ahmedabad",
+    bedrooms: 4,
+    bathrooms: 5,
+    areaSqft: 5500,
+    type: "Apartment",
+    furnishing: "Fully furnished",
+    readyStatus: "Immediate",
+    parking: 4,
+    ageLabel: "New",
+    priceCr: 6.5,
+    priceLabel: "₹6.50 Cr",
+    media: "Video",
+    phoneMasked: "+91 8XXX-XXX005",
+    image: "https://images.pexels.com/photos/271618/pexels-photo-271618.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    tags: ["Ultra Luxury", "Concierge"],
+    amenities: ["Pool", "Gym", "Concierge"],
+  },
+  {
+    id: 106,
+    tier: "exclusive",
+    source: "owner",
+    title: "Koba Circle Villa Estate",
+    locality: "Koba",
+    city: "Gandhinagar",
+    bedrooms: 6,
+    bathrooms: 6,
+    areaSqft: 6000,
+    type: "Villa",
+    furnishing: "Unfurnished",
+    readyStatus: "Ready to move",
+    parking: 5,
+    ageLabel: "5-10 years",
+    priceCr: 5.1,
+    priceLabel: "₹5.10 Cr",
+    media: "Photos",
+    phoneMasked: "+91 8XXX-XXX006",
+    image: "https://images.pexels.com/photos/2102587/pexels-photo-2102587.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    tags: ["Huge Plot", "Private Road"],
+    amenities: ["Garden", "Security"],
+  },
+
+  // === 12 FEATURED PROPERTIES ===
+  {
+    id: 201,
     tier: "featured",
     source: "partner",
     title: "Kudasan High-Rise • Club Access",
@@ -128,19 +227,273 @@ const listings: Listing[] = [
     ageLabel: "<5 years",
     priceCr: 1.65,
     priceLabel: "₹1.65 Cr",
-    media: "9 photos • Video",
-    phoneMasked: "+91 7XXX-XXX000",
-    image:
-      "https://images.pexels.com/photos/439391/pexels-photo-439391.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    tags: ["Club house", "Gym", "City view"],
-    amenities: ["Gym", "Club house", "Lift", "Security"],
+    media: "Video",
+    phoneMasked: "+91 7XXX-XXX201",
+    image: "https://images.pexels.com/photos/439391/pexels-photo-439391.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    tags: ["Club house", "Gym"],
+    amenities: ["Gym", "Club house"],
   },
   {
-    id: 3,
+    id: 202,
+    tier: "featured",
+    source: "owner",
+    title: "Motera Sports Enclave • 2BHK",
+    locality: "Motera",
+    city: "Ahmedabad",
+    bedrooms: 2,
+    bathrooms: 2,
+    areaSqft: 1350,
+    type: "Apartment",
+    furnishing: "Unfurnished",
+    readyStatus: "Ready to move",
+    parking: 1,
+    ageLabel: "1-5 years",
+    priceCr: 0.65,
+    priceLabel: "₹65 Lac",
+    media: "Photos",
+    phoneMasked: "+91 7XXX-XXX202",
+    image: "https://images.pexels.com/photos/2079234/pexels-photo-2079234.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    tags: ["Near Stadium", "Metro"],
+    amenities: ["Security", "Lift"],
+  },
+  {
+    id: 203,
+    tier: "featured",
+    source: "owner",
+    title: "Zundal Elegant Bungalow",
+    locality: "Zundal",
+    city: "Ahmedabad",
+    bedrooms: 4,
+    bathrooms: 4,
+    areaSqft: 2800,
+    type: "Bungalow",
+    furnishing: "Unfurnished",
+    readyStatus: "After 1 Month",
+    parking: 2,
+    ageLabel: "0-1 years",
+    priceCr: 2.25,
+    priceLabel: "₹2.25 Cr",
+    media: "Photos",
+    phoneMasked: "+91 7XXX-XXX203",
+    image: "https://images.pexels.com/photos/206172/pexels-photo-206172.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    tags: ["Gated Society", "Corner"],
+    amenities: ["Club house", "Garden"],
+  },
+  {
+    id: 204,
+    tier: "featured",
+    source: "partner",
+    title: "Sargasan Terrace Apartment",
+    locality: "Sargasan",
+    city: "Gandhinagar",
+    bedrooms: 3,
+    bathrooms: 3,
+    areaSqft: 2100,
+    type: "Apartment",
+    furnishing: "Semi-furnished",
+    readyStatus: "Ready to move",
+    parking: 2,
+    ageLabel: "2-5 years",
+    priceCr: 1.45,
+    priceLabel: "₹1.45 Cr",
+    media: "Video",
+    phoneMasked: "+91 7XXX-XXX204",
+    image: "https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    tags: ["Private Terrace", "View"],
+    amenities: ["Lift", "Security"],
+  },
+  {
+    id: 205,
+    tier: "featured",
+    source: "owner",
+    title: "Randesan Garden Villa",
+    locality: "Randesan",
+    city: "Gandhinagar",
+    bedrooms: 4,
+    bathrooms: 4,
+    areaSqft: 3100,
+    type: "Villa",
+    furnishing: "Fully furnished",
+    readyStatus: "Immediate",
+    parking: 2,
+    ageLabel: "5-10 years",
+    priceCr: 2.8,
+    priceLabel: "₹2.80 Cr",
+    media: "Photos",
+    phoneMasked: "+91 7XXX-XXX205",
+    image: "https://images.pexels.com/photos/259950/pexels-photo-259950.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    tags: ["Garden", "Peaceful"],
+    amenities: ["Garden", "Security"],
+  },
+  {
+    id: 206,
+    tier: "featured",
+    source: "partner",
+    title: "Bhat Riverfront Home",
+    locality: "Bhat",
+    city: "Ahmedabad",
+    bedrooms: 3,
+    bathrooms: 3,
+    areaSqft: 1850,
+    type: "Apartment",
+    furnishing: "Unfurnished",
+    readyStatus: "Ready to move",
+    parking: 1,
+    ageLabel: "New",
+    priceCr: 1.15,
+    priceLabel: "₹1.15 Cr",
+    media: "Photos",
+    phoneMasked: "+91 7XXX-XXX206",
+    image: "https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    tags: ["River View", "Breeze"],
+    amenities: ["Gym", "Lift"],
+  },
+  {
+    id: 207,
+    tier: "featured",
+    source: "partner",
+    title: "Chandkheda Commercial Plot",
+    locality: "Chandkheda",
+    city: "Ahmedabad",
+    bedrooms: 0,
+    bathrooms: 0,
+    areaSqft: 5000,
+    type: "Plot",
+    furnishing: "Unfurnished",
+    readyStatus: "Immediate",
+    parking: 0,
+    ageLabel: "N/A",
+    priceCr: 3.5,
+    priceLabel: "₹3.50 Cr",
+    media: "Map",
+    phoneMasked: "+91 7XXX-XXX207",
+    image: "https://images.pexels.com/photos/1761279/pexels-photo-1761279.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    tags: ["Commercial", "Main Road"],
+    amenities: ["Water connection"],
+  },
+  {
+    id: 208,
+    tier: "featured",
+    source: "owner",
+    title: "Sector 6 Corner House",
+    locality: "Sectors",
+    city: "Gandhinagar",
+    bedrooms: 3,
+    bathrooms: 2,
+    areaSqft: 1500,
+    type: "Bungalow",
+    furnishing: "Semi-furnished",
+    readyStatus: "Ready to move",
+    parking: 1,
+    ageLabel: "10+ years",
+    priceCr: 1.9,
+    priceLabel: "₹1.90 Cr",
+    media: "Photos",
+    phoneMasked: "+91 7XXX-XXX208",
+    image: "https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    tags: ["Old Construction", "Prime Loc"],
+    amenities: ["Water", "Parking"],
+  },
+  {
+    id: 209,
+    tier: "featured",
+    source: "partner",
+    title: "Koba IT Park Apartment",
+    locality: "Koba",
+    city: "Gandhinagar",
+    bedrooms: 2,
+    bathrooms: 2,
+    areaSqft: 1200,
+    type: "Apartment",
+    furnishing: "Fully furnished",
+    readyStatus: "Immediate",
+    parking: 1,
+    ageLabel: "1-5 years",
+    priceCr: 0.75,
+    priceLabel: "₹75 Lac",
+    media: "Photos",
+    phoneMasked: "+91 7XXX-XXX209",
+    image: "https://images.pexels.com/photos/323772/pexels-photo-323772.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    tags: ["Near IT Park", "Rental Income"],
+    amenities: ["Lift", "Security"],
+  },
+  {
+    id: 210,
+    tier: "featured",
+    source: "owner",
+    title: "Adalaj Weekend Home",
+    locality: "Adalaj",
+    city: "Ahmedabad",
+    bedrooms: 2,
+    bathrooms: 2,
+    areaSqft: 1000,
+    type: "Villa",
+    furnishing: "Fully furnished",
+    readyStatus: "Ready to move",
+    parking: 1,
+    ageLabel: "5-10 years",
+    priceCr: 0.95,
+    priceLabel: "₹95 Lac",
+    media: "Photos",
+    phoneMasked: "+91 7XXX-XXX210",
+    image: "https://images.pexels.com/photos/259600/pexels-photo-259600.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    tags: ["Weekend", "Greenery"],
+    amenities: ["Garden", "Club"],
+  },
+  {
+    id: 211,
+    tier: "featured",
+    source: "partner",
+    title: "Raysan Smart Home 3BHK",
+    locality: "Raysan",
+    city: "Gandhinagar",
+    bedrooms: 3,
+    bathrooms: 3,
+    areaSqft: 1800,
+    type: "Apartment",
+    furnishing: "Semi-furnished",
+    readyStatus: "After 1 Month",
+    parking: 2,
+    ageLabel: "New",
+    priceCr: 1.35,
+    priceLabel: "₹1.35 Cr",
+    media: "Video",
+    phoneMasked: "+91 7XXX-XXX211",
+    image: "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    tags: ["Smart Home", "Solar"],
+    amenities: ["Solar", "Lift"],
+  },
+  {
+    id: 212,
+    tier: "featured",
+    source: "owner",
+    title: "Gift City Office Space",
+    locality: "Gift City",
+    city: "Gift City",
+    bedrooms: 0,
+    bathrooms: 1,
+    areaSqft: 800,
+    type: "Apartment", // Using Apartment type for office demo
+    furnishing: "Unfurnished",
+    readyStatus: "Immediate",
+    parking: 1,
+    ageLabel: "New",
+    priceCr: 1.1,
+    priceLabel: "₹1.10 Cr",
+    media: "Photos",
+    phoneMasked: "+91 7XXX-XXX212",
+    image: "https://images.pexels.com/photos/269077/pexels-photo-269077.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    tags: ["Office", "Tax Free Zone"],
+    amenities: ["Lift", "Security"],
+  },
+
+  // === REGULAR PROPERTIES (Existing + Extras) ===
+  {
+    id: 301,
     tier: "regular",
     source: "owner",
     title: "Sector 21 Apartment • Park Facing",
-    locality: "Sector 21",
+    locality: "Sectors",
     city: "Gandhinagar",
     bedrooms: 2,
     bathrooms: 2,
@@ -152,15 +505,14 @@ const listings: Listing[] = [
     ageLabel: "5–10 years",
     priceCr: 1.25,
     priceLabel: "₹1.25 Cr",
-    media: "5 photos • No video",
-    phoneMasked: "+91 9XXX-XXX000",
-    image:
-      "https://images.pexels.com/photos/439227/pexels-photo-439227.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    media: "Photos",
+    phoneMasked: "+91 9XXX-XXX301",
+    image: "https://images.pexels.com/photos/439227/pexels-photo-439227.jpeg?auto=compress&cs=tinysrgb&w=1200",
     tags: ["Renovated", "Park view"],
     amenities: ["Park view", "Lift"],
   },
   {
-    id: 2,
+    id: 302,
     tier: "regular",
     source: "partner",
     title: "Kudasan Cozy 3BHK • Renovated",
@@ -176,15 +528,14 @@ const listings: Listing[] = [
     ageLabel: "1–5 years",
     priceCr: 1.55,
     priceLabel: "₹1.55 Cr",
-    media: "6 photos • Video",
-    phoneMasked: "+91 9XXX-XXX000",
-    image:
-      "https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    media: "Video",
+    phoneMasked: "+91 9XXX-XXX302",
+    image: "https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=1200",
     tags: ["South facing", "Lift"],
     amenities: ["Lift", "Security"],
   },
   {
-    id: 1,
+    id: 303,
     tier: "regular",
     source: "owner",
     title: "Randesan Premium 3BHK • Garden View",
@@ -200,18 +551,88 @@ const listings: Listing[] = [
     ageLabel: "5–10 years",
     priceCr: 2.1,
     priceLabel: "₹2.10 Cr",
-    media: "8 photos • Video",
-    phoneMasked: "+91 9XXX-XXX000",
-    image:
-      "https://images.pexels.com/photos/1571459/pexels-photo-1571459.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    media: "Video",
+    phoneMasked: "+91 9XXX-XXX303",
+    image: "https://images.pexels.com/photos/1571459/pexels-photo-1571459.jpeg?auto=compress&cs=tinysrgb&w=1200",
     tags: ["Modular kitchen", "Garden"],
     amenities: ["Garden", "Lift"],
   },
+  {
+    id: 304,
+    tier: "regular",
+    source: "partner",
+    title: "Chandkheda Modern 3BHK",
+    locality: "Chandkheda",
+    city: "Ahmedabad",
+    bedrooms: 3,
+    bathrooms: 3,
+    areaSqft: 1600,
+    type: "Apartment",
+    furnishing: "Semi-furnished",
+    readyStatus: "Ready to move",
+    parking: 1,
+    ageLabel: "5-10 years",
+    priceCr: 0.85,
+    priceLabel: "₹85 Lac",
+    media: "Photos",
+    phoneMasked: "+91 9XXX-XXX304",
+    image: "https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    tags: ["Main Road", "Shopping"],
+    amenities: ["Lift", "Water"],
+  },
+  {
+    id: 305,
+    tier: "regular",
+    source: "partner",
+    title: "Koba Prime Plot",
+    locality: "Koba",
+    city: "Gandhinagar",
+    bedrooms: 0,
+    bathrooms: 0,
+    areaSqft: 4000,
+    type: "Plot",
+    furnishing: "Unfurnished",
+    readyStatus: "Immediate",
+    parking: 0,
+    ageLabel: "N/A",
+    priceCr: 1.1,
+    priceLabel: "₹1.10 Cr",
+    media: "Map",
+    phoneMasked: "+91 9XXX-XXX305",
+    image: "https://images.pexels.com/photos/1761279/pexels-photo-1761279.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    tags: ["Investment", "Highway"],
+    amenities: ["Water connection"],
+  },
+  {
+    id: 306,
+    tier: "regular",
+    source: "partner",
+    title: "Bhat Spacious 4BHK",
+    locality: "Bhat",
+    city: "Ahmedabad",
+    bedrooms: 4,
+    bathrooms: 4,
+    areaSqft: 2100,
+    type: "Apartment",
+    furnishing: "Semi-furnished",
+    readyStatus: "Ready to move",
+    parking: 2,
+    ageLabel: "2-5 years",
+    priceCr: 1.05,
+    priceLabel: "₹1.05 Cr",
+    media: "Photos",
+    phoneMasked: "+91 9XXX-XXX306",
+    image: "https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    tags: ["River view", "Quiet"],
+    amenities: ["Gym", "Security"],
+  },
 ];
 
+// Initial state
 const initialFilters: Filters = {
   location: "",
-  city: "",
+  city: "any",
+  localities: [],
   propertyType: "any",
   priceRange: "any",
   possession: "any",
@@ -221,8 +642,8 @@ const initialFilters: Filters = {
   furnishing: "any",
   minParking: 0,
   amenities: [],
-  priceMin: "",
-  priceMax: "",
+  priceMin: 0,
+  priceMax: 6, 
   sizeMin: "",
   sizeMax: "",
 };
@@ -234,163 +655,178 @@ const getTierWeight = (tier: Tier) => {
   return 1; // regular
 };
 
+// Helper to shuffle array (Fisher-Yates)
+function shuffleArray<T>(array: T[]): T[] {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 // --- MAIN PAGE COMPONENT ---
 export default function BuyIntroPage() {
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [sortBy, setSortBy] = useState<SortOption>("Newest");
+  
+  // State to hold the specific rotation of listings for this user/session
+  // Initialize with empty or default logic, then populate in useEffect to avoid hydration mismatch
+  const [rotatedListings, setRotatedListings] = useState<Listing[]>([]);
 
-  const handleAmenityToggle = (amenity: string) => {
+  // --- ROTATION LOGIC ---
+  useEffect(() => {
+    // 1. Split ALL_LISTINGS into buckets
+    const exclusive = ALL_LISTINGS.filter(l => l.tier === "exclusive");
+    const featured = ALL_LISTINGS.filter(l => l.tier === "featured");
+    const regular = ALL_LISTINGS.filter(l => l.tier === "regular");
+
+    // 2. Randomly select 2 Exclusive and 2 Featured
+    // Note: We shuffle the buckets and take the first 2
+    const selectedExclusive = shuffleArray(exclusive).slice(0, 2);
+    const selectedFeatured = shuffleArray(featured).slice(0, 2);
+
+    // 3. Combine them: 2 Exclusive + 2 Featured + All Regulars
+    // The regular ones are just appended. The sort logic later will handle the final order (Ex > Feat > Reg)
+    const combined = [...selectedExclusive, ...selectedFeatured, ...regular];
+
+    setRotatedListings(combined);
+  }, []); // Runs once on mount (refresh triggers re-mount)
+
+  const handleClearFilters = () => setFilters(initialFilters);
+
+  // Logic to handle clicking a City pill
+  const handleCityToggle = (selectedCity: string) => {
     setFilters((prev) => {
-      const exists = prev.amenities.includes(amenity);
+      const isSame = prev.city === selectedCity;
       return {
         ...prev,
-        amenities: exists
-          ? prev.amenities.filter((a) => a !== amenity)
-          : [...prev.amenities, amenity],
+        city: isSame ? "any" : selectedCity,
+        localities: [], 
       };
     });
   };
 
-  const handleClearFilters = () => setFilters(initialFilters);
+  const handleLocalityToggle = (loc: string) => {
+    setFilters((prev) => {
+      const exists = prev.localities.includes(loc);
+      return {
+        ...prev,
+        localities: exists 
+          ? prev.localities.filter(l => l !== loc)
+          : [...prev.localities, loc]
+      };
+    });
+  };
 
   const filteredListings = useMemo(() => {
-    let result = listings.filter((l) => {
-      // LOCATION text search
+    // Use ROTATED listings as source
+    // If rotatedListings is empty (initial render), we can fallback to empty array or ALL_LISTINGS slice
+    const sourceData = rotatedListings.length > 0 ? rotatedListings : [];
+
+    let result = sourceData.filter((l) => {
+      // 1. LOCATION text search
       if (filters.location.trim()) {
         const q = filters.location.toLowerCase().trim();
         const locString = `${l.locality} ${l.city}`.toLowerCase();
         if (!locString.includes(q)) return false;
       }
 
-      // PROPERTY TYPE
-      if (
-        filters.propertyType !== "any" &&
-        l.type !== filters.propertyType
-      )
+      // 2. CITY FILTER
+      if (filters.city !== "any" && l.city !== filters.city) {
+        return false;
+      }
+
+      // 3. LOCALITY FILTER
+      if (filters.localities.length > 0) {
+        if (!filters.localities.includes(l.locality)) {
+          return false;
+        }
+      }
+
+      // 4. PROPERTY TYPE
+      if (filters.propertyType !== "any" && l.type !== filters.propertyType)
         return false;
 
-      // PRICE (Dropdown)
+      // 5. BUDGET SLIDER
+      if (l.priceCr < filters.priceMin || l.priceCr > filters.priceMax) {
+          return false;
+      }
+
+      // 5b. OLD DROPDOWN (legacy support)
       if (filters.priceRange !== "any") {
         const price = l.priceCr;
         if (filters.priceRange === "0-1.5" && !(price <= 1.5)) return false;
-        if (
-          filters.priceRange === "1.5-2" &&
-          !(price >= 1.5 && price <= 2)
-        )
-          return false;
-        if (
-          filters.priceRange === "2-2.5" &&
-          !(price >= 2 && price <= 2.5)
-        )
-          return false;
+        if (filters.priceRange === "1.5-2" && !(price >= 1.5 && price <= 2)) return false;
+        if (filters.priceRange === "2-2.5" && !(price >= 2 && price <= 2.5)) return false;
         if (filters.priceRange === "2.5+" && !(price >= 2.5)) return false;
       }
 
-      // PRICE (Min/Max inputs)
-      const minPriceCr = filters.priceMin
-        ? parseFloat(filters.priceMin)
-        : NaN;
-      const maxPriceCr = filters.priceMax
-        ? parseFloat(filters.priceMax)
-        : NaN;
-      if (!Number.isNaN(minPriceCr) && l.priceCr < minPriceCr) return false;
-      if (!Number.isNaN(maxPriceCr) && l.priceCr > maxPriceCr) return false;
-
-      // POSSESSION
-      if (
-        filters.possession !== "any" &&
-        l.readyStatus !== filters.possession
-      )
+      // 6. POSSESSION
+      if (filters.possession !== "any" && l.readyStatus !== filters.possession)
         return false;
         
-      // LISTED BY
+      // 7. LISTED BY
       if (filters.listedBy !== "any") {
           if (filters.listedBy === "owner" && l.source !== "owner") return false;
           if (filters.listedBy === "partner" && l.source !== "partner") return false;
       }
 
-      // BED / BATH / PARKING
+      // 8. SPECS
       if (l.bedrooms < filters.minBedrooms) return false;
       if (l.bathrooms < filters.minBathrooms) return false;
       if (l.parking < filters.minParking) return false;
 
-      // FURNISHING
-      if (
-        filters.furnishing !== "any" &&
-        l.furnishing !== filters.furnishing
-      )
+      // 9. FURNISHING
+      if (filters.furnishing !== "any" && l.furnishing !== filters.furnishing)
         return false;
-
-      // SIZE
-      const minSize = filters.sizeMin ? parseInt(filters.sizeMin, 10) : NaN;
-      const maxSize = filters.sizeMax ? parseInt(filters.sizeMax, 10) : NaN;
-      if (!Number.isNaN(minSize) && l.areaSqft < minSize) return false;
-      if (!Number.isNaN(maxSize) && l.areaSqft > maxSize) return false;
-
-      // AMENITIES
-      if (filters.amenities.length > 0) {
-        const hasAll = filters.amenities.every((a) =>
-          l.amenities.includes(a)
-        );
-        if (!hasAll) return false;
-      }
 
       return true;
     });
 
     // --- SORTING LOGIC ---
-    // Tier Weight > User Selection
+    // This sorting ensures the selected Exclusive ones stay at top, then Featured, then Regular
     result = [...result].sort((a, b) => {
-      // 1. Primary Sort: Tier
       const weightA = getTierWeight(a.tier);
       const weightB = getTierWeight(b.tier);
 
       if (weightA !== weightB) {
-        return weightB - weightA; // Exclusive (3) first
+        return weightB - weightA; 
       }
 
-      // 2. Secondary Sort: User Selection
       switch (sortBy) {
-        case "PriceLowHigh":
-          return a.priceCr - b.priceCr;
-        case "PriceHighLow":
-          return b.priceCr - a.priceCr;
-        case "SizeLowHigh":
-            return a.areaSqft - b.areaSqft; 
-        case "SizeHighLow":
-          return b.areaSqft - a.areaSqft; 
-        case "Oldest":
-            return a.id - b.id; // Ascending ID
+        case "PriceLowHigh": return a.priceCr - b.priceCr;
+        case "PriceHighLow": return b.priceCr - a.priceCr;
+        case "SizeLowHigh": return a.areaSqft - b.areaSqft; 
+        case "SizeHighLow": return b.areaSqft - a.areaSqft; 
+        case "Oldest": return a.id - b.id; 
         case "Newest":
-        default:
-          return b.id - a.id; // Descending ID
+        default: return b.id - a.id; 
       }
     });
 
     return result;
-  }, [filters, sortBy]);
+  }, [filters, sortBy, rotatedListings]);
 
   return (
     <main className="min-h-screen bg-[#F5F7F9]">
       <Header />
 
-      {/* FULL-WIDTH WRAPPER */}
       <section className="w-full px-3 sm:px-4 lg:px-6 xl:px-10 py-6">
         
         {/* --- TOP SEARCH CARD --- */}
-        <div className="rounded-2xl border border-slate-200 bg-white px-3 sm:px-4 py-2 shadow-sm"> {/* ADJUSTED: py-3 -> py-2, px reduced */}
-          {/* Header & Badges */}
-          <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between mb-3"> {/* ADJUSTED: gap-2 -> gap-1, mb-4 -> mb-3 */}
+        <div className="rounded-2xl border border-slate-200 bg-white px-3 sm:px-4 py-2 shadow-sm">
+          <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between mb-3">
             <div>
-              <h1 className="text-sm font-semibold text-slate-900"> {/* ADJUSTED: text-base -> text-sm */}
+              <h1 className="text-sm font-semibold text-slate-900">
                 Find your next home
               </h1>
-              <p className="text-xs text-slate-500 mt-0.5"> {/* ADJUSTED: mt-1 -> mt-0.5 */}
+              <p className="text-xs text-slate-500 mt-0.5">
                 Search by city, locality, type, and budget.
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500"> {/* ADJUSTED: gap-3 -> gap-2 */}
+            <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
               <BadgeDot color="#808080">Seller OTP verified</BadgeDot>
               <BadgeDot color="#808080">Direct Owner</BadgeDot>
               <BadgeDot color="#808080">Agent listed</BadgeDot>
@@ -398,36 +834,8 @@ export default function BuyIntroPage() {
             </div>
           </div>
 
-          {/* SEARCH ROW */}
-          <div className="flex flex-col gap-1 lg:flex-row"> {/* ADJUSTED: gap-2 -> gap-1 */}
-            
-            {/* 1. Location Input */}
-            <div className="relative flex min-w-[240px] flex-[1.2] items-center rounded-full border border-slate-200 bg-slate-50 px-2 transition-colors hover:border-slate-300 focus-within:border-emerald-500 focus-within:bg-white focus-within:ring-1 focus-within:ring-emerald-500 h-8"> {/* ADJUSTED: px-3 -> px-2, h-9 -> h-8 */}
-              <svg
-                className="mr-2 h-3.5 w-3.5 text-slate-400" /* ADJUSTED: h-4 -> h-3.5 */
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-              <input
-                value={filters.location}
-                onChange={(e) =>
-                  setFilters((f) => ({ ...f, location: e.target.value }))
-                }
-                placeholder="Search City, Locality..."
-                className="w-full bg-transparent text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none"
-              />
-            </div>
-
-            {/* 2. Horizontal Filters */}
-            <div className="flex flex-1 flex-col gap-1 sm:flex-row"> {/* ADJUSTED: gap-2 -> gap-1 */}
+          <div className="flex flex-col gap-1 lg:flex-row">
+            <div className="flex flex-1 flex-col gap-1 sm:flex-row">
               <SmartDropdown
                 label="Type"
                 value={filters.propertyType}
@@ -471,48 +879,22 @@ export default function BuyIntroPage() {
               />
             </div>
 
-            {/* 3. Search Button */}
-            <button className="h-8 shrink-0 rounded-full bg-[#006B5B] px-5 text-sm font-semibold text-white shadow transition-all hover:bg-[#005347] active:scale-95"> {/* ADJUSTED: h-9 -> h-8, px-6 -> px-5, font-bold -> font-semibold */}
+            <button className="h-8 shrink-0 rounded-full bg-[#006B5B] px-5 text-sm font-semibold text-white shadow transition-all hover:bg-[#005347] active:scale-95">
               Search
             </button>
           </div>
 
-          {/* --- FOOTER & SORTING --- */}
-          <div className="mt-3 flex flex-col gap-1 border-t border-slate-100 pt-3 lg:flex-row lg:items-center lg:justify-between"> {/* ADJUSTED: mt-4 -> mt-3, gap-2 -> gap-1, pt-4 -> pt-3 */}
-            
-            {/* LEFT SIDE: Info Pills */}
+          <div className="mt-3 flex flex-col gap-1 border-t border-slate-100 pt-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-wrap items-center gap-1">
-              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[11px] font-medium text-slate-600"> {/* ADJUSTED: px,py reduced */}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-slate-400"
-                >
+              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[11px] font-medium text-slate-600">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400">
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                 </svg>
                 Order: Exclusive first, then Featured, then all others.
               </div>
 
-              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[11px] font-medium text-slate-600"> {/* ADJUSTED: px,py reduced */}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-slate-400"
-                >
+              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[11px] font-medium text-slate-600">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400">
                    <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91" />
                    <line x1="22" y1="2" x2="2" y2="22" />
                 </svg>
@@ -520,25 +902,17 @@ export default function BuyIntroPage() {
               </div>
             </div>
 
-            {/* RIGHT SIDE: CUSTOM Sort Dropdown */}
-            <div className="relative mt-0.5 lg:mt-0"> {/* ADJUSTED: mt-1 -> mt-0.5 */}
-               <SortDropdown 
-                 value={sortBy}
-                 onChange={setSortBy}
-               />
+            <div className="relative mt-0.5 lg:mt-0">
+               <SortDropdown value={sortBy} onChange={setSortBy} />
             </div>
-
           </div>
         </div>
 
         {/* MAIN GRID */}
-        <div className="mt-2 grid gap-3 md:grid-cols-[270px,1fr]"> {/* ADJUSTED: mt-3 -> mt-2, gap slightly reduced */}
+        <div className="mt-2 grid gap-3 md:grid-cols-[270px,1fr]">
           
-          {/* SIDEBAR */}
           <aside className="h-fit">
-            
-            {/* MAP PLACEHOLDER */}
-            <div className="mb-3 w-full aspect-square rounded-2xl border border-slate-200 bg-slate-100 overflow-hidden relative group cursor-pointer shadow-sm"> {/* ADJUSTED: mb-4 -> mb-3 */}
+            <div className="mb-3 w-full aspect-square rounded-2xl border border-slate-200 bg-slate-100 overflow-hidden relative group cursor-pointer shadow-sm">
                 <img 
                     src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScDLQeIDVShuT2tL3g-BkmQUdq0tId_aQP9g&s"
                     alt="Map view"
@@ -552,138 +926,70 @@ export default function BuyIntroPage() {
                 </div>
             </div>
 
-            {/* FILTERS CONTAINER */}
             <div className="rounded-2xl border border-slate-200 bg-white px-4 py-5 text-xs text-slate-700 shadow-sm">
                 <div className="flex items-start justify-between gap-2">
                 <div>
-                    <h2 className="text-sm font-semibold text-slate-900">
-                    Filters
-                    </h2>
-                    <p className="text-[11px] text-slate-500">
-                    Refine your search results.
-                    </p>
+                    <h2 className="text-sm font-semibold text-slate-900">Filters</h2>
+                    <p className="text-[11px] text-slate-500">Refine your search results.</p>
                 </div>
-                <button
-                    onClick={handleClearFilters}
-                    className="text-[11px] font-medium text-[#006B5B]"
-                >
+                <button onClick={handleClearFilters} className="text-[11px] font-medium text-[#006B5B]">
                     Clear all
                 </button>
                 </div>
 
-                <div className="mt-4 space-y-4">
+                <div className="mt-4 space-y-5">
                 
-                {/* UPDATED: Listed By Filter */}
-                {/* City (NEW) - pill buttons like other filters */}
-<FilterBlock title="City">
-  <PillButton
-    active={filters.city === "Gandhinagar"}
-    onClick={() => setFilters((f) => ({ ...f, city: f.city === "Gandhinagar" ? "any" : "Gandhinagar" }))} // note: filters.city field is not in type, but original code used it - left as-is
-  >
-    Gandhinagar
-  </PillButton>
+                <FilterBlock title="City">
+                  <PillButton active={filters.city === "Gandhinagar"} onClick={() => handleCityToggle("Gandhinagar")}>Gandhinagar</PillButton>
+                  <PillButton active={filters.city === "Ahmedabad"} onClick={() => handleCityToggle("Ahmedabad")}>Ahmedabad</PillButton>
+                  <PillButton active={filters.city === "Gift City"} onClick={() => handleCityToggle("Gift City")}>Gift City</PillButton>
+                </FilterBlock>
 
-  <PillButton
-    active={filters.city === "Gift City"}
-    onClick={() => setFilters((f) => ({ ...f, city: f.city === "Gift City" ? "any" : "Gift City" }))}
-  >
-    Gift City
-  </PillButton>
+                {/* CONDITIONAL LOCALITY */}
+                {(filters.city === "Gandhinagar" || filters.city === "Ahmedabad") && (
+                   <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                      <FilterBlock title={`Locality (${filters.city})`}>
+                         {CITY_AREAS[filters.city].map(area => (
+                            <PillButton key={area} active={filters.localities.includes(area)} onClick={() => handleLocalityToggle(area)}>
+                               {area}
+                            </PillButton>
+                         ))}
+                      </FilterBlock>
+                   </div>
+                )}
 
-  <PillButton
-    active={filters.city === "Ahmedabad"}
-    onClick={() => setFilters((f) => ({ ...f, city: f.city === "Ahmedabad" ? "any" : "Ahmedabad" }))}
-  >
-    Ahmedabad
-  </PillButton>
-</FilterBlock>
+                <div className="pt-1">
+                   <div className="flex justify-between items-center mb-2">
+                      <div className="text-[11px] font-semibold text-slate-500">Budget</div>
+                      <div className="text-[10px] text-slate-400 font-medium">₹{filters.priceMin} Cr - ₹{filters.priceMax}+ Cr</div>
+                   </div>
+                   <DualRangeSlider 
+                      min={0} max={6} step={0.1}
+                      minValue={filters.priceMin} maxValue={filters.priceMax}
+                      onChange={(min, max) => setFilters(prev => ({...prev, priceMin: min, priceMax: max}))}
+                   />
+                </div>
 
                 <FilterBlock title="Listed by">
-                    <PillButton
-                      active={filters.listedBy === "owner"}
-                      onClick={() => setFilters(f => ({...f, listedBy: f.listedBy === "owner" ? "any" : "owner"}))}
-                    >
-                      Direct Owner
-                    </PillButton>
-                    <PillButton
-                      active={filters.listedBy === "partner"}
-                      onClick={() => setFilters(f => ({...f, listedBy: f.listedBy === "partner" ? "any" : "partner"}))}
-                    >
-                      Agent listed
-                    </PillButton>
+                    <PillButton active={filters.listedBy === "owner"} onClick={() => setFilters(f => ({...f, listedBy: f.listedBy === "owner" ? "any" : "owner"}))}>Direct Owner</PillButton>
+                    <PillButton active={filters.listedBy === "partner"} onClick={() => setFilters(f => ({...f, listedBy: f.listedBy === "partner" ? "any" : "partner"}))}>Agent listed</PillButton>
                 </FilterBlock>
                 
-                
-                {/* Property type */}
                 <FilterBlock title="Property type">
-                    {["Apartment", "Villa", "Bungalow", "Plot"].map(
-                    (type) => (
-                        <PillButton
-                        key={type}
-                        active={filters.propertyType === type}
-                        onClick={() =>
-                            setFilters((f) => ({
-                            ...f,
-                            propertyType:
-                                f.propertyType === type
-                                ? "any"
-                                : (type as PropertyType),
-                            }))
-                        }
-                        >
-                        {type}
-                        </PillButton>
-                    )
-                    )}
+                    {["Apartment", "Villa", "Bungalow", "Plot"].map((type) => (
+                        <PillButton key={type} active={filters.propertyType === type} onClick={() => setFilters((f) => ({...f, propertyType: f.propertyType === type ? "any" : (type as PropertyType)}))}>{type}</PillButton>
+                    ))}
                 </FilterBlock>
 
-
-                {/* Bedrooms */}
                 <FilterBlock title="Bedrooms">
-                    {["1+", "2+", "3+", "4+"].map((label, idx) => {
-                    const value = idx + 1;
-                    return (
-                        <PillButton
-                        key={label}
-                        active={filters.minBedrooms === value}
-                        onClick={() =>
-                            setFilters((f) => ({
-                            ...f,
-                            minBedrooms:
-                                f.minBedrooms === value ? 0 : value,
-                            }))
-                        }
-                        >
-                        {label}
-                        </PillButton>
-                    );
-                    })}
+                    {["1+", "2+", "3+", "4+"].map((label, idx) => (
+                        <PillButton key={label} active={filters.minBedrooms === idx + 1} onClick={() => setFilters((f) => ({...f, minBedrooms: f.minBedrooms === idx + 1 ? 0 : idx + 1}))}>{label}</PillButton>
+                    ))}
                 </FilterBlock>
 
-                
-
-                {/* Furnishing */}
                 <FilterBlock title="Furnishing">
-                    {[
-                    "Unfurnished",
-                    "Semi-furnished",
-                    "Fully furnished",
-                    ].map((label) => (
-                    <PillButton
-                        key={label}
-                        active={filters.furnishing === label}
-                        onClick={() =>
-                        setFilters((f) => ({
-                            ...f,
-                            furnishing:
-                            f.furnishing === label
-                                ? "any"
-                                : (label as Listing["furnishing"]),
-                        }))
-                        }
-                    >
-                        {label}
-                    </PillButton>
+                    {["Unfurnished", "Semi-furnished", "Fully furnished"].map((label) => (
+                    <PillButton key={label} active={filters.furnishing === label} onClick={() => setFilters((f) => ({...f, furnishing: f.furnishing === label ? "any" : (label as Listing["furnishing"])}))}>{label}</PillButton>
                     ))}
                 </FilterBlock>
 
@@ -692,19 +998,18 @@ export default function BuyIntroPage() {
           </aside>
 
           {/* LISTINGS */}
-          <section className="space-y-3"> {/* ADJUSTED: space-y-4 -> space-y-3 */}
-            {/* HEADER SECTION */}
+          <section className="space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="text-base font-bold text-slate-900">
-                Showing properties in Gandhinagar
+                {filters.city !== "any" ? `Showing properties in ${filters.city}` : "Showing all properties"}
               </h2>
               <span className="text-xs font-medium text-slate-500">
-                {filteredListings.length} listings • Updated today
+                {filteredListings.length} listings • Updated just now
               </span>
             </div>
 
-            {/* UNIFIED LIST RENDERING */}
-            <div className="space-y-3"> {/* ADJUSTED */}
+            <div className="space-y-3">
+              {/* If empty while hydrating, you might see nothing for a millisecond, then random list appears */}
               {filteredListings.map((item) => (
                 <ListingCard key={item.id} item={item} />
               ))}
@@ -712,8 +1017,7 @@ export default function BuyIntroPage() {
 
             {filteredListings.length === 0 && (
               <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
-                No properties match your filters yet. Try adjusting your
-                budget or removing some filters.
+                No properties match your filters yet.
               </div>
             )}
           </section>
@@ -723,27 +1027,54 @@ export default function BuyIntroPage() {
   );
 }
 
+/* ===== CUSTOM COMPONENTS ===== */
+
+const DualRangeSlider = ({ min, max, step, minValue, maxValue, onChange }: { 
+    min: number; max: number; step: number; minValue: number; maxValue: number; onChange: (min: number, max: number) => void 
+}) => {
+    const minRef = useRef<HTMLInputElement>(null);
+    const maxRef = useRef<HTMLInputElement>(null);
+    const range = useRef<HTMLDivElement>(null);
+
+    const getPercent = useCallback(
+        (value: number) => Math.round(((value - min) / (max - min)) * 100),
+        [min, max]
+    );
+
+    useEffect(() => {
+        if (maxRef.current && range.current) {
+            const minPercent = getPercent(minValue);
+            const maxPercent = getPercent(maxValue);
+
+            if (range.current) {
+                range.current.style.left = `${minPercent}%`;
+                range.current.style.width = `${maxPercent - minPercent}%`;
+            }
+        }
+    }, [minValue, maxValue, getPercent]);
+
+    return (
+        <div className="relative w-full h-4 flex items-center group">
+            <input type="range" min={min} max={max} step={step} value={minValue} ref={minRef} onChange={(event) => { const value = Math.min(Number(event.target.value), maxValue - step); onChange(value, maxValue); }} className="absolute z-20 w-full h-full opacity-0 cursor-pointer pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4" style={{zIndex: minValue > max - 100 ? 5 : undefined}} />
+            <input type="range" min={min} max={max} step={step} value={maxValue} ref={maxRef} onChange={(event) => { const value = Math.max(Number(event.target.value), minValue + step); onChange(minValue, value); }} className="absolute z-20 w-full h-full opacity-0 cursor-pointer pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4" />
+            <div className="absolute top-1/2 left-0 right-0 -translate-y-1/2 h-1 bg-slate-200 rounded-full z-10">
+                <div ref={range} className="absolute h-1 bg-[#007F6D] rounded-full z-10"></div>
+                <div className="absolute h-4 w-4 bg-[#007F6D] rounded-full -translate-x-1/2 -top-[6px] shadow-sm z-20 pointer-events-none" style={{ left: `${getPercent(minValue)}%` }} />
+                <div className="absolute h-4 w-4 bg-[#007F6D] rounded-full -translate-x-1/2 -top-[6px] shadow-sm z-20 pointer-events-none" style={{ left: `${getPercent(maxValue)}%` }} />
+            </div>
+        </div>
+    );
+};
+
+
 /* ===== UI Helpers ===== */
 
-interface SortDropdownProps {
-  value: SortOption;
-  onChange: (value: SortOption) => void;
-}
+interface SortDropdownProps { value: SortOption; onChange: (value: SortOption) => void; }
 
 const SortDropdown: React.FC<SortDropdownProps> = ({ value, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
-
-  // UPDATED: Exact sort options requested
-  const options: { label: string; value: SortOption }[] = [
-    { label: "Price (low to high)", value: "PriceLowHigh" },
-    { label: "Price (high to low)", value: "PriceHighLow" },
-    { label: "Size (small to large)", value: "SizeLowHigh" },
-    { label: "Size (large to small)", value: "SizeHighLow" },
-    { label: "Oldest to newest", value: "Oldest" },
-    { label: "Newest to oldest", value: "Newest" },
-  ];
-
+  const options: { label: string; value: SortOption }[] = [ { label: "Price (low to high)", value: "PriceLowHigh" }, { label: "Price (high to low)", value: "PriceHighLow" }, { label: "Size (small to large)", value: "SizeLowHigh" }, { label: "Size (large to small)", value: "SizeHighLow" }, { label: "Oldest to newest", value: "Oldest" }, { label: "Newest to oldest", value: "Newest" }, ];
   const selectedLabel = options.find((o) => o.value === value)?.label;
 
   useEffect(() => {
@@ -758,54 +1089,18 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ value, onChange }) => {
 
   return (
     <div className="relative" ref={wrapperRef}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="group inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-medium text-slate-600 transition-all hover:border-slate-300 hover:bg-white" /* ADJUSTED: px,py reduced */
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="text-slate-400"
-        >
-          <line x1="21" x2="14" y1="4" y2="4" />
-          <line x1="10" x2="3" y1="4" y2="4" />
-          <line x1="21" x2="12" y1="12" y2="12" />
-          <line x1="8" x2="3" y1="12" y2="12" />
-          <line x1="21" x2="16" y1="20" y2="20" />
-          <line x1="12" x2="3" y1="20" y2="20" />
-        </svg>
-        <span>
-          Sort by: <span className="font-semibold text-slate-900 capitalize">{selectedLabel}</span>
-        </span>
+      <button onClick={() => setIsOpen(!isOpen)} className="group inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-medium text-slate-600 transition-all hover:border-slate-300 hover:bg-white">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400"> <line x1="21" x2="14" y1="4" y2="4" /> <line x1="10" x2="3" y1="4" y2="4" /> <line x1="21" x2="12" y1="12" y2="12" /> <line x1="8" x2="3" y1="12" y2="12" /> <line x1="21" x2="16" y1="20" y2="20" /> <line x1="12" x2="3" y1="20" y2="20" /> </svg>
+        <span>Sort by: <span className="font-semibold text-slate-900 capitalize">{selectedLabel}</span></span>
       </button>
 
       {isOpen && (
         <div className="absolute right-0 top-full z-50 mt-2 w-48 origin-top-right animate-in fade-in zoom-in-95 duration-100 rounded-xl border border-slate-100 bg-white p-1 shadow-xl shadow-slate-200/50">
           <div className="flex flex-col">
             {options.map((option) => (
-              <button
-                key={option.value}
-                onClick={() => {
-                  onChange(option.value);
-                  setIsOpen(false);
-                }}
-                className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs transition-colors capitalize ${
-                  value === option.value
-                    ? "bg-emerald-50 text-emerald-700 font-medium"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                }`}
-              >
+              <button key={option.value} onClick={() => { onChange(option.value); setIsOpen(false); }} className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs transition-colors capitalize ${ value === option.value ? "bg-emerald-50 text-emerald-700 font-medium" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900" }`}>
                 {option.label}
-                {value === option.value && (
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                )}
+                {value === option.value && ( <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> )}
               </button>
             ))}
           </div>
@@ -815,34 +1110,18 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ value, onChange }) => {
   );
 };
 
-interface SmartDropdownProps {
-  label: string;
-  options: { value: string; label: string }[];
-  value: string;
-  onChange: (value: string) => void;
-}
+interface SmartDropdownProps { label: string; options: { value: string; label: string }[]; value: string; onChange: (value: string) => void; }
 
-const SmartDropdown: React.FC<SmartDropdownProps> = ({
-  label,
-  options,
-  value,
-  onChange,
-}) => {
+const SmartDropdown: React.FC<SmartDropdownProps> = ({ label, options, value, onChange, }) => {
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (
-        wrapperRef.current &&
-        !wrapperRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-      }
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) { setIsOpen(false); }
     }
     document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const selectedOption = options.find((opt) => opt.value === value);
@@ -851,67 +1130,22 @@ const SmartDropdown: React.FC<SmartDropdownProps> = ({
 
   return (
     <div className="relative flex-1 min-w-[140px]" ref={wrapperRef}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`group flex h-8 w-full items-center justify-between rounded-full border px-3 transition-all duration-200 ${
-          isOpen
-            ? "border-emerald-500 ring-1 ring-emerald-500 bg-white"
-            : isActive
-            ? "border-emerald-200 bg-emerald-50/30 hover:border-emerald-300"
-            : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
-        }`}
-      >
+      <button onClick={() => setIsOpen(!isOpen)} className={`group flex h-8 w-full items-center justify-between rounded-full border px-3 transition-all duration-200 ${ isOpen ? "border-emerald-500 ring-1 ring-emerald-500 bg-white" : isActive ? "border-emerald-200 bg-emerald-50/30 hover:border-emerald-300" : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50" }`}>
         <div className="flex items-center gap-2 overflow-hidden">
-          <span className="shrink-0 text-xs font-medium text-slate-500">
-            {label}
-          </span>
+          <span className="shrink-0 text-xs font-medium text-slate-500">{label}</span>
           <span className="h-3 w-px bg-slate-200"></span>
-          <span
-            className={`truncate text-sm ${
-              isActive ? "font-semibold text-emerald-900" : "text-slate-700"
-            }`}
-          >
-            {displayLabel}
-          </span>
+          <span className={`truncate text-sm ${isActive ? "font-semibold text-emerald-900" : "text-slate-700"}`}>{displayLabel}</span>
         </div>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className={`ml-2 h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${
-            isOpen ? "rotate-180 text-emerald-600" : ""
-          }`}
-        >
-          <path d="m6 9 6 6 6-6" />
-        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`ml-2 h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${isOpen ? "rotate-180 text-emerald-600" : ""}`}> <path d="m6 9 6 6 6-6" /> </svg>
       </button>
 
       {isOpen && (
         <div className="absolute left-0 top-full z-50 mt-1.5 w-full min-w-[180px] origin-top-left animate-in fade-in zoom-in-95 duration-100 rounded-xl border border-slate-100 bg-white p-1 shadow-xl shadow-slate-200/50">
           <div className="flex flex-col">
             {options.map((option) => (
-              <button
-                key={option.value}
-                onClick={() => {
-                  onChange(option.value);
-                  setIsOpen(false);
-                }}
-                className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-                  value === option.value
-                    ? "bg-emerald-50 text-emerald-700 font-medium"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                }`}
-              >
+              <button key={option.value} onClick={() => { onChange(option.value); setIsOpen(false); }} className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${ value === option.value ? "bg-emerald-50 text-emerald-700 font-medium" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900" }`}>
                 {option.label}
-                {value === option.value && (
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                )}
+                {value === option.value && ( <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> )}
               </button>
             ))}
           </div>
@@ -921,260 +1155,84 @@ const SmartDropdown: React.FC<SmartDropdownProps> = ({
   );
 };
 
-function BadgeDot({
-  color,
-  children,
-}: {
-  color: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <span className="flex items-center gap-1">
-      <span
-        className="h-1.5 w-1.5 rounded-full"
-        style={{ backgroundColor: color }}
-      />
-      {children}
-    </span>
-  );
+function BadgeDot({ color, children }: { color: string; children: React.ReactNode; }) {
+  return ( <span className="flex items-center gap-1"> <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} /> {children} </span> );
 }
 
-function FilterBlock({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div>
-      <div className="text-[11px] font-semibold text-slate-500">{title}</div>
-      <div className="mt-2 flex flex-wrap gap-1.5">{children}</div>
-    </div>
-  );
+function FilterBlock({ title, children }: { title: string; children: React.ReactNode; }) {
+  return ( <div> <div className="text-[11px] font-semibold text-slate-500">{title}</div> <div className="mt-2 flex flex-wrap gap-1.5">{children}</div> </div> );
 }
 
-function PillButton({
-  active,
-  children,
-  onClick,
-}: {
-  active?: boolean;
-  children: React.ReactNode;
-  onClick?: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`rounded-full px-3 py-1 text-[11px] transition-colors ${
-        active
-          ? "border border-[#0B8A72] bg-[#E5F6F2] font-medium text-[#0B6754]"
-          : "border border-slate-200 bg-white text-slate-600 hover:border-[#0B8A72]/60"
-      }`}
-    >
-      {children}
-    </button>
-  );
+function PillButton({ active, children, onClick }: { active?: boolean; children: React.ReactNode; onClick?: () => void; }) {
+  return ( <button type="button" onClick={onClick} className={`rounded-full px-3 py-1 text-[11px] transition-colors ${ active ? "border border-[#0B8A72] bg-[#E5F6F2] font-medium text-[#0B6754]" : "border border-slate-200 bg-white text-slate-600 hover:border-[#0B8A72]/60" }`}> {children} </button> );
 }
 
-// --- TIER HELPER ---
+function themeForTier(tier: Tier) {
+  const exclusive = { 
+      badge: "bg-[#DCCEB9] text-[#5A4A2E] shadow-sm", 
+      priceChip: "bg-white text-[#5A4A2E] border border-[#E6D9C4] shadow-sm", 
+      tagBg: "bg-[#F5EFE7] text-[#6B5A41] border border-[#E6D9C4]", 
+      viewBtn: "bg-[#BFA97F] hover:bg-[#a89064] text-white shadow", 
+      cardAccent: "ring-1 ring-[#EAE0CF]/40", 
+      cardBg: "bg-gradient-to-r from-[#E8DEC9] to-white" 
+  };
+  
+  // UPDATED: Featured tier now uses the Bluish/Teal theme from your Carousel
+  const featured = { 
+      badge: "bg-[#0F7F9C] text-white shadow-sm", // Teal badge
+      priceChip: "bg-white text-[#0F7F9C] border border-sky-100 shadow-sm", // Teal text
+      tagBg: "bg-[#e0f2ff] text-[#0F7F9C] border border-[#bfe0ff]", // Light blue bg, teal text
+      viewBtn: "bg-gradient-to-r from-[#0F7F9C] to-[#022F5A] text-white shadow hover:opacity-90", // Gradient button
+      cardAccent: "ring-1 ring-sky-200", 
+      cardBg: "bg-gradient-to-r from-[#f0f9ff] to-white" // Subtle blue tint
+  };
+  
+  const regular = { 
+      badge: "bg-[#004D40] text-white", 
+      priceChip: "bg-white text-slate-800 border border-slate-100 shadow-sm", 
+      tagBg: "bg-[#E5F6F2] text-[#006B5B]", 
+      viewBtn: "bg-[#0F4C3E] hover:bg-[#0b3b30] text-white shadow", 
+      cardAccent: "", 
+      cardBg: "bg-white" 
+  };
+  
+  if (tier === "exclusive") return exclusive;
+  if (tier === "featured") return featured;
+  return regular;
+}
+
 function tierLabel(tier: Tier) {
   if (tier === "exclusive") return "Exclusive";
   if (tier === "featured") return "Featured";
   return "";
 }
 
-/**
- * Provide theme classes for important UI elements based on tier.
- * We're intentionally only changing visual classes for:
- * - badge (top-left)
- * - price chip (left of image)
- * - tags pill background & text
- * - primary button (View details)
- * - card background/accent (NEW)
- *
- * This keeps the rest of the markup/logic untouched.
- */
-function themeForTier(tier: Tier) {
-  // Exclusive palette (beige premium)
-  const exclusive = {
-    badge: "bg-[#DCCEB9] text-[#5A4A2E] shadow-sm", // beige bg + brown text
-    priceChip: "bg-white text-[#5A4A2E] border border-[#E6D9C4] shadow-sm", // white chip with brown text & soft beige border
-    tagBg: "bg-[#F5EFE7] text-[#6B5A41] border border-[#E6D9C4]",
-    viewBtn: "bg-[#BFA97F] hover:bg-[#a89064] text-white shadow", // beige button
-    cardAccent: "ring-1 ring-[#EAE0CF]/40", // subtle card ring
-    cardBg: "bg-gradient-to-r from-[#E8DEC9] to-white",
-  };
-
-  // Featured palette (light green accents)
-  const featured = {
-    badge: "bg-[#155E34] text-white shadow-sm", // deep green
-    priceChip: "bg-white text-[#0F694F] border border-[#CDEDE4] shadow-sm", // white chip with green text
-    tagBg: "bg-[#E9FAF6] text-[#006B53] border border-[#D1F0E7]",
-    viewBtn: "bg-[#0F4C3E] hover:bg-[#0b3b30] text-white shadow", // existing green
-    cardAccent: "ring-1 ring-[#D7F3EA]/40",
-    // new: pale inner background (keeps card white but gives a gentle green tint)
-    cardBg: "bg-gradient-to-r from-[#ECF7E9] to-white",
-  };
-
-  const regular = {
-    badge: "bg-[#004D40] text-white", // fallback (kept similar to previous)
-    priceChip: "bg-white text-slate-800 border border-slate-100 shadow-sm",
-    tagBg: "bg-[#E5F6F2] text-[#006B5B]",
-    viewBtn: "bg-[#0F4C3E] hover:bg-[#0b3b30] text-white shadow",
-    cardAccent: "",
-    cardBg: "bg-white",
-  };
-
-  if (tier === "exclusive") return exclusive;
-  if (tier === "featured") return featured;
-  return regular;
-}
-
-// --- LISTING CARD (unchanged structure; styled by themeForTier) ---
 function ListingCard({ item }: { item: Listing }) {
   const isOwner = item.source === "owner";
   const theme = themeForTier(item.tier);
-
   return (
-    <article
-      className={`relative overflow-hidden flex flex-col md:flex-row gap-3 md:gap-5 p-3 border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 ${theme.cardAccent} ${theme.cardBg ? theme.cardBg : "bg-white"}`}
-    >
-      {/* left accent bar for featured */}
-      {item.tier === "featured" && (
-        <div className="absolute left-0 top-0 bottom-0 w-2 rounded-l-2xl bg-gradient-to-b from-[#E8F8F0] to-[#F5FFF9] pointer-events-none" />
+    <article className={`relative overflow-hidden flex flex-col md:flex-row gap-3 md:gap-5 p-3 border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 ${theme.cardAccent} ${theme.cardBg ? theme.cardBg : "bg-white"}`}>
+      {item.tier === "featured" && ( 
+          // UPDATED: Accent bar for featured is now blue-ish
+          <div className="absolute left-0 top-0 bottom-0 w-2 rounded-l-2xl bg-gradient-to-b from-[#e0f2ff] to-[#f0f9ff] pointer-events-none" /> 
       )}
-
-      {/* LEFT: Image Section */}
       <div className="w-full md:w-[288px] h-[190px] relative rounded-xl overflow-hidden shrink-0 bg-slate-100">
-        <img
-          src={item.image}
-          alt={item.title}
-          className="w-full h-full object-cover"
-        />
-
-        {/* Tier Badge (Exclusive/Featured) - Top Left */}
-        {tierLabel(item.tier) && (
-          <span
-            className={`absolute top-3 left-3 px-3 py-1 text-[11px] font-semibold rounded-full ${theme.badge}`}
-          >
-            {tierLabel(item.tier)}
-          </span>
-        )}
-
-        {/* Price chip at bottom-left of image */}
-        <div className="absolute left-4 bottom-4">
-          <span className={`px-3 py-1.5 text-[13px] rounded-lg font-semibold ${theme.priceChip}`}>
-            {item.priceLabel}
-          </span>
-        </div>
-
-        {/* UPDATED: Direct Owner / Agent Badge - Top Right */}
-        <div className="absolute top-3 right-3">
-            {isOwner ? (
-                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/95 backdrop-blur-sm text-green-700 text-[10px] font-bold shadow-sm">
-                    <ShieldCheck className="w-3 h-3" />
-                    Direct Owner
-                </span>
-            ) : (
-                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/95 backdrop-blur-sm text-blue-700 text-[10px] font-bold shadow-sm">
-                    <ShieldCheck className="w-3 h-3" />
-                    Agent listed
-                </span>
-            )}
-        </div>
+        <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+        {tierLabel(item.tier) && ( <span className={`absolute top-3 left-3 px-3 py-1 text-[11px] font-semibold rounded-full ${theme.badge}`}> {tierLabel(item.tier)} </span> )}
+        <div className="absolute left-4 bottom-4"> <span className={`px-3 py-1.5 text-[13px] rounded-lg font-semibold ${theme.priceChip}`}> {item.priceLabel} </span> </div>
+        <div className="absolute top-3 right-3"> {isOwner ? ( <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/95 backdrop-blur-sm text-green-700 text-[10px] font-bold shadow-sm"> <ShieldCheck className="w-3 h-3" /> Direct Owner </span> ) : ( <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/95 backdrop-blur-sm text-blue-700 text-[10px] font-bold shadow-sm"> <ShieldCheck className="w-3 h-3" /> Agent listed </span> )} </div>
       </div>
-
-      {/* CENTER: Info Section */}
       <div className="flex-1 flex flex-col gap-2">
-        {/* Title */}
-        <div>
-          <h3 className="text-lg font-bold text-slate-900 leading-tight">
-            {item.title}
-          </h3>
-        </div>
-
-        {/* Row 1: Specs Pills */}
-        <div className="flex flex-wrap gap-2">
-          <span className="px-3 py-1.5 bg-slate-50 rounded-lg text-sm font-semibold text-slate-700 border border-slate-100">
-            {item.bedrooms} BHK • {item.bathrooms} Bath
-          </span>
-          <span className="px-3 py-1.5 bg-slate-50 rounded-lg text-sm font-semibold text-slate-700 border border-slate-100">
-            {item.areaSqft.toLocaleString()} sq ft
-          </span>
-        </div>
-
-        {/* Row 2: Type & Location */}
-        <div className="flex flex-wrap gap-2">
-          <span className="px-3 py-1.5 bg-white rounded-full text-xs font-medium text-slate-600 border border-slate-200">
-            {item.type} • {item.furnishing}
-          </span>
-          <span className="px-3 py-1.5 bg-white rounded-full text-xs font-medium text-slate-600 border border-slate-200">
-            {item.locality}, {item.city}
-          </span>
-        </div>
-
-        {/* Row 3: Meta Info (Icons) */}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-1 text-sm text-slate-500">
-          <div className="flex items-center gap-1.5">
-            <Clock className="w-4 h-4 text-slate-400" />
-            <span>{item.readyStatus}</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Car className="w-4 h-4 text-slate-400" />
-            <span>{item.parking} Parking</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Calendar className="w-4 h-4 text-slate-400" />
-            <span>Age: {item.ageLabel}</span>
-          </div>
-        </div>
-
-        {/* Row 4: Tags */}
-        <div className="flex flex-wrap gap-2 mt-auto">
-          {item.tags.map((tag) => (
-            <span
-              key={tag}
-              className={`px-2.5 py-1 rounded-md text-[11px] font-medium ${theme.tagBg}`}
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-        
-        {/* Media Text */}
-        <div className="text-[11px] text-slate-400 pt-1">
-           Media & docs • {item.media}
-        </div>
+        <div> <h3 className="text-lg font-bold text-slate-900 leading-tight"> {item.title} </h3> </div>
+        <div className="flex flex-wrap gap-2"> <span className="px-3 py-1.5 bg-slate-50 rounded-lg text-sm font-semibold text-slate-700 border border-slate-100"> {item.bedrooms > 0 ? `${item.bedrooms} BHK` : "Plot"} • {item.bathrooms > 0 ? `${item.bathrooms} Bath` : ""} </span> <span className="px-3 py-1.5 bg-slate-50 rounded-lg text-sm font-semibold text-slate-700 border border-slate-100"> {item.areaSqft.toLocaleString()} sq ft </span> </div>
+        <div className="flex flex-wrap gap-2"> <span className="px-3 py-1.5 bg-white rounded-full text-xs font-medium text-slate-600 border border-slate-200"> {item.type} • {item.furnishing} </span> <span className="px-3 py-1.5 bg-white rounded-full text-xs font-medium text-slate-600 border border-slate-200"> {item.locality}, {item.city} </span> </div>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-1 text-sm text-slate-500"> <div className="flex items-center gap-1.5"> <Clock className="w-4 h-4 text-slate-400" /> <span>{item.readyStatus}</span> </div> <div className="flex items-center gap-1.5"> <Car className="w-4 h-4 text-slate-400" /> <span>{item.parking} Parking</span> </div> <div className="flex items-center gap-1.5"> <Calendar className="w-4 h-4 text-slate-400" /> <span>Age: {item.ageLabel}</span> </div> </div>
+        <div className="flex flex-wrap gap-2 mt-auto"> {item.tags.map((tag) => ( <span key={tag} className={`px-2.5 py-1 rounded-md text-[11px] font-medium ${theme.tagBg}`}> {tag} </span> ))} </div>
+        <div className="text-[11px] text-slate-400 pt-1"> Media & docs • {item.media} </div>
       </div>
-
-      {/* RIGHT: Price & Actions */}
       <div className="w-full md:w-48 shrink-0 flex flex-col justify-between md:border-l md:border-slate-100 md:pl-4 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100">
-        
-        {/* Top: Price */}
-        <div>
-          <div className="text-xs font-medium text-slate-500">Price</div>
-          <div className="text-xl font-bold text-slate-900 mt-0.5">
-            {item.priceLabel}
-          </div>
-          <div className="mt-2">
-              <div className="text-xs text-slate-500">Seller access</div>
-              <div className="text-xs font-medium text-slate-700 mt-0.5">{item.phoneMasked}</div>
-              <div className="text-[10px] text-slate-400 leading-tight">full number after subscription</div>
-          </div>
-        </div>
-
-        {/* Bottom: Buttons */}
-        <div className="flex flex-col gap-2 mt-4">
-          <button className={`w-full py-2 rounded-full text-white text-sm font-bold shadow-sm transition-all active:scale-95 ${theme.viewBtn}`}>
-            View details
-          </button>
-          <button className="w-full py-2 rounded-full border border-slate-300 bg-white hover:border-slate-400 text-slate-800 text-sm font-bold transition-all active:scale-95">
-            Unlock seller
-          </button>
-        </div>
-
+        <div> <div className="text-xs font-medium text-slate-500">Price</div> <div className="text-xl font-bold text-slate-900 mt-0.5"> {item.priceLabel} </div> <div className="mt-2"> <div className="text-xs text-slate-500">Seller access</div> <div className="text-xs font-medium text-slate-700 mt-0.5">{item.phoneMasked}</div> <div className="text-[10px] text-slate-400 leading-tight">full number after subscription</div> </div> </div>
+        <div className="flex flex-col gap-2 mt-4"> <button className={`w-full py-2 rounded-full text-white text-sm font-bold shadow-sm transition-all active:scale-95 ${theme.viewBtn}`}> View details </button> <button className="w-full py-2 rounded-full border border-slate-300 bg-white hover:border-slate-400 text-slate-800 text-sm font-bold transition-all active:scale-95"> Unlock seller </button> </div>
       </div>
     </article>
   );
