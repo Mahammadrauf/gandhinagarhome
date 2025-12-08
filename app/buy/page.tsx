@@ -637,33 +637,6 @@ export default function BuyIntroPage() {
                     )}
                 </FilterBlock>
 
-                {/* Price range (₹) */}
-                <FilterBlock title="Price range (₹)">
-                    <div className="flex gap-2 w-full">
-                    <input
-                        value={filters.priceMin}
-                        onChange={(e) =>
-                        setFilters((f) => ({
-                            ...f,
-                            priceMin: e.target.value,
-                        }))
-                        }
-                        placeholder="Min Cr"
-                        className="w-full rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] outline-none placeholder:text-slate-400 focus:border-emerald-500"
-                    />
-                    <input
-                        value={filters.priceMax}
-                        onChange={(e) =>
-                        setFilters((f) => ({
-                            ...f,
-                            priceMax: e.target.value,
-                        }))
-                        }
-                        placeholder="Max Cr"
-                        className="w-full rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] outline-none placeholder:text-slate-400 focus:border-emerald-500"
-                    />
-                    </div>
-                </FilterBlock>
 
                 {/* Bedrooms */}
                 <FilterBlock title="Bedrooms">
@@ -687,27 +660,7 @@ export default function BuyIntroPage() {
                     })}
                 </FilterBlock>
 
-                {/* Bathrooms */}
-                <FilterBlock title="Bathrooms">
-                    {["1+", "2+", "3+"].map((label, idx) => {
-                    const value = idx + 1;
-                    return (
-                        <PillButton
-                        key={label}
-                        active={filters.minBathrooms === value}
-                        onClick={() =>
-                            setFilters((f) => ({
-                            ...f,
-                            minBathrooms:
-                                f.minBathrooms === value ? 0 : value,
-                            }))
-                        }
-                        >
-                        {label}
-                        </PillButton>
-                    );
-                    })}
-                </FilterBlock>
+                
 
                 {/* Furnishing */}
                 <FilterBlock title="Furnishing">
@@ -734,110 +687,6 @@ export default function BuyIntroPage() {
                     ))}
                 </FilterBlock>
 
-                {/* Parking */}
-                <FilterBlock title="Parking">
-                    <PillButton
-                    active={filters.minParking === 0}
-                    onClick={() =>
-                        setFilters((f) => ({ ...f, minParking: 0 }))
-                    }
-                    >
-                    Any
-                    </PillButton>
-                    <PillButton
-                    active={filters.minParking === 1}
-                    onClick={() =>
-                        setFilters((f) => ({ ...f, minParking: 1 }))
-                    }
-                    >
-                    1+
-                    </PillButton>
-                    <PillButton
-                    active={filters.minParking === 2}
-                    onClick={() =>
-                        setFilters((f) => ({ ...f, minParking: 2 }))
-                    }
-                    >
-                    2+
-                    </PillButton>
-                </FilterBlock>
-
-                {/* Size (sq ft) */}
-                <FilterBlock title="Size (sq ft)">
-                    <div className="flex gap-2 w-full">
-                    <input
-                        value={filters.sizeMin}
-                        onChange={(e) =>
-                        setFilters((f) => ({
-                            ...f,
-                            sizeMin: e.target.value,
-                        }))
-                        }
-                        placeholder="Min size"
-                        className="w-full rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] outline-none placeholder:text-slate-400 focus:border-emerald-500"
-                    />
-                    <input
-                        value={filters.sizeMax}
-                        onChange={(e) =>
-                        setFilters((f) => ({
-                            ...f,
-                            sizeMax: e.target.value,
-                        }))
-                        }
-                        placeholder="Max size"
-                        className="w-full rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] outline-none placeholder:text-slate-400 focus:border-emerald-500"
-                    />
-                    </div>
-                </FilterBlock>
-
-                {/* Age & availability */}
-                <FilterBlock title="Possession">
-                    <PillButton
-                    active={filters.possession === "any"}
-                    onClick={() =>
-                        setFilters((f) => ({ ...f, possession: "any" }))
-                    }
-                    >
-                    Any
-                    </PillButton>
-                    <PillButton
-                    active={filters.possession === "Immediate"}
-                    onClick={() =>
-                        setFilters((f) => ({
-                        ...f,
-                        possession: "Immediate",
-                        }))
-                    }
-                    >
-                    Immediate
-                    </PillButton>
-                    <PillButton
-                    active={filters.possession === "After 1 Month"}
-                    onClick={() =>
-                        setFilters((f) => ({
-                        ...f,
-                        possession: "After 1 Month",
-                        }))
-                    }
-                    >
-                    After 1 Month
-                    </PillButton>
-                </FilterBlock>
-
-                {/* Amenities */}
-                <FilterBlock title="Amenities">
-                    {["Lift", "Garden", "Security", "Gym"].map(
-                    (amenity) => (
-                        <PillButton
-                        key={amenity}
-                        active={filters.amenities.includes(amenity)}
-                        onClick={() => handleAmenityToggle(amenity)}
-                        >
-                        {amenity}
-                        </PillButton>
-                    )
-                    )}
-                </FilterBlock>
                 </div>
             </div>
           </aside>
