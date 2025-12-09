@@ -7,6 +7,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import Link from "next/link";
 
 // --- Types ---
 
@@ -340,17 +341,18 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
                           ))}
                         </div>
 
-                        <button
-                          type="button"
-                          // Prevent button click while dragging
+                        <Link
+                          href={`/property/${property.id}`}
                           onClick={(e) => {
-                             if(isDragging) e.preventDefault();
-                             else console.log('Navigating to', property.id);
+                            // Prevent navigation if user is dragging
+                            if (isDragging) {
+                              e.preventDefault();
+                            }
                           }}
-                          className={`mt-auto w-full py-2.5 rounded-lg font-medium transition-all ${isCenterCard ? "bg-gradient-to-r from-[#B59E78] to-[#8C7A5B] text-white shadow-lg" : "bg-stone-200 text-stone-600"}`}
+                          className={`mt-auto w-full py-2.5 rounded-lg font-medium transition-all text-center block ${isCenterCard ? "bg-gradient-to-r from-[#B59E78] to-[#8C7A5B] text-white shadow-lg hover:shadow-xl" : "bg-stone-200 text-stone-600 hover:bg-stone-300"}`}
                         >
                           View Details
-                        </button>
+                        </Link>
                       </div>
                     </div>
                   </div>
@@ -380,7 +382,7 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
 // Dummy data moved outside component
 const MOCK_DB_DATA: Property[] = [
   {
-    id: "f1",
+    id: "1",
     image: "https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=800&q=80",
     price: "₹2.1 Cr",
     location: "Sargasan",
@@ -391,7 +393,7 @@ const MOCK_DB_DATA: Property[] = [
     tag: { text: "New", color: "bg-[#B59E78] text-white" },
   },
   {
-    id: "f2",
+    id: "2",
     image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80",
     price: "₹1.65 Cr",
     location: "Kudasan",
@@ -402,7 +404,7 @@ const MOCK_DB_DATA: Property[] = [
     tag: { text: "Exclusive", color: "bg-[#D4C5A5] text-[#5C5042]" },
   },
   {
-    id: "f3",
+    id: "3",
     image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80",
     price: "₹2.45 Cr",
     location: "Randesan",
@@ -413,7 +415,7 @@ const MOCK_DB_DATA: Property[] = [
     tag: { text: "Open House", color: "bg-stone-200 text-stone-700" },
   },
   {
-    id: "f4",
+    id: "4",
     image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80",
     price: "₹3.10 Cr",
     location: "Sector 21",
@@ -424,7 +426,7 @@ const MOCK_DB_DATA: Property[] = [
     tag: { text: "Private", color: "bg-[#8C7A5B] text-white" },
   },
   {
-    id: "f5",
+    id: "5",
     image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80",
     price: "₹1.85 Cr",
     location: "Sector 16",

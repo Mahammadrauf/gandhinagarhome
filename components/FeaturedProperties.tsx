@@ -7,6 +7,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import Link from "next/link";
 
 // --- Types ---
 
@@ -422,20 +423,22 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
                           ))}
                         </div>
 
-                        <button
-                          type="button"
+                        <Link
+                          href={`/featured-property/${property.id}`}
                           onClick={(e) => {
-                            if (isDragging) e.preventDefault();
-                            else console.log("Navigating to", property.id);
+                            // Prevent navigation if user is dragging
+                            if (isDragging) {
+                              e.preventDefault();
+                            }
                           }}
-                          className={`mt-auto w-full py-2.5 rounded-lg font-medium transition-all ${
+                          className={`mt-auto w-full py-2.5 rounded-lg font-medium transition-all text-center block ${
                             isCenterCard
                               ? "bg-gradient-to-r from-[#0F7F9C] to-[#022F5A] text-white shadow-md hover:shadow-lg"
-                              : "bg-gray-200 text-gray-700"
+                              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                           }`}
                         >
                           View Details
-                        </button>
+                        </Link>
                       </div>
                     </div>
                   </div>

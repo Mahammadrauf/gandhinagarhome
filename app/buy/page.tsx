@@ -64,7 +64,8 @@ interface Filters {
 // --- DATA CONSTANTS ---
 const CITY_AREAS: Record<string, string[]> = {
   Gandhinagar: ["Raysan", "Randesan", "Sargasan", "Kudasan", "Koba", "Sectors"],
-  Ahmedabad: ["Motera", "Chandkheda", "Zundal", "Adalaj", "Bhat"],
+  // Added "Tapovan" here as requested
+  Ahmedabad: ["Motera", "Chandkheda", "Zundal", "Adalaj", "Bhat", "Tapovan"],
 };
 
 // --- EXPANDED DATASET (Source of Truth) ---
@@ -835,54 +836,64 @@ export default function BuyIntroPage() {
           </div>
 
           <div className="flex flex-col gap-1 lg:flex-row">
-            <div className="flex flex-1 flex-col gap-1 sm:flex-row">
-              <SmartDropdown
-                label="Type"
-                value={filters.propertyType}
-                onChange={(val) =>
-                  setFilters((f) => ({ ...f, propertyType: val as any }))
-                }
-                options={[
-                  { value: "any", label: "Any" },
-                  { value: "Apartment", label: "Apartment" },
-                  { value: "Villa", label: "Villa" },
-                  { value: "Plot", label: "Plot" },
-                ]}
-              />
+  {/* 1. Removed 'flex-1' so the group doesn't push the button to the far right. */}
+  <div className="flex flex-col gap-1 sm:flex-row">
+    
+    {/* 2. Wrapped each Dropdown in 'w-40' (approx 160px). 
+          You can change w-40 to w-44 or w-36 to adjust the width. */}
+    <div className="w-60">
+      <SmartDropdown
+        label="Type"
+        value={filters.propertyType}
+        onChange={(val) =>
+          setFilters((f) => ({ ...f, propertyType: val as any }))
+        }
+        options={[
+          { value: "any", label: "Any" },
+          { value: "Apartment", label: "Apartment" },
+          { value: "Villa", label: "Villa" },
+          { value: "Plot", label: "Plot" },
+        ]}
+      />
+    </div>
 
-              <SmartDropdown
-                label="Budget"
-                value={filters.priceRange}
-                onChange={(val) =>
-                  setFilters((f) => ({ ...f, priceRange: val as any }))
-                }
-                options={[
-                  { value: "any", label: "Any" },
-                  { value: "0-1.5", label: "Up to ₹1.5 Cr" },
-                  { value: "1.5-2", label: "₹1.5 - ₹2 Cr" },
-                  { value: "2.5+", label: "₹2.5 Cr +" },
-                ]}
-              />
+    <div className="w-60">
+      <SmartDropdown
+        label="Budget"
+        value={filters.priceRange}
+        onChange={(val) =>
+          setFilters((f) => ({ ...f, priceRange: val as any }))
+        }
+        options={[
+          { value: "any", label: "Any" },
+          { value: "0-1.5", label: "Up to ₹1.5 Cr" },
+          { value: "1.5-2", label: "₹1.5 - ₹2 Cr" },
+          { value: "2.5+", label: "₹2.5 Cr +" },
+        ]}
+      />
+    </div>
 
-              <SmartDropdown
-                label="Move"
-                value={filters.possession}
-                onChange={(val) =>
-                  setFilters((f) => ({ ...f, possession: val as any }))
-                }
-                options={[
-                  { value: "any", label: "Any" },
-                  { value: "Ready to move", label: "Ready to Move" },
-                  { value: "Immediate", label: "Immediate" },
-                  { value: "After 1 Month", label: "After 1 Month" },
-                ]}
-              />
-            </div>
+    <div className="w-60">
+      <SmartDropdown
+        label="Move"
+        value={filters.possession}
+        onChange={(val) =>
+          setFilters((f) => ({ ...f, possession: val as any }))
+        }
+        options={[
+          { value: "any", label: "Any" },
+          { value: "Ready to move", label: "Ready to Move" },
+          { value: "Immediate", label: "Immediate" },
+          { value: "After 1 Month", label: "After 1 Month" },
+        ]}
+      />
+    </div>
+  </div>
 
-            <button className="h-8 shrink-0 rounded-full bg-[#006B5B] px-5 text-sm font-semibold text-white shadow transition-all hover:bg-[#005347] active:scale-95">
-              Search
-            </button>
-          </div>
+  <button className="h-8 shrink-0 rounded-full bg-[#006B5B] px-5 text-sm font-semibold text-white shadow transition-all hover:bg-[#005347] active:scale-95">
+    Search
+  </button>
+</div>
 
           <div className="mt-3 flex flex-col gap-1 border-t border-slate-100 pt-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-wrap items-center gap-1">
@@ -949,11 +960,11 @@ export default function BuyIntroPage() {
                 {(filters.city === "Gandhinagar" || filters.city === "Ahmedabad") && (
                    <div className="animate-in fade-in slide-in-from-top-2 duration-300">
                       <FilterBlock title={`Locality (${filters.city})`}>
-                         {CITY_AREAS[filters.city].map(area => (
-                            <PillButton key={area} active={filters.localities.includes(area)} onClick={() => handleLocalityToggle(area)}>
-                               {area}
-                            </PillButton>
-                         ))}
+                          {CITY_AREAS[filters.city].map(area => (
+                             <PillButton key={area} active={filters.localities.includes(area)} onClick={() => handleLocalityToggle(area)}>
+                                {area}
+                             </PillButton>
+                          ))}
                       </FilterBlock>
                    </div>
                 )}
@@ -961,7 +972,9 @@ export default function BuyIntroPage() {
                 <div className="pt-1">
                    <div className="flex justify-between items-center mb-2">
                       <div className="text-[11px] font-semibold text-slate-500">Budget</div>
-                      <div className="text-[10px] text-slate-400 font-medium">₹{filters.priceMin} Cr - ₹{filters.priceMax}+ Cr</div>
+                      <div className="text-sm text-slate-700 font-bold">
+  ₹{filters.priceMin} Cr - ₹{filters.priceMax}+ Cr
+</div>
                    </div>
                    <DualRangeSlider 
                       min={0} max={6} step={0.1}
@@ -1184,7 +1197,7 @@ function themeForTier(tier: Tier) {
       tagBg: "bg-[#e0f2ff] text-[#0F7F9C] border border-[#bfe0ff]", // Light blue bg, teal text
       viewBtn: "bg-gradient-to-r from-[#0F7F9C] to-[#022F5A] text-white shadow hover:opacity-90", // Gradient button
       cardAccent: "ring-1 ring-sky-200", 
-      cardBg: "bg-gradient-to-r from-[#f0f9ff] to-white" // Subtle blue tint
+      cardBg: "bg-gradient-to-r from-[#CFE5FF] to-[#F0F9FF]" // Subtle blue tint
   };
   
   const regular = { 
