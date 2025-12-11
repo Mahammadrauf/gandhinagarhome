@@ -424,7 +424,7 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
                         </div>
 
                         <Link
-                          href={`/featured-property/${property.id}`}
+                          href={`/properties/${property.id}`}
                           onClick={(e) => {
                             // Prevent navigation if user is dragging
                             if (isDragging) {
