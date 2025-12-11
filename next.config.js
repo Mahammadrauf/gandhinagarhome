@@ -1,6 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  
+  // Merge the eslint setting inside here
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
+  // Your Unsplash image configuration
   images: {
     remotePatterns: [
       {
@@ -11,11 +18,4 @@ const nextConfig = {
   },
 }
 
-module.exports = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-};
-
-module.exports = nextConfig
-
+module.exports = nextConfig;

@@ -40,12 +40,13 @@ const property = {
     { text: 'Exact map available' },
   ],
 
+  // UPDATED IMAGES HERE
   images: [
-    'https://images.unsplash.com/photo-1600596542815-3ad19fb2a258?auto=format&fit=crop&w=1600&q=80',
-    'https://images.unsplash.com/photo-1600585154340-0ef3c08c0632?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1600&q=80', // Modern Villa Exterior
+    'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=800&q=80', // Modern Living Room
+    'https://images.unsplash.com/photo-1616594031246-852a69137bc8?auto=format&fit=crop&w=800&q=80', // Master Bedroom
+    'https://images.unsplash.com/photo-1631679706909-1844bbd07221?auto=format&fit=crop&w=800&q=80', // Living Area / Dining
+    'https://images.unsplash.com/photo-1560185127-6ed189bf02f4?auto=format&fit=crop&w=800&q=80', // Guest Bedroom
   ],
 
   videoUrl: 'https://samplelib.com/lib/preview/mp4/sample-5s.mp4',
