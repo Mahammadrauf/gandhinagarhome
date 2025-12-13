@@ -342,7 +342,7 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
                         </div>
 
                         <Link
-                          href={`/properties/${property.id}`}
+                          href={`/properties/e${property.id}`}
                           onClick={(e) => {
                             // Prevent navigation if user is dragging
                             if (isDragging) {

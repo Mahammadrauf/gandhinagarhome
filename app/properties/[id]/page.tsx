@@ -154,22 +154,57 @@ const similarProperties = [
 ];
 
 // ---- THEME ----
-const getTheme = (type: string) => {
+const getTheme = (type: string, propertyId?: string) => {
+  // Check if this is a featured property by looking at the ID
+  const isFeatured = propertyId && (propertyId.startsWith('f') || propertyId.startsWith('F'));
+  // Check if this is an exclusive property by looking at the ID
+  const isExclusive = propertyId && (propertyId.startsWith('e') || propertyId.startsWith('E'));
+  // Check if this is a normal property by looking at the ID
+  const isNormal = propertyId && (propertyId.startsWith('n') || propertyId.startsWith('N'));
+  
   const themes = {
+    featured: {
+      primary: '#0F7F9C',
+      primaryHover: '#075985',
+      lightBg: '#e0f2ff',
+      borderColor: '#0F7F9C',
+      badgeBg: '#0F7F9C',
+      badgeText: 'text-white',
+      buttonBg: 'bg-[#0F7F9C]',
+      buttonHover: 'hover:bg-[#075985]',
+      tagBg: '#0F7F9C',
+    },
     exclusive: {
-      badgeBg: 'bg-[#f4c15b]',
+      primary: '#B59E78',
+      primaryHover: '#8C7A5B',
+      lightBg: '#F5F2EB',
+      borderColor: '#B59E78',
+      badgeBg: '#f4c15b',
       badgeText: 'text-[#4f3a06]',
+      buttonBg: 'bg-[#B59E78]',
+      buttonHover: 'hover:bg-[#8C7A5B]',
+      tagBg: '#B59E78',
+    },
+    normal: {
+      primary: '#1f5f5b',
+      primaryHover: '#164542',
+      lightBg: '#eefcfa',
+      borderColor: '#1f5f5b',
+      badgeBg: '#1f5f5b',
+      badgeText: 'text-white',
       buttonBg: 'bg-[#1f5f5b]',
       buttonHover: 'hover:bg-[#164542]',
-      tagBg: 'bg-[#1f5f5b]',
-      lightBg: 'bg-[#eefcfa]',
-      borderColor: 'border-[#1f5f5b]',
+      tagBg: '#1f5f5b',
     },
   };
-  return themes[type as keyof typeof themes] || themes.exclusive;
+  
+  // Return theme based on property ID detection
+  if (isFeatured) return themes.featured;
+  if (isExclusive) return themes.exclusive;
+  if (isNormal) return themes.normal;
+  // Fallback to type-based detection
+  return themes[type as keyof typeof themes] || themes.normal;
 };
-
-const theme = getTheme(property.type);
 
 // --- Custom Badge Component to match Image ---
 const DirectOwnerBadge = () => (
@@ -184,6 +219,10 @@ const DirectOwnerBadge = () => (
 export default function PropertyDetailsPage({ params }: { params: { id: string } }) {
   const [mediaMode, setMediaMode] = useState('photos');
   const [galleryIndex, setGalleryIndex] = useState(0);
+  
+  // Use the actual URL parameter for theme detection
+  const propertyId = params.id;
+  const theme = getTheme(property.type, propertyId);
   
   // Carousel Scroll Ref
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -226,9 +265,9 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
           <div className="flex items-center justify-between mb-5">
             <Link
               href="/properties"
-              className="group inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-[#1f5f5b] transition-colors"
+              className="group inline-flex items-center gap-2 text-sm font-medium text-gray-500 transition-colors"
             >
-              <div className="p-1.5 rounded-full bg-white border border-gray-200 group-hover:border-[#1f5f5b] transition-colors shadow-sm">
+              <div className="p-1.5 rounded-full bg-white border border-gray-200 transition-colors shadow-sm">
                  <ArrowLeft className="w-4 h-4" />
               </div>
               Back to properties
@@ -246,7 +285,7 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
 
           {/* Title Card */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-md px-6 py-6 mb-6 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[#1f5f5b]/10 to-transparent rounded-full opacity-50 blur-3xl pointer-events-none -mr-16 -mt-16 transition-opacity group-hover:opacity-75"></div>
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-500/10 to-transparent rounded-full opacity-50 blur-3xl pointer-events-none -mr-16 -mt-16 transition-opacity group-hover:opacity-75"></div>
 
             <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 relative z-10">
               <div>
@@ -254,7 +293,7 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                   {property.badges.map((badge, i) => (
                     <span
                       key={i}
-                      className={`${theme.badgeBg} ${theme.badgeText} text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm`}
+                      className="bg-[#f4c15b] text-[#4f3a06] text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm"
                     >
                       {badge.text}
                     </span>
@@ -270,7 +309,7 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
               </div>
               
               <div className="text-left md:text-right">
-                   <p className="text-3xl font-bold text-[#1f5f5b] tracking-tight">{property.price}</p>
+                   <p className="text-3xl font-bold tracking-tight" style={{ color: theme.primary }}>{property.price}</p>
                    <p className="text-xs text-gray-500 font-medium mt-1">{property.priceNote}</p>
               </div>
             </div>
@@ -364,37 +403,37 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                     <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Property Documents</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {property.hasSaleDeed && (
-                          <div className={`flex items-center justify-between p-4 rounded-xl border border-gray-200 bg-gray-50 hover:bg-[#eefcfa] hover:border-[#1f5f5b] transition-all group cursor-pointer relative overflow-hidden`}>
-                               <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#1f5f5b] opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <div className={`flex items-center justify-between p-4 rounded-xl border border-gray-200 bg-gray-50 hover:${theme.lightBg} hover:border-[${theme.borderColor}] transition-all group cursor-pointer relative overflow-hidden`}>
+                               <div className="absolute left-0 top-0 bottom-0 w-1 bg-[${theme.borderColor}] opacity-0 group-hover:opacity-100 transition-opacity" />
                                <div className="flex items-center gap-4">
-                                  <div className="p-2.5 bg-white rounded-lg shadow-sm text-[#1f5f5b] border border-gray-100 group-hover:scale-105 transition-transform">
+                                  <div className="p-2.5 bg-white rounded-lg shadow-sm text-[${theme.borderColor}] border border-gray-100 group-hover:scale-105 transition-transform">
                                       <FileCheck className="w-6 h-6" />
                                   </div>
                                   <div>
-                                      <p className="text-sm font-bold text-gray-900 group-hover:text-[#1f5f5b] transition-colors">Sale Deed / Index</p>
+                                      <p className="text-sm font-bold text-gray-900 group-hover:text-[${theme.borderColor}] transition-colors">Sale Deed / Index</p>
                                       <p className="text-[11px] text-green-600 font-bold flex items-center gap-1 mt-0.5">
                                           <CheckCircle2 className="w-3 h-3"/> Verified Ownership
                                       </p>
                                   </div>
                                 </div>
-                               <div className="bg-white p-2 rounded-lg border border-gray-200 text-gray-400 group-hover:text-[#1f5f5b] group-hover:border-[#1f5f5b]/30 shadow-sm transition-all">
+                               <div className="bg-white p-2 rounded-lg border border-gray-200 text-gray-400 group-hover:text-[${theme.borderColor}] group-hover:border-[${theme.borderColor}]/30 shadow-sm transition-all">
                                    <Download className="w-4 h-4" />
                                </div>
                           </div>
                         )}
                         {property.hasBrochure && (
-                          <div className={`flex items-center justify-between p-4 rounded-xl border border-gray-200 bg-gray-50 hover:bg-[#eefcfa] hover:border-[#1f5f5b] transition-all group cursor-pointer relative overflow-hidden`}>
-                               <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#1f5f5b] opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <div className={`flex items-center justify-between p-4 rounded-xl border border-gray-200 bg-gray-50 hover:${theme.lightBg} hover:border-[${theme.borderColor}] transition-all group cursor-pointer relative overflow-hidden`}>
+                               <div className="absolute left-0 top-0 bottom-0 w-1 bg-[${theme.borderColor}] opacity-0 group-hover:opacity-100 transition-opacity" />
                                <div className="flex items-center gap-4">
-                                  <div className="p-2.5 bg-white rounded-lg shadow-sm text-[#1f5f5b] border border-gray-100 group-hover:scale-105 transition-transform">
+                                  <div className="p-2.5 bg-white rounded-lg shadow-sm text-[${theme.borderColor}] border border-gray-100 group-hover:scale-105 transition-transform">
                                       <BookOpen className="w-6 h-6" />
                                   </div>
                                   <div>
-                                      <p className="text-sm font-bold text-gray-900 group-hover:text-[#1f5f5b] transition-colors">Project Brochure</p>
+                                      <p className="text-sm font-bold text-gray-900 group-hover:text-[${theme.borderColor}] transition-colors">Project Brochure</p>
                                       <p className="text-[11px] text-gray-500 font-medium mt-0.5">View layouts & plans</p>
                                   </div>
                                </div>
-                               <div className="bg-white p-2 rounded-lg border border-gray-200 text-gray-400 group-hover:text-[#1f5f5b] group-hover:border-[#1f5f5b]/30 shadow-sm transition-all">
+                               <div className="bg-white p-2 rounded-lg border border-gray-200 text-gray-400 group-hover:text-[${theme.borderColor}] group-hover:border-[${theme.borderColor}]/30 shadow-sm transition-all">
                                    <Download className="w-4 h-4" />
                                </div>
                           </div>
@@ -413,8 +452,8 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {property.overview.map((item, i) => (
-                    <div key={i} className="group bg-gray-50 hover:bg-[#eefcfa] border border-gray-100 hover:border-[#1f5f5b]/20 transition-all duration-300 rounded-lg p-3 flex items-center gap-3 cursor-default">
-                      <div className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm text-[#1f5f5b] group-hover:scale-110 transition-transform">
+                    <div key={i} className="group bg-gray-50 hover:${theme.lightBg} border border-gray-100 hover:border-[${theme.borderColor}]/20 transition-all duration-300 rounded-lg p-3 flex items-center gap-3 cursor-default">
+                      <div className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm text-[${theme.borderColor}] group-hover:scale-110 transition-transform">
                           <item.icon className="w-4 h-4" />
                       </div>
                       <div className="flex flex-col">
@@ -444,8 +483,8 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                  <h3 className="text-base font-bold text-gray-900 mb-5 pb-2 border-b border-gray-100">Amenities</h3>
                  <div className="flex flex-wrap gap-3">
                    {property.amenities.map((amenity, i) => (
-                     <span key={i} className="group inline-flex items-center px-4 py-2.5 rounded-xl border border-gray-200 bg-white hover:border-[#1f5f5b] hover:bg-[#eefcfa] transition-all text-sm font-medium text-gray-600 hover:text-[#1f5f5b] cursor-default shadow-sm">
-                       <CheckCircle2 className="w-4 h-4 mr-2 text-gray-300 group-hover:text-[#1f5f5b] transition-colors" />
+                     <span key={i} className="group inline-flex items-center px-4 py-2.5 rounded-xl border border-gray-200 bg-white hover:border-[${theme.borderColor}] hover:${theme.lightBg} transition-all text-sm font-medium text-gray-600 hover:text-[${theme.borderColor}] cursor-default shadow-sm">
+                       <CheckCircle2 className="w-4 h-4 mr-2 text-gray-300 group-hover:text-[${theme.borderColor}] transition-colors" />
                        {amenity}
                      </span>
                    ))}
@@ -457,7 +496,7 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                  <div className="relative h-64 md:h-72 bg-[#f0f2f5] rounded-xl overflow-hidden flex flex-col items-center justify-center group cursor-pointer">
                     <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:16px_16px]"></div>
                     <div className="relative z-10 flex flex-col items-center p-6 bg-white/80 backdrop-blur-md rounded-2xl border border-white shadow-lg transition-transform duration-300 group-hover:scale-105">
-                        <div className="bg-[#1f5f5b] p-3 rounded-full mb-3 text-white shadow-md">
+                        <div className="p-3 rounded-full mb-3 text-white shadow-md" style={{ backgroundColor: theme.primary }}>
                             <MapPin className="w-6 h-6" />
                         </div>
                         <span className="text-sm font-bold text-gray-900">Map View Hidden</span>
@@ -466,7 +505,7 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                  </div>
                  <div className="flex justify-between items-center px-4 py-3 bg-white rounded-b-xl">
                     <p className="text-xs text-gray-500 font-medium">Approx: Raysan, Gandhinagar – 382421</p>
-                    <button className="text-xs font-bold text-[#1f5f5b] hover:underline flex items-center gap-1">
+                    <button className="text-xs font-bold hover:underline flex items-center gap-1" style={{ color: theme.primary }}>
                         Open in Google Maps <ArrowLeft className="w-3 h-3 rotate-180" />
                     </button>
                  </div>
@@ -480,7 +519,7 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                 
                 {/* Contact Card */}
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-xl p-6 relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#1f5f5b] to-[#f4c15b]" />
+                  <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r" style={{ background: `linear-gradient(to right, ${theme.primary}, #f4c15b)` }} />
                   
                   <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Total Price</p>
                   <h2 className="text-3xl lg:text-4xl font-extrabold text-gray-900 mb-1 tracking-tight">{property.price}</h2>
@@ -489,7 +528,7 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                   <div className="mb-6 bg-gray-50 rounded-xl p-4 border border-gray-100">
                     <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
                         <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-full bg-[#1f5f5b] text-white flex items-center justify-center font-bold text-lg">
+                            <div className="w-12 h-12 rounded-full text-white flex items-center justify-center font-bold text-lg" style={{ backgroundColor: theme.primary }}>
                                 {property.seller.name.charAt(0)}
                             </div>
                             <div>
@@ -520,7 +559,7 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                     </div>
                   </div>
 
-                  <button className={`w-full bg-[#1f5f5b] hover:bg-[#164542] text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] mb-3 flex items-center justify-center gap-2 shadow-lg shadow-[#1f5f5b]/20 text-base`}>
+                  <button className={`w-full text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] mb-3 flex items-center justify-center gap-2 shadow-lg text-base ${theme.buttonBg} ${theme.buttonHover}`} style={{ boxShadow: `0 10px 25px -5px ${theme.primary}40` }}>
                       <ShieldCheck className="w-5 h-5" />
                       Contact Seller
                   </button>
@@ -531,21 +570,19 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                 </div>
 
                 {/* Quick Tip Card */}
-                <div className="bg-[#eefcfa] rounded-xl p-4 border border-[#1f5f5b]/10">
-                    <h5 className="text-sm font-bold text-[#1f5f5b] mb-1">Interested?</h5>
-                    <p className="text-xs text-[#1f5f5b]/80 leading-relaxed">
+                <div className={`${theme.lightBg} rounded-xl p-4 border border-[#00000010]`}>
+                    <h5 className="text-sm font-bold mb-1" style={{ color: theme.primary }}>Interested?</h5>
+                    <p className="text-xs leading-relaxed" style={{ color: theme.primary + 'cc' }}>
                         Properties in Raysan are seeing high demand. Don't wait too long to schedule a visit.
                     </p>
                 </div>
               </div>
             </div>
           </div>
-
-          {/* ---- SUGGESTED PROPERTIES CAROUSEL ---- */}
           <div className="mt-12 mb-10 pt-10 border-t border-gray-200 relative group">
              <div className="flex items-center justify-between mb-6 px-1">
                 <h2 className="text-2xl font-bold text-gray-900">Similar homes you might like</h2>
-                <Link href="/properties" className="text-sm font-bold text-[#1f5f5b] hover:underline flex items-center gap-1">
+                <Link href="/properties" className="text-sm font-bold hover:underline flex items-center gap-1 text-[#1f5f5b]">
                     See all <ArrowLeft className="w-4 h-4 rotate-180" />
                 </Link>
              </div>
@@ -553,7 +590,7 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
              {/* Carousel Buttons */}
              <button 
                 onClick={() => scroll('left')} 
-                className="absolute left-0 top-[55%] -translate-y-1/2 z-20 bg-white text-gray-700 p-2.5 rounded-full shadow-lg border border-gray-100 hover:bg-gray-50 hover:text-[#1f5f5b] hover:scale-110 transition-all hidden md:flex items-center justify-center"
+                className="absolute left-0 top-[55%] -translate-y-1/2 z-20 bg-white text-gray-700 p-2.5 rounded-full shadow-lg border border-gray-100 hover:bg-gray-50 hover:scale-110 transition-all hidden md:flex items-center justify-center"
                 aria-label="Scroll left"
              >
                 <ChevronLeft className="w-6 h-6" />
@@ -561,7 +598,7 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
              
              <button 
                 onClick={() => scroll('right')} 
-                className="absolute right-0 top-[55%] -translate-y-1/2 z-20 bg-white text-gray-700 p-2.5 rounded-full shadow-lg border border-gray-100 hover:bg-gray-50 hover:text-[#1f5f5b] hover:scale-110 transition-all hidden md:flex items-center justify-center"
+                className="absolute right-0 top-[55%] -translate-y-1/2 z-20 bg-white text-gray-700 p-2.5 rounded-full shadow-lg border border-gray-100 hover:bg-gray-50 hover:scale-110 transition-all hidden md:flex items-center justify-center"
                 aria-label="Scroll right"
              >
                 <ChevronRight className="w-6 h-6" />
