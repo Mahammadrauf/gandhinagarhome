@@ -24,7 +24,7 @@ export type Property = {
 };
 
 interface ExclusivePropertyProps {
-  data?: Property[]; // Made optional to handle loading states
+  data?: Property[]; 
   isLoading?: boolean;
 }
 
@@ -32,26 +32,20 @@ interface ExclusivePropertyProps {
 
 const CAROUSEL_CONFIG = {
   AUTO_ADVANCE_MS: 3000,
-  DRAG_THRESHOLD: 50, // Pixel movement required to change slide
+  DRAG_THRESHOLD: 50, 
   GAP: 20,
   DESKTOP_CARD_WIDTH: 350,
 } as const;
 
 // --- Hooks ---
 
-/**
- * Calculates available width for cards based on window size
- */
 const useCardWidth = () => {
   const [width, setWidth] = useState<number>(CAROUSEL_CONFIG.DESKTOP_CARD_WIDTH);
 
   useEffect(() => {
-    // Check if window is defined (client-side only)
     if (typeof window === "undefined") return;
 
     const handleResize = () => {
-      // On mobile (less than 640px), make card 85% of screen width
-      // On desktop, stick to fixed 350px
       if (window.innerWidth < 640) {
         setWidth(window.innerWidth * 0.85);
       } else {
@@ -59,9 +53,7 @@ const useCardWidth = () => {
       }
     };
 
-    // Initial set
     handleResize();
-
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -118,7 +110,6 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
 
   const scheduleNext = useCallback(() => {
     clearTimer();
-    // Don't auto-advance if paused, dragging, or not enough slides
     if (isPaused || isDragging || totalSlides <= 1) return;
     
     timeoutRef.current = window.setTimeout(() => {
@@ -137,7 +128,7 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
   const handlePointerDown = (e: React.PointerEvent) => {
     if (totalSlides <= 1) return;
     setIsDragging(true);
-    setIsPaused(true); // Pause auto-scroll immediately
+    setIsPaused(true); 
     startXRef.current = e.clientX;
     (e.target as Element).setPointerCapture(e.pointerId);
   };
@@ -145,7 +136,6 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
   const handlePointerMove = (e: React.PointerEvent) => {
     if (!isDragging || startXRef.current === null) return;
     e.preventDefault();
-    // Calculate how many pixels moved
     const currentX = e.clientX;
     const diff = currentX - startXRef.current;
     setDragOffset(diff);
@@ -155,47 +145,35 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
     if (!isDragging) return;
     setIsDragging(false);
     
-    // Release capture
     (e.target as Element).releasePointerCapture(e.pointerId);
     startXRef.current = null;
 
-    // Decide if we should change slide based on threshold
     if (dragOffset > CAROUSEL_CONFIG.DRAG_THRESHOLD) {
       prevSlide();
     } else if (dragOffset < -CAROUSEL_CONFIG.DRAG_THRESHOLD) {
       nextSlide();
     } else {
-      // Snap back to center if drag wasn't far enough
       setDragOffset(0);
     }
 
-    // Resume auto-scroll after a short delay
     setTimeout(() => setIsPaused(false), 2000);
   };
 
-  // --- Style Calculation (The Math) ---
+  // --- Style Calculation ---
 
   const getCardStyles = useCallback((index: number) => {
     let diff = index - centerIndex;
     
-    // Shortest path wrapping
     if (diff > totalSlides / 2) diff -= totalSlides;
     if (diff < -totalSlides / 2) diff += totalSlides;
 
-    // Visibility optimization
     const isVisible = Math.abs(diff) <= 2;
     if (!isVisible) return { display: 'none' };
 
-    // Standard spacing offset
     const baseOffset = diff * (cardWidth + CAROUSEL_CONFIG.GAP);
-    
-    // Add the pixel-perfect drag offset
-    // We add dragOffset directly to the translation
     const totalX = baseOffset + dragOffset;
 
-    // Scale effect (center card is bigger)
-    // We calculate a "progress" 0 to 1 based on how close to center it is
-    const distanceFactor = Math.abs(diff + (dragOffset / -cardWidth)); // roughly 0 when centered
+    const distanceFactor = Math.abs(diff + (dragOffset / -cardWidth)); 
     const scale = Math.max(0.9, 1.05 - (distanceFactor * 0.15));
     const opacity = Math.max(0.5, 1 - (distanceFactor * 0.5));
     const zIndex = 30 - Math.round(distanceFactor * 10);
@@ -206,7 +184,6 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
       zIndex: zIndex,
       opacity: opacity,
       position: 'absolute' as const,
-      // If dragging, remove transition for instant follow. If released, smooth snap.
       transition: isDragging ? 'none' : 'transform 500ms cubic-bezier(0.25, 1, 0.5, 1), opacity 500ms',
       width: `${cardWidth}px`,
       cursor: isDragging ? 'grabbing' : 'grab',
@@ -215,7 +192,6 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
 
   // --- Render ---
 
-  // Loading State
   if (isLoading) {
     return (
       <section className="py-20 bg-[#FAF9F6] h-[600px] flex items-center justify-center">
@@ -227,10 +203,8 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
     );
   }
 
-  // No Data State
   if (!data || data.length === 0) return null;
 
-  // Icon Helper
   const StatIcon: React.FC<{ children: React.ReactNode }> = ({ children }) => (
     <svg className="w-4 h-4 inline-block mr-1 text-[#B59E78] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       {children}
@@ -262,22 +236,22 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => !isDragging && setIsPaused(false)}
         >
-          {/* Controls - Hide on mobile if you prefer pure swipe */}
+          {/* --- CONTROLS --- */}
           <button
             onClick={prevSlide}
-            className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-40 w-12 h-12 rounded-full bg-white/80 backdrop-blur border border-stone-200 shadow-lg items-center justify-center hover:scale-105 transition-all text-stone-600 z-50"
+            className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-50 w-20 h-20 rounded-full bg-white/20 backdrop-blur-md border border-white/10 shadow-lg items-center justify-center hover:scale-105 hover:bg-white/40 transition-all text-stone-700"
           >
-            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+            <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           </button>
           
           <button
             onClick={nextSlide}
-            className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-40 w-12 h-12 rounded-full bg-white/80 backdrop-blur border border-stone-200 shadow-lg items-center justify-center hover:scale-105 transition-all text-stone-600 z-50"
+            className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-50 w-20 h-20 rounded-full bg-white/20 backdrop-blur-md border border-white/10 shadow-lg items-center justify-center hover:scale-105 hover:bg-white/40 transition-all text-stone-700"
           >
-            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
           </button>
 
-          {/* Viewport */}
+          {/* Viewport with Drag Events Attached */}
           <div
             className="relative w-full h-[540px] overflow-hidden select-none"
             onPointerDown={handlePointerDown}
@@ -293,7 +267,7 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
                 <article
                   key={property.id}
                   style={style}
-                  className="top-4 origin-center touch-none" // touch-none is critical for dragging
+                  className="top-4 origin-center touch-none" 
                 >
                   <div className={`
                     relative rounded-3xl overflow-hidden h-full bg-[#FDFBF7] border border-[#EBE5D9] transition-shadow duration-300
@@ -341,8 +315,11 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
                           ))}
                         </div>
 
+                        {/* UPDATED LINK: Opens in New Tab */}
                         <Link
                           href={`/properties/e${property.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           onClick={(e) => {
                             // Prevent navigation if user is dragging
                             if (isDragging) {
@@ -379,7 +356,6 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
 
 // --- SIMULATION OF PARENT COMPONENT (Backend Fetch) ---
 
-// Dummy data moved outside component
 const MOCK_DB_DATA: Property[] = [
   {
     id: "1",
@@ -443,10 +419,8 @@ const PropertyPage = () => {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Simulate Fetching Data
   useEffect(() => {
     const fetchData = async () => {
-      // Simulate network delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       setProperties(MOCK_DB_DATA);
       setLoading(false);

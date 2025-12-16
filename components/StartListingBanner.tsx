@@ -52,14 +52,20 @@ export default function SellPage() {
   // Specifications
   const [title, setTitle] = useState(""); // property name
   const [bedrooms, setBedrooms] = useState("2");
+  
+  // UPDATED DEFAULT
   const [propertyType, setPropertyType] = useState("Apartment");
+  
   const [bathrooms, setBathrooms] = useState("2");
   const [balcony, setBalcony] = useState("0");
   const [parking, setParking] = useState("None");
   // Age of property 1–25 and 25+
   const [ageOfProperty, setAgeOfProperty] = useState("1");
   const [furnishing, setFurnishing] = useState<"Unfurnished" | "Semi-furnished" | "Fully furnished">("Unfurnished");
-  const [availability, setAvailability] = useState<"Ready" | "After1Month">("Ready");
+  
+  // UPDATED DEFAULT STATE FOR AVAILABILITY
+  const [availability, setAvailability] = useState("Ready to Move");
+  
   const [price, setPrice] = useState("");
   const [amenities, setAmenities] = useState<string[]>([]);
   const [currentAmenity, setCurrentAmenity] = useState("");
@@ -69,6 +75,7 @@ export default function SellPage() {
   const [propertySizeUnit, setPropertySizeUnit] = useState<"sq ft" | "sq m" | "sq yd">("sq ft");
 
   // Location
+  // UPDATED: Default matches new dropdown
   const [city, setCity] = useState("Gandhinagar");
   const [locality, setLocality] = useState("");
   const [society, setSociety] = useState(""); 
@@ -116,7 +123,10 @@ export default function SellPage() {
   
 
   // --- Helper arrays for ALL dropdowns ---
-  const propertyTypeOptions = ["Apartment", "Villa", "Bungalow", "Plot", "Other"];
+  
+  // UPDATED: Property Type Options
+  const propertyTypeOptions = ["Apartment", "Tenement", "Bungalow", "Penthouse", "Plot", "Shop", "Office"];
+  
   const bedroomOptions = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10+"];
   const balconyOptions = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10+"];
   const bathroomOptions = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10+"];
@@ -129,7 +139,13 @@ export default function SellPage() {
   ];
 
   const furnishingOptions = ["Unfurnished", "Semi-furnished", "Fully furnished"];
-  const availabilityOptions = ["Ready", "After1Month"];
+  
+  // UPDATED: Availability (Possession) Options
+  const availabilityOptions = ["Ready to Move", "After 1 Month", "After 2 Months", "After 3 Months", "Above 3 Months"];
+  
+  // UPDATED: City Options for Dropdown
+  const cityOptions = ["Gandhinagar", "Gift City", "Ahmedabad"];
+
   const amenitySuggestions = ["Lift", "Security", "Garden", "Gym", "Swimming Pool", "Clubhouse", "Parking"];
 
   const propertySizeUnitOptions: Array<"sq ft" | "sq m" | "sq yd"> = ["sq ft", "sq m", "sq yd"];
@@ -559,9 +575,9 @@ export default function SellPage() {
                     </button>
                     
                     <div className="flex items-center gap-2 text-sm text-gray-700 font-medium">
-                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                         <path d="M10 3L8 8l-5 2 5 2 2 5 2-5 5-2-5-2zM14 14l-2 5-2-5-5-2 5-2 2-5 2 5 5 2z"></path>
-                       </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M10 3L8 8l-5 2 5 2 2 5 2-5 5-2-5-2zM14 14l-2 5-2-5-5-2 5-2 2-5 2 5 5 2z"></path>
+                        </svg>
                       Well-detailed listings rank higher
                     </div>
                   </div>
@@ -648,7 +664,7 @@ export default function SellPage() {
                     {/* --- BEDROOMS --- */}
                     <div>
                       <label className={fieldLabel}>Bedrooms <span className="text-[#0b6b53]">*</span></label>
-                       <Listbox value={bedrooms} onChange={setBedrooms}>
+                        <Listbox value={bedrooms} onChange={setBedrooms}>
                         <div className="relative">
                           <Listbox.Button className={`${selectNormal} ${triedContinue && !isBedroomsValid ? 'border-red-200' : 'border-gray-100'} flex items-center justify-between`}>
                             <span className="block truncate">{bedrooms}</span>
@@ -773,7 +789,7 @@ export default function SellPage() {
                           </Transition>
                         </div>
                       </Listbox>
-                       {triedContinue && !isBathroomsValid && <div className="text-xs text-red-600 mt-2">Required</div>}
+                        {triedContinue && !isBathroomsValid && <div className="text-xs text-red-600 mt-2">Required</div>}
                     </div>
                   </div>
 
@@ -969,48 +985,50 @@ export default function SellPage() {
                   
                   {/* Row 4: Availability / Price */}
                   <div className={cardWrapper + " grid grid-cols-1 md:grid-cols-2 gap-6"}>
-                     {/* --- AVAILABILITY --- */}
-                     <div>
-                      <label className={fieldLabel}>Availability</label>
-                      <Listbox value={availability} onChange={setAvailability as any}>
-                        <div className="relative">
-                          <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
-                            <span className="block truncate">{availability === "Ready" ? "Immediately" : "After 1 Month"}</span>
-                            <DropdownChevron />
-                          </Listbox.Button>
-                          <Transition
-                            as={Fragment}
-                            leave="transition ease-in duration-100"
-                            leaveFrom="opacity-100"
-                            leaveTo="opacity-0"
-                          >
-                            <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-20">
-                              {availabilityOptions.map((option, optionIdx) => (
-                                <Listbox.Option
-                                  key={optionIdx}
-                                  className={({ active }) =>
-                                    `relative cursor-default select-none py-2 px-4 ${
-                                      active ? 'bg-[#f1faf6] text-[#0b6b53]' : 'text-gray-900'
-                                    }`
-                                  }
-                                  value={option}
-                                >
-                                  {({ selected }) => (
-                                    <span
-                                      className={`block truncate ${
-                                        selected ? 'font-medium' : 'font-normal'
-                                      }`}
-                                    >
-                                      {option === "Ready" ? "Immediately" : "After 1 Month"}
-                                    </span>
-                                  )}
-                                </Listbox.Option>
-                              ))}
-                            </Listbox.Options>
-                          </Transition>
-                        </div>
-                      </Listbox>
-                    </div>
+                      {/* --- AVAILABILITY (UPDATED) --- */}
+                      <div>
+                       <label className={fieldLabel}>Availability</label>
+                       <Listbox value={availability} onChange={setAvailability as any}>
+                         <div className="relative">
+                           <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
+                             {/* UPDATED: Directly show value */}
+                             <span className="block truncate">{availability}</span>
+                             <DropdownChevron />
+                           </Listbox.Button>
+                           <Transition
+                             as={Fragment}
+                             leave="transition ease-in duration-100"
+                             leaveFrom="opacity-100"
+                             leaveTo="opacity-0"
+                           >
+                             <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-20">
+                               {availabilityOptions.map((option, optionIdx) => (
+                                 <Listbox.Option
+                                   key={optionIdx}
+                                   className={({ active }) =>
+                                     `relative cursor-default select-none py-2 px-4 ${
+                                       active ? 'bg-[#f1faf6] text-[#0b6b53]' : 'text-gray-900'
+                                     }`
+                                   }
+                                   value={option}
+                                 >
+                                   {({ selected }) => (
+                                     <span
+                                       className={`block truncate ${
+                                         selected ? 'font-medium' : 'font-normal'
+                                       }`}
+                                     >
+                                       {/* UPDATED: Directly show option */}
+                                       {option}
+                                     </span>
+                                   )}
+                                 </Listbox.Option>
+                               ))}
+                             </Listbox.Options>
+                           </Transition>
+                         </div>
+                       </Listbox>
+                     </div>
                     
                     <div>
                       <label className={fieldLabel}>Price (₹) <span className="text-[#0b6b53]">*</span></label>
@@ -1072,9 +1090,9 @@ export default function SellPage() {
                       <button onClick={onContinueFromStep2} className={canContinueStep2 ? btnPrimary : btnDisabled} disabled={!canContinueStep2}>Continue to Location</button>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-700 font-medium">
-                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                         <path d="M10 3L8 8l-5 2 5 2 2 5 2-5 5-2-5-2zM14 14l-2 5-2-5-5-2 5-2 2-5 2 5 5 2z"></path>
-                       </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M10 3L8 8l-5 2 5 2 2 5 2-5 5-2-5-2zM14 14l-2 5-2-5-5-2 5-2 2-5 2 5 5 2z"></path>
+                        </svg>
                       Well-detailed listings rank higher
                     </div>
                   </div>
@@ -1083,166 +1101,200 @@ export default function SellPage() {
               {/* --- END OF STEP 1 BLOCK --- */}
 
               {/* --- STEP 2: LOCATION --- */}
-{step === 2 && (
-  <div className="space-y-6">
-    {/* Row 0: Header */}
-    <div className="flex items-center justify-between">
-      <h3 className="text-lg font-semibold">Step 3: Location</h3>
-      <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
-          <circle cx="12" cy="10" r="3"></circle>
-        </svg>
-        Keep it simple
-      </div>
-    </div>
+              {step === 2 && (
+                <div className="space-y-6">
+                  {/* Row 0: Header */}
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold">Step 3: Location</h3>
+                    <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                      </svg>
+                      Keep it simple
+                    </div>
+                  </div>
 
-    {/* Card 1: Project Name / Locality */}
-    <div className={cardWrapper + " grid grid-cols-1 md:grid-cols-2 gap-6"}>
-      <div>
-        <label className={fieldLabel}>
-          Project Name <span className="text-[#0b6b53]">*</span>
-        </label>
-        <input
-          value={society}
-          onChange={(e) => setSociety(e.target.value)}
-          placeholder="e.g., Shilp Residency"
-          className={`${triedContinue && !isSocietyValid ? inputError : inputNormal}`}
-        />
-        {triedContinue && !isSocietyValid && (
-          <div className="text-xs text-red-600 mt-2">
-            Please enter a project name.
-          </div>
-        )}
-      </div>
-      <div>
-        <label className={fieldLabel}>
-          Locality / Area <span className="text-[#0b6b53]">*</span>
-        </label>
-        <input
-          value={locality}
-          onChange={(e) => setLocality(e.target.value)}
-          placeholder="e.g., Kudasan"
-          className={`${triedContinue && !isLocalityValid ? inputError : inputNormal}`}
-        />
-        {triedContinue && !isLocalityValid && (
-          <div className="text-xs text-red-600 mt-2">
-            Please enter a locality.
-          </div>
-        )}
-      </div>
-    </div>
+                  {/* Card 1: Project Name / Locality */}
+                  <div className={cardWrapper + " grid grid-cols-1 md:grid-cols-2 gap-6"}>
+                    <div>
+                      <label className={fieldLabel}>
+                        Project Name <span className="text-[#0b6b53]">*</span>
+                      </label>
+                      <input
+                        value={society}
+                        onChange={(e) => setSociety(e.target.value)}
+                        placeholder="e.g., Shilp Residency"
+                        className={`${triedContinue && !isSocietyValid ? inputError : inputNormal}`}
+                      />
+                      {triedContinue && !isSocietyValid && (
+                        <div className="text-xs text-red-600 mt-2">
+                          Please enter a project name.
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <label className={fieldLabel}>
+                        Locality / Area <span className="text-[#0b6b53]">*</span>
+                      </label>
+                      <input
+                        value={locality}
+                        onChange={(e) => setLocality(e.target.value)}
+                        placeholder="e.g., Kudasan"
+                        className={`${triedContinue && !isLocalityValid ? inputError : inputNormal}`}
+                      />
+                      {triedContinue && !isLocalityValid && (
+                        <div className="text-xs text-red-600 mt-2">
+                          Please enter a locality.
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-    {/* Card 2: Unit No / Pincode */}
-    <div className={cardWrapper + " grid grid-cols-1 md:grid-cols-2 gap-6"}>
-      <div>
-        <label className={fieldLabel}>
-          Unit No <span className="text-[#0b6b53]">*</span>
-        </label>
-        <input
-          value={unitNo}
-          onChange={(e) => setUnitNo(e.target.value)}
-          placeholder="e.g., B-701"
-          className={`${triedContinue && !isUnitNoValid ? inputError : inputNormal}`}
-        />
-        {triedContinue && !isUnitNoValid && (
-          <div className="text-xs text-red-600 mt-2">
-            Please enter a unit number.
-          </div>
-        )}
-      </div>
-      <div>
-        <label className={fieldLabel}>
-          Pincode <span className="text-[#0b6b53]">*</span>
-        </label>
-        <input
-          value={pincode}
-          onChange={(e) => setPincode(e.target.value)}
-          placeholder="e.g., 382421"
-          className={`${triedContinue && !isPincodeValid ? inputError : inputNormal}`}
-        />
-        {triedContinue && !isPincodeValid && (
-          <div className="text-xs text-red-600 mt-2">
-            Please enter a valid 6-digit pincode.
-          </div>
-        )}
-      </div>
-    </div>
+                  {/* Card 2: Unit No / Pincode */}
+                  <div className={cardWrapper + " grid grid-cols-1 md:grid-cols-2 gap-6"}>
+                    <div>
+                      <label className={fieldLabel}>
+                        Unit No <span className="text-[#0b6b53]">*</span>
+                      </label>
+                      <input
+                        value={unitNo}
+                        onChange={(e) => setUnitNo(e.target.value)}
+                        placeholder="e.g., B-701"
+                        className={`${triedContinue && !isUnitNoValid ? inputError : inputNormal}`}
+                      />
+                      {triedContinue && !isUnitNoValid && (
+                        <div className="text-xs text-red-600 mt-2">
+                          Please enter a unit number.
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <label className={fieldLabel}>
+                        Pincode <span className="text-[#0b6b53]">*</span>
+                      </label>
+                      <input
+                        value={pincode}
+                        onChange={(e) => setPincode(e.target.value)}
+                        placeholder="e.g., 382421"
+                        className={`${triedContinue && !isPincodeValid ? inputError : inputNormal}`}
+                      />
+                      {triedContinue && !isPincodeValid && (
+                        <div className="text-xs text-red-600 mt-2">
+                          Please enter a valid 6-digit pincode.
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-    {/* Card 3: City */}
-    <div className={cardWrapper + " grid grid-cols-1"}>
-      <div>
-        <label className={fieldLabel}>
-          City <span className="text-[#0b6b53]">*</span>
-        </label>
-        <input
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          placeholder="Gandhinagar"
-          className={`${triedContinue && !isCityValid ? inputError : inputNormal}`}
-        />
-        {triedContinue && !isCityValid && (
-          <div className="text-xs text-red-600 mt-2">
-            Please enter a city.
-          </div>
-        )}
-      </div>
-    </div>
+                  {/* Card 3: City (UPDATED to Listbox) */}
+                  <div className={cardWrapper + " grid grid-cols-1"}>
+                    <div>
+                      <label className={fieldLabel}>
+                        City <span className="text-[#0b6b53]">*</span>
+                      </label>
+                      
+                      <Listbox value={city} onChange={setCity}>
+                        <div className="relative">
+                          <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
+                            <span className="block truncate">{city}</span>
+                            <DropdownChevron />
+                          </Listbox.Button>
+                          <Transition
+                            as={Fragment}
+                            leave="transition ease-in duration-100"
+                            leaveFrom="opacity-100"
+                            leaveTo="opacity-0"
+                          >
+                            <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-20">
+                              {cityOptions.map((option, optionIdx) => (
+                                <Listbox.Option
+                                  key={optionIdx}
+                                  className={({ active }) =>
+                                    `relative cursor-default select-none py-2 px-4 ${
+                                      active ? 'bg-[#f1faf6] text-[#0b6b53]' : 'text-gray-900'
+                                    }`
+                                  }
+                                  value={option}
+                                >
+                                  {({ selected }) => (
+                                    <span
+                                      className={`block truncate ${
+                                        selected ? 'font-medium' : 'font-normal'
+                                      }`}
+                                    >
+                                      {option}
+                                    </span>
+                                  )}
+                                </Listbox.Option>
+                              ))}
+                            </Listbox.Options>
+                          </Transition>
+                        </div>
+                      </Listbox>
 
-    {/* Card 4: Map */}
-    <div className={cardWrapper + " p-2"}>
-      {/* NEW helper text */}
-      <p className="text-sm text-gray-600 mb-3 px-1">
-        Click on the map to open the location picker, search your address and drop a pin so buyers can see your exact location.
-      </p>
+                      {triedContinue && !isCityValid && (
+                        <div className="text-xs text-red-600 mt-2">
+                          Please enter a city.
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-      <div className="h-60 rounded-lg bg-gray-200 grid place-items-center text-sm text-gray-500 overflow-hidden cursor-pointer">
-        <img
-          src="https://placehold.co/800x400/e2e8f0/64748b?text=Map+Integration+Placeholder"
-          alt="Map placeholder"
-          className="w-full h-full object-cover"
-        />
-      </div>
-    </div>
+                  {/* Card 4: Map */}
+                  <div className={cardWrapper + " p-2"}>
+                    {/* NEW helper text */}
+                    <p className="text-sm text-gray-600 mb-3 px-1">
+                      Click on the map to open the location picker, search your address and drop a pin so buyers can see your exact location.
+                    </p>
 
-    <p className="text-sm text-gray-500">
-      Accurate location helps buyers filter results effectively.
-    </p>
+                    <div className="h-60 rounded-lg bg-gray-200 grid place-items-center text-sm text-gray-500 overflow-hidden cursor-pointer">
+                      <img
+                        src="https://placehold.co/800x400/e2e8f0/64748b?text=Map+Integration+Placeholder"
+                        alt="Map placeholder"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </div>
 
-    {/* Footer: Buttons */}
-    <div className="flex items-center justify-between mt-4">
-      <div className="flex items-center gap-3">
-        <button onClick={() => setStep(1)} className={btnLight}>
-          Back to Specifications
-        </button>
-        <button
-          onClick={onContinueFromStep3}
-          className={canContinueStep3 ? btnPrimary : btnDisabled}
-          disabled={!canContinueStep3}
-        >
-          Continue to Media Upload
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+                  <p className="text-sm text-gray-500">
+                    Accurate location helps buyers filter results effectively.
+                  </p>
+
+                  {/* Footer: Buttons */}
+                  <div className="flex items-center justify-between mt-4">
+                    <div className="flex items-center gap-3">
+                      <button onClick={() => setStep(1)} className={btnLight}>
+                        Back to Specifications
+                      </button>
+                      <button
+                        onClick={onContinueFromStep3}
+                        className={canContinueStep3 ? btnPrimary : btnDisabled}
+                        disabled={!canContinueStep3}
+                      >
+                        Continue to Media Upload
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* --- END OF STEP 2 BLOCK --- */}
 
               {/* --- STEP 3: MEDIA (UPDATED TEXT) --- */}
               {step === 3 && (
                 <div className="space-y-6">
-                   {/* Row 0: Header */}
+                    {/* Row 0: Header */}
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold">Step 4: Media Upload </h3>
                     <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
@@ -1348,7 +1400,9 @@ export default function SellPage() {
                         <div className="flex items-center gap-4 w-full">
                           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400"><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
                           <div className="text-sm text-gray-500">No video uploaded</div>
-                          <button onClick={() => videoRef.current?.click()} className="ml-auto h-10 px-4 rounded-lg bg-[#0b6b53] text-white text-sm font-semibold">Add Video</button>
+                          
+                          {/* UPDATED WIDTH */}
+                          <button onClick={() => videoRef.current?.click()} className="ml-auto h-10 w-40 flex justify-center items-center rounded-lg bg-[#0b6b53] text-white text-sm font-semibold">Add Video</button>
                         </div>
                       )}
                       <input ref={videoRef} type="file" accept="video/*" className="hidden" onChange={(e) => onAddVideo(e.target.files)} />
@@ -1381,7 +1435,9 @@ export default function SellPage() {
                             <polyline points="14 2 14 8 20 8"></polyline>
                           </svg>
                           <div className="text-sm text-gray-500">No document uploaded</div>
-                          <button onClick={() => saleDeedRef.current?.click()} className="ml-auto h-10 px-4 rounded-lg bg-[#0b6b53] text-white text-sm font-semibold">
+                          
+                          {/* UPDATED WIDTH */}
+                          <button onClick={() => saleDeedRef.current?.click()} className="ml-auto h-10 w-40 flex justify-center items-center rounded-lg bg-[#0b6b53] text-white text-sm font-semibold">
                             Add Document
                           </button>
                         </div>
@@ -1426,7 +1482,9 @@ export default function SellPage() {
                             <path d="M20 4.5v15"></path>
                           </svg>
                           <div className="text-sm text-gray-500">No brochure uploaded</div>
-                          <button onClick={() => brochureRef.current?.click()} className="ml-auto h-10 px-4 rounded-lg bg-[#0b6b53] text-white text-sm font-semibold">
+                          
+                          {/* UPDATED WIDTH */}
+                          <button onClick={() => brochureRef.current?.click()} className="ml-auto h-10 w-40 flex justify-center items-center rounded-lg bg-[#0b6b53] text-white text-sm font-semibold">
                             Add Brochure
                           </button>
                         </div>

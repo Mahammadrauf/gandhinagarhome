@@ -32,7 +32,7 @@ import {
   Phone,
   ChevronLeft,
   ChevronRight,
-  Shield // Used for the badge icon construction
+  Shield 
 } from 'lucide-react';
 import Header from '@/components/Header';
 
@@ -45,7 +45,8 @@ const property = {
   title: 'Raysan Luxury Villa • Corner Plot',
   subtitle: '₹3.10 Cr • 4 BHK • 3,400 sq ft • Villa • Fully furnished',
   price: '₹3.10 Cr',
-  priceNote: 'Negotiable • Registration extra',
+  // CHANGED: Updated note text
+  priceNote: '+ Stamp Duty',
   location: 'Raysan, Gandhinagar',
   badges: [
     { text: 'Exclusive listing' },
@@ -65,7 +66,8 @@ const property = {
   overview: [
     { label: 'Price', value: '₹3.10 Cr', icon: FileText },
     { label: 'Bedrooms', value: '4 BHK', icon: BedDouble },
-    { label: 'Size', value: '3,400 sq ft', icon: Maximize2 },
+    // CHANGED: Label to Built-up Area
+    { label: 'Built-up Area', value: '3,400 sq ft', icon: Maximize2 },
     { label: 'Furnishing', value: 'Fully furnished', icon: Home },
     { label: 'Status', value: 'Ready to move', icon: CheckCircle2 },
     { label: 'Parking', value: '2 covered', icon: Car },
@@ -76,7 +78,8 @@ const property = {
     { label: 'Title', value: 'Raysan Luxury Villa 4 BHK' },
     { label: 'Type', value: 'Villa' },
     { label: 'Price', value: '₹3.10 Cr' },
-    { label: 'Size', value: '3,400 sq ft' },
+    // CHANGED: Label to Built-up Area
+    { label: 'Built-up Area', value: '3,400 sq ft' },
     { label: 'Bedrooms', value: '4' },
     { label: 'Bathrooms', value: '4' },
     { label: 'Balconies', value: '2' },
@@ -142,24 +145,21 @@ const similarProperties = [
         tags: ['High Rise', 'Smart Home']
     },
     {
-      id: 5,
-      image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=800&q=80',
-      price: '₹1.1 Cr',
-      badge: 'Sold Out',
-      title: 'Randheshan Villa',
-      subtitle: 'Gandhinagar • Green Belt',
-      specs: { beds: 3, baths: 3, area: '1,800 sq ft' },
-      tags: ['Garden', 'Security']
+        id: 5,
+        image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=800&q=80',
+        price: '₹1.1 Cr',
+        badge: 'Sold Out',
+        title: 'Randheshan Villa',
+        subtitle: 'Gandhinagar • Green Belt',
+        specs: { beds: 3, baths: 3, area: '1,800 sq ft' },
+        tags: ['Garden', 'Security']
   }
 ];
 
 // ---- THEME ----
 const getTheme = (type: string, propertyId?: string) => {
-  // Check if this is a featured property by looking at the ID
   const isFeatured = propertyId && (propertyId.startsWith('f') || propertyId.startsWith('F'));
-  // Check if this is an exclusive property by looking at the ID
   const isExclusive = propertyId && (propertyId.startsWith('e') || propertyId.startsWith('E'));
-  // Check if this is a normal property by looking at the ID
   const isNormal = propertyId && (propertyId.startsWith('n') || propertyId.startsWith('N'));
   
   const themes = {
@@ -198,15 +198,12 @@ const getTheme = (type: string, propertyId?: string) => {
     },
   };
   
-  // Return theme based on property ID detection
   if (isFeatured) return themes.featured;
   if (isExclusive) return themes.exclusive;
   if (isNormal) return themes.normal;
-  // Fallback to type-based detection
   return themes[type as keyof typeof themes] || themes.normal;
 };
 
-// --- Custom Badge Component to match Image ---
 const DirectOwnerBadge = () => (
     <div className="inline-flex items-center gap-1.5 bg-white border border-gray-200 px-3 py-1.5 rounded-lg shadow-sm">
         <div className="relative w-4 h-4 flex items-center justify-center">
@@ -220,11 +217,9 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
   const [mediaMode, setMediaMode] = useState('photos');
   const [galleryIndex, setGalleryIndex] = useState(0);
   
-  // Use the actual URL parameter for theme detection
   const propertyId = params.id;
   const theme = getTheme(property.type, propertyId);
   
-  // Carousel Scroll Ref
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const scroll = (direction: 'left' | 'right') => {
@@ -310,12 +305,13 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
               
               <div className="text-left md:text-right">
                    <p className="text-3xl font-bold tracking-tight" style={{ color: theme.primary }}>{property.price}</p>
+                   {/* CHANGED: Shows + Stamp Duty */}
                    <p className="text-xs text-gray-500 font-medium mt-1">{property.priceNote}</p>
               </div>
             </div>
           </div>
 
-          {/* Main Grid Layout - UPDATED RATIO FOR WIDER SELLER BOX */}
+          {/* Main Grid Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
             
             {/* LEFT: Main Content (8 cols) */}
@@ -415,7 +411,7 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                                           <CheckCircle2 className="w-3 h-3"/> Verified Ownership
                                       </p>
                                   </div>
-                                </div>
+                               </div>
                                <div className="bg-white p-2 rounded-lg border border-gray-200 text-gray-400 group-hover:text-[${theme.borderColor}] group-hover:border-[${theme.borderColor}]/30 shadow-sm transition-all">
                                    <Download className="w-4 h-4" />
                                </div>
@@ -513,7 +509,7 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
 
             </div>
 
-            {/* RIGHT: Sticky Sidebar (4 cols - WIDER) */}
+            {/* RIGHT: Sticky Sidebar (4 cols) */}
             <div className="lg:col-span-4">
               <div className="lg:sticky lg:top-24 space-y-4">
                 
@@ -521,8 +517,9 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-xl p-6 relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r" style={{ background: `linear-gradient(to right, ${theme.primary}, #f4c15b)` }} />
                   
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Total Price</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Price</p>
                   <h2 className="text-3xl lg:text-4xl font-extrabold text-gray-900 mb-1 tracking-tight">{property.price}</h2>
+                  {/* CHANGED: + Stamp Duty */}
                   <p className="text-xs text-gray-500 font-medium mb-6">{property.priceNote}</p>
 
                   <div className="mb-6 bg-gray-50 rounded-xl p-4 border border-gray-100">
@@ -536,7 +533,7 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                                 <p className="text-[10px] text-gray-400 font-medium">Verified Seller</p>
                             </div>
                         </div>
-                        {/* --- DIRECT OWNER BADGE (REPLICA) --- */}
+                        {/* --- DIRECT OWNER BADGE --- */}
                         {property.seller.isDirectOwner && (
                             <DirectOwnerBadge />
                         )}
@@ -706,9 +703,11 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                       </ul>
                   </div>
                   <div>
-                      <h3 className="text-lg font-bold text-gray-900 border-l-4 border-[#1f5f5b] pl-3 mb-4">Buy by Type</h3>
-                      <div className="grid grid-cols-2 gap-y-3">
-                          {['2 BHK', '3 BHK', '4 BHK', '5 BHK', 'Bungalow', 'Plot'].map((item) => (
+                      {/* CHANGED: Header Title */}
+                      <h3 className="text-lg font-bold text-gray-900 border-l-4 border-[#1f5f5b] pl-3 mb-4">Property Type</h3>
+                      {/* CHANGED: gap reduced to 1.5, added all types */}
+                      <div className="grid grid-cols-2 gap-y-1.5">
+                          {['Apartment', 'Tenement', 'Bungalow', 'Penthouse', 'Plot', 'Shop', 'Office'].map((item) => (
                               <Link key={item} href="#" className="text-sm text-gray-600 hover:text-[#1f5f5b] transition-colors">
                                   {item}
                               </Link>

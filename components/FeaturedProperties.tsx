@@ -43,11 +43,9 @@ const useCardWidth = () => {
   const [width, setWidth] = useState<number>(CAROUSEL_CONFIG.DESKTOP_CARD_WIDTH);
 
   useEffect(() => {
-    // Check if window is defined (client-side only)
     if (typeof window === "undefined") return;
 
     const handleResize = () => {
-      // On mobile (less than 640px), make card 85% of screen width
       if (window.innerWidth < 640) {
         setWidth(window.innerWidth * 0.85);
       } else {
@@ -253,13 +251,13 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => !isDragging && setIsPaused(false)}
         >
-          {/* Controls */}
+          {/* --- CONTROLS --- */}
           <button
             onClick={prevSlide}
-            className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-50 w-10 h-10 rounded-full bg-white shadow-lg items-center justify-center hover:scale-105 transition transform focus:outline-none focus:ring-2 focus:ring-sky-200"
+            className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-50 w-20 h-20 rounded-full bg-white/20 backdrop-blur-md border border-white/10 shadow-lg items-center justify-center hover:scale-105 hover:bg-white/40 transition-all text-gray-700"
           >
             <svg
-              className="w-5 h-5 text-gray-700"
+              className="w-8 h-8"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -275,10 +273,10 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
 
           <button
             onClick={nextSlide}
-            className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-50 w-10 h-10 rounded-full bg-white shadow-lg items-center justify-center hover:scale-105 transition transform focus:outline-none focus:ring-2 focus:ring-sky-200"
+            className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-50 w-20 h-20 rounded-full bg-white/20 backdrop-blur-md border border-white/10 shadow-lg items-center justify-center hover:scale-105 hover:bg-white/40 transition-all text-gray-700"
           >
             <svg
-              className="w-5 h-5 text-gray-700"
+              className="w-8 h-8"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -423,8 +421,11 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
                           ))}
                         </div>
 
+                        {/* UPDATED LINK: Opens in New Tab */}
                         <Link
                           href={`/properties/f${property.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           onClick={(e) => {
                             // Prevent navigation if user is dragging
                             if (isDragging) {
