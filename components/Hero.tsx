@@ -16,40 +16,50 @@ const manrope = Manrope({
 // === COLORS & BUTTON STYLES ===
 const BRAND_HEX = "#056F5E";
 const BRAND_GREEN = `bg-[${BRAND_HEX}]`;
-const BRAND_TEXT = `text-[${BRAND_HEX}]`;
 
-// New "Really Good" Hover Effect Definition
-// 1. Base Green -> Brighter Green on hover
-// 2. lift & scale up
-// 3. Deep, soft colored shadow that expands on hover
+// Button Styles
 const BUTTON_BASE_CLASSES = `
   group
   relative
   ${BRAND_GREEN}
-  hover:bg-[#068a75] /* Slightly brighter/more energetic green on hover */
+  hover:bg-[#068a75]
   text-white 
-  px-12 py-4 
+  px-8 py-3 
   rounded-full 
   font-bold tracking-tight 
-  shadow-[0_10px_20px_-10px_rgba(5,111,94,0.5)] /* Nice base colored shadow */
+  shadow-[0_10px_20px_-10px_rgba(5,111,94,0.5)]
   transition-all duration-300 ease-out
   hover:scale-105
   hover:-translate-y-1
-  hover:shadow-[0_20px_35px_-15px_rgba(5,111,94,0.6)] /* Expansive shadow on hover */
-  active:scale-[0.98] active:translate-y-0 /* Satisfying click press */
+  hover:shadow-[0_20px_35px_-15px_rgba(5,111,94,0.6)]
+  active:scale-[0.98] active:translate-y-0
 `;
 
-
-const Dropdown = ({ placeholder, options }: { placeholder: string; options: string[] }) => (
+// === REUSABLE DROPDOWN COMPONENT ===
+const Dropdown = ({ 
+  placeholder, 
+  options, 
+  triggerClassName = "" 
+}: { 
+  placeholder: string; 
+  options: string[];
+  triggerClassName?: string;
+}) => (
   <Select.Root>
-    <Select.Trigger className={`inline-flex items-center justify-between gap-2 px-6 py-3 rounded-full border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#056F5E] min-w-[12rem] shadow-sm font-medium ${manrope.className} tracking-tight transition-all hover:border-[#056F5E]/50`}>
+    <Select.Trigger className={`inline-flex items-center justify-between w-full gap-2 px-4 lg:px-6 py-3 rounded-full border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#056F5E] shadow-sm font-medium ${manrope.className} tracking-tight transition-all hover:border-[#056F5E]/50 ${triggerClassName}`}>
       <Select.Value placeholder={placeholder} />
       <Select.Icon>
-        <ChevronDown className="w-4 h-4 text-gray-500" />
+        <ChevronDown className="w-4 h-4 text-gray-500 flex-shrink-0" />
       </Select.Icon>
     </Select.Trigger>
+    
+    {/* Added position="popper" and sideOffset to make it appear BELOW the trigger */}
     <Select.Portal>
-      <Select.Content className={`z-50 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl animate-in fade-in zoom-in-95 duration-200 ${manrope.className}`}>
+      <Select.Content 
+        position="popper" 
+        sideOffset={5} 
+        className={`z-50 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl animate-in fade-in zoom-in-95 duration-200 ${manrope.className}`}
+      >
         <Select.Viewport className="p-1">
           {options.map((opt) => (
             <Select.Item
@@ -87,7 +97,7 @@ const Hero = () => {
 
       {/* Main Content Area */}
       <div className="container mx-auto px-4 md:px-8 mt-2 md:-mt-4 relative z-10">
-        <div className="relative h-[360px] md:h-[420px] overflow-hidden rounded-[2.5rem] border border-gray-100 shadow-2xl">
+        <div className="relative h-[480px] md:h-[420px] overflow-hidden rounded-[2.5rem] border border-gray-100 shadow-2xl">
 
           {/* Background */}
           <div className="absolute inset-0 bg-[#056F5E]" />
@@ -109,16 +119,45 @@ const Hero = () => {
 
           {/* SEARCH BAR */}
           <div className="absolute bottom-0 left-0 right-0 z-20 px-4 pb-6 animate-rise delay-300">
-            <div className="max-w-5xl mx-auto bg-white/95 backdrop-blur-md rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-2.5 border border-gray-100">
+            {/* CHANGED: max-w-6xl -> max-w-5xl to reduce width as requested */}
+            <div className="max-w-5xl mx-auto bg-white/95 backdrop-blur-md rounded-[2rem] md:rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-2.5 border border-gray-100">
+              
               <div className="flex flex-col md:flex-row gap-2">
-                <input type="text" placeholder="Location (e.g. Sargasan, Kudasan...)" className="min-w-0 flex-1 px-6 py-3 rounded-full border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#056F5E] focus:bg-white transition-all text-gray-800 placeholder-gray-400 font-semibold tracking-tight" />
-                <div className="hidden md:flex gap-2 flex-gap-2-fallback flex-no-shrink">
-                  <Dropdown placeholder="Property Type" options={["Apartment","Villa","Plot","Penthouse"]} />
-                  <Dropdown placeholder="Price Range" options={["Under ₹50 Lakhs","₹50L - ₹1 Cr","₹1 Cr - ₹2 Cr","Above ₹2 Cr"]} />
-                  <Dropdown placeholder="Possession" options={["Ready to Move","Under Construction"]} />
+                
+                {/* 1. CITY */}
+                <div className="w-full md:flex-1 min-w-0">
+                    <Dropdown 
+                        placeholder="City" 
+                        options={["Gandhinagar", "Gift City", "Ahmedabad"]} 
+                    />
                 </div>
-                {/* Search button uses the same new premium style */}
-                <Link href="/buy" className={`${BUTTON_BASE_CLASSES} !px-8 !py-3 flex-shrink-0`}>
+
+                {/* 2. PROPERTY TYPE */}
+                <div className="w-full md:flex-1 min-w-0">
+                  <Dropdown 
+                    placeholder="Type" 
+                    options={["Apartment", "Tenement", "Bungalow", "Penthouse", "Plot", "Shop", "Office"]} 
+                  />
+                </div>
+
+                {/* 3. BUDGET */}
+                <div className="w-full md:flex-1 min-w-0">
+                  <Dropdown 
+                    placeholder="Budget" 
+                    options={["₹0 - ₹50 Lakhs", "₹50L - ₹1 Cr", "₹1 Cr - ₹1.5 Cr", "Above ₹1.5 Cr"]} 
+                  />
+                </div>
+
+                {/* 4. POSSESSION */}
+                <div className="w-full md:flex-1 min-w-0">
+                  <Dropdown 
+                    placeholder="Possession" 
+                    options={["Ready to Move", "After 1 Month", "After 2 Months", "After 3 Months", "Above 3 Months"]} 
+                  />
+                </div>
+
+                {/* Search button */}
+                <Link href="/buy" className={`${BUTTON_BASE_CLASSES} w-full md:w-auto flex-shrink-0 flex items-center justify-center`}>
                   Search
                 </Link>
               </div>
@@ -128,19 +167,16 @@ const Hero = () => {
         </div>
       </div>
 
-      {/* === UPDATED CTA BUTTONS === */}
+      {/* === CTA BUTTONS === */}
       <div className="bg-white py-10 flex justify-center animate-rise delay-300">
-        {/* Added a subtle hover glow to the container itself */}
         <div className="bg-white rounded-[2.5rem] px-8 py-5 border border-gray-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] transition-shadow hover:shadow-[0_20px_50px_-10px_rgba(5,111,94,0.15)] inline-flex">
           <div className="flex flex-col md:flex-row gap-6 flex-gap-6-fallback flex-no-shrink items-center">
             
-            {/* Buy Button - Solid Green with new hover effect */}
-            <Link href="/buy" className={`inline-block flex-shrink-0 ${BUTTON_BASE_CLASSES}`}>
+            <Link href="/buy" className={`inline-block flex-shrink-0 ${BUTTON_BASE_CLASSES} !px-12 !py-4`}>
               Buy Property
             </Link>
             
-            {/* Sell Button - Now ALSO Solid Green with same effect */}
-            <Link href="/sell" className={`inline-block flex-shrink-0 ${BUTTON_BASE_CLASSES}`}>
+            <Link href="/sell" className={`inline-block flex-shrink-0 ${BUTTON_BASE_CLASSES} !px-12 !py-4`}>
               Sell Property
             </Link>
 

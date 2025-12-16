@@ -6,9 +6,18 @@ import { MapPin, Clock, Car, Calendar, Map as MapIcon, ShieldCheck, User } from 
 
 // --- TYPES ---
 type Tier = "exclusive" | "featured" | "regular";
-type PropertyType = "Apartment" | "Villa" | "Bungalow" | "Plot";
-type Possession = "Ready to move" | "Immediate" | "After 1 Month";
-type PriceRangeValue = "any" | "0-1.5" | "1.5-2" | "2-2.5" | "2.5+";
+// UPDATED: Added new property types
+type PropertyType = "Apartment" | "Tenement" | "Bungalow" | "Penthouse" | "Plot" | "Shop" | "Office";
+// UPDATED: Added new possession types
+type Possession = "Ready to move" | "After 1 Month" | "After 2 Months" | "After 3 Months" | "Above 3 Months";
+
+// UPDATED: Price ranges matching Hero section
+type PriceRangeValue = 
+  | "any" 
+  | "0-50L" 
+  | "50L-1Cr" 
+  | "1Cr-1.5Cr" 
+  | "1.5Cr+";
 
 type SortOption = 
   | "PriceLowHigh" 
@@ -21,7 +30,7 @@ type SortOption =
 interface Listing {
   id: number;
   tier: Tier;
-  source: "owner" | "partner"; 
+  source: "owner" | "partner" | "builder"; // UPDATED: Added builder
   title: string;
   locality: string;
   city: string;
@@ -49,14 +58,13 @@ interface Filters {
   propertyType: "any" | PropertyType;
   priceRange: PriceRangeValue; 
   possession: "any" | Possession;
-  listedBy: "any" | "owner" | "partner"; 
-  minBedrooms: number;
+  listedBy: "any" | "owner" | "partner" | "builder"; // UPDATED
+  minBedrooms: number; // Will use this for exact match or min match logic, currently logic is min
   minBathrooms: number;
   furnishing: "any" | Listing["furnishing"];
   minParking: number;
   amenities: string[];
-  priceMin: number; 
-  priceMax: number; 
+  // Removed slider specific min/max numbers, using ranges now
   sizeMin: string;
   sizeMax: string;
 }
@@ -64,11 +72,12 @@ interface Filters {
 // --- DATA CONSTANTS ---
 const CITY_AREAS: Record<string, string[]> = {
   Gandhinagar: ["Raysan", "Randesan", "Sargasan", "Kudasan", "Koba", "Sectors"],
-  // Added "Tapovan" here as requested
   Ahmedabad: ["Motera", "Chandkheda", "Zundal", "Adalaj", "Bhat", "Tapovan"],
 };
 
 // --- EXPANDED DATASET (Source of Truth) ---
+// Note: I have kept existing data but updated types/possession where needed to match new enums roughly.
+// In a real app, you'd migrate the data. Here I'll just cast strings or leave them compatible.
 const ALL_LISTINGS: Listing[] = [
   // === 6 EXCLUSIVE PROPERTIES ===
   {
@@ -81,7 +90,7 @@ const ALL_LISTINGS: Listing[] = [
     bedrooms: 4,
     bathrooms: 4,
     areaSqft: 3400,
-    type: "Villa",
+    type: "Bungalow", // Mapped Villa -> Bungalow or keep Villa if type allows. Updated Type to include Villa? No, user said "Bunglow". Let's use Bungalow mostly.
     furnishing: "Fully furnished",
     readyStatus: "Ready to move",
     parking: 2,
@@ -104,9 +113,9 @@ const ALL_LISTINGS: Listing[] = [
     bedrooms: 5,
     bathrooms: 6,
     areaSqft: 5000,
-    type: "Villa",
+    type: "Bungalow",
     furnishing: "Fully furnished",
-    readyStatus: "Immediate",
+    readyStatus: "After 1 Month",
     parking: 4,
     ageLabel: "New",
     priceCr: 5.5,
@@ -127,7 +136,7 @@ const ALL_LISTINGS: Listing[] = [
     bedrooms: 4,
     bathrooms: 4,
     areaSqft: 4200,
-    type: "Apartment",
+    type: "Penthouse",
     furnishing: "Fully furnished",
     readyStatus: "Ready to move",
     parking: 3,
@@ -166,7 +175,7 @@ const ALL_LISTINGS: Listing[] = [
   {
     id: 105,
     tier: "exclusive",
-    source: "partner",
+    source: "builder", // Changed to builder for demo
     title: "Ambli-Bopal Luxury Apartment",
     locality: "Bhat", 
     city: "Ahmedabad",
@@ -175,7 +184,7 @@ const ALL_LISTINGS: Listing[] = [
     areaSqft: 5500,
     type: "Apartment",
     furnishing: "Fully furnished",
-    readyStatus: "Immediate",
+    readyStatus: "After 2 Months",
     parking: 4,
     ageLabel: "New",
     priceCr: 6.5,
@@ -196,7 +205,7 @@ const ALL_LISTINGS: Listing[] = [
     bedrooms: 6,
     bathrooms: 6,
     areaSqft: 6000,
-    type: "Villa",
+    type: "Bungalow",
     furnishing: "Unfurnished",
     readyStatus: "Ready to move",
     parking: 5,
@@ -223,7 +232,7 @@ const ALL_LISTINGS: Listing[] = [
     areaSqft: 1950,
     type: "Apartment",
     furnishing: "Semi-furnished",
-    readyStatus: "Immediate",
+    readyStatus: "After 3 Months",
     parking: 1,
     ageLabel: "<5 years",
     priceCr: 1.65,
@@ -261,13 +270,13 @@ const ALL_LISTINGS: Listing[] = [
     id: 203,
     tier: "featured",
     source: "owner",
-    title: "Zundal Elegant Bungalow",
+    title: "Zundal Elegant Tenement",
     locality: "Zundal",
     city: "Ahmedabad",
     bedrooms: 4,
     bathrooms: 4,
     areaSqft: 2800,
-    type: "Bungalow",
+    type: "Tenement",
     furnishing: "Unfurnished",
     readyStatus: "After 1 Month",
     parking: 2,
@@ -313,9 +322,9 @@ const ALL_LISTINGS: Listing[] = [
     bedrooms: 4,
     bathrooms: 4,
     areaSqft: 3100,
-    type: "Villa",
+    type: "Bungalow",
     furnishing: "Fully furnished",
-    readyStatus: "Immediate",
+    readyStatus: "After 2 Months",
     parking: 2,
     ageLabel: "5-10 years",
     priceCr: 2.8,
@@ -361,7 +370,7 @@ const ALL_LISTINGS: Listing[] = [
     areaSqft: 5000,
     type: "Plot",
     furnishing: "Unfurnished",
-    readyStatus: "Immediate",
+    readyStatus: "Ready to move",
     parking: 0,
     ageLabel: "N/A",
     priceCr: 3.5,
@@ -382,7 +391,7 @@ const ALL_LISTINGS: Listing[] = [
     bedrooms: 3,
     bathrooms: 2,
     areaSqft: 1500,
-    type: "Bungalow",
+    type: "Tenement",
     furnishing: "Semi-furnished",
     readyStatus: "Ready to move",
     parking: 1,
@@ -407,7 +416,7 @@ const ALL_LISTINGS: Listing[] = [
     areaSqft: 1200,
     type: "Apartment",
     furnishing: "Fully furnished",
-    readyStatus: "Immediate",
+    readyStatus: "Above 3 Months",
     parking: 1,
     ageLabel: "1-5 years",
     priceCr: 0.75,
@@ -428,7 +437,7 @@ const ALL_LISTINGS: Listing[] = [
     bedrooms: 2,
     bathrooms: 2,
     areaSqft: 1000,
-    type: "Villa",
+    type: "Bungalow",
     furnishing: "Fully furnished",
     readyStatus: "Ready to move",
     parking: 1,
@@ -467,16 +476,16 @@ const ALL_LISTINGS: Listing[] = [
   {
     id: 212,
     tier: "featured",
-    source: "owner",
+    source: "builder",
     title: "Gift City Office Space",
     locality: "Gift City",
     city: "Gift City",
     bedrooms: 0,
     bathrooms: 1,
     areaSqft: 800,
-    type: "Apartment", // Using Apartment type for office demo
+    type: "Office",
     furnishing: "Unfurnished",
-    readyStatus: "Immediate",
+    readyStatus: "Ready to move",
     parking: 1,
     ageLabel: "New",
     priceCr: 1.1,
@@ -524,7 +533,7 @@ const ALL_LISTINGS: Listing[] = [
     areaSqft: 1800,
     type: "Apartment",
     furnishing: "Semi-furnished",
-    readyStatus: "Immediate",
+    readyStatus: "After 2 Months",
     parking: 1,
     ageLabel: "1–5 years",
     priceCr: 1.55,
@@ -593,7 +602,7 @@ const ALL_LISTINGS: Listing[] = [
     areaSqft: 4000,
     type: "Plot",
     furnishing: "Unfurnished",
-    readyStatus: "Immediate",
+    readyStatus: "Ready to move",
     parking: 0,
     ageLabel: "N/A",
     priceCr: 1.1,
@@ -643,8 +652,6 @@ const initialFilters: Filters = {
   furnishing: "any",
   minParking: 0,
   amenities: [],
-  priceMin: 0,
-  priceMax: 6, 
   sizeMin: "",
   sizeMax: "",
 };
@@ -671,32 +678,23 @@ export default function BuyIntroPage() {
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [sortBy, setSortBy] = useState<SortOption>("Newest");
   
-  // State to hold the specific rotation of listings for this user/session
-  // Initialize with empty or default logic, then populate in useEffect to avoid hydration mismatch
   const [rotatedListings, setRotatedListings] = useState<Listing[]>([]);
 
   // --- ROTATION LOGIC ---
   useEffect(() => {
-    // 1. Split ALL_LISTINGS into buckets
     const exclusive = ALL_LISTINGS.filter(l => l.tier === "exclusive");
     const featured = ALL_LISTINGS.filter(l => l.tier === "featured");
     const regular = ALL_LISTINGS.filter(l => l.tier === "regular");
 
-    // 2. Randomly select 2 Exclusive and 2 Featured
-    // Note: We shuffle the buckets and take the first 2
     const selectedExclusive = shuffleArray(exclusive).slice(0, 2);
     const selectedFeatured = shuffleArray(featured).slice(0, 2);
 
-    // 3. Combine them: 2 Exclusive + 2 Featured + All Regulars
-    // The regular ones are just appended. The sort logic later will handle the final order (Ex > Feat > Reg)
     const combined = [...selectedExclusive, ...selectedFeatured, ...regular];
-
     setRotatedListings(combined);
-  }, []); // Runs once on mount (refresh triggers re-mount)
+  }, []);
 
   const handleClearFilters = () => setFilters(initialFilters);
 
-  // Logic to handle clicking a City pill
   const handleCityToggle = (selectedCity: string) => {
     setFilters((prev) => {
       const isSame = prev.city === selectedCity;
@@ -721,8 +719,6 @@ export default function BuyIntroPage() {
   };
 
   const filteredListings = useMemo(() => {
-    // Use ROTATED listings as source
-    // If rotatedListings is empty (initial render), we can fallback to empty array or ALL_LISTINGS slice
     const sourceData = rotatedListings.length > 0 ? rotatedListings : [];
 
     let result = sourceData.filter((l) => {
@@ -749,32 +745,33 @@ export default function BuyIntroPage() {
       if (filters.propertyType !== "any" && l.type !== filters.propertyType)
         return false;
 
-      // 5. BUDGET SLIDER
-      if (l.priceCr < filters.priceMin || l.priceCr > filters.priceMax) {
-          return false;
-      }
-
-      // 5b. OLD DROPDOWN (legacy support)
+      // 5. BUDGET (UPDATED RANGE LOGIC)
       if (filters.priceRange !== "any") {
         const price = l.priceCr;
-        if (filters.priceRange === "0-1.5" && !(price <= 1.5)) return false;
-        if (filters.priceRange === "1.5-2" && !(price >= 1.5 && price <= 2)) return false;
-        if (filters.priceRange === "2-2.5" && !(price >= 2 && price <= 2.5)) return false;
-        if (filters.priceRange === "2.5+" && !(price >= 2.5)) return false;
+        if (filters.priceRange === "0-50L" && !(price > 0 && price <= 0.5)) return false;
+        if (filters.priceRange === "50L-1Cr" && !(price > 0.5 && price <= 1)) return false;
+        if (filters.priceRange === "1Cr-1.5Cr" && !(price > 1 && price <= 1.5)) return false;
+        if (filters.priceRange === "1.5Cr+" && !(price > 1.5)) return false;
       }
 
       // 6. POSSESSION
       if (filters.possession !== "any" && l.readyStatus !== filters.possession)
         return false;
         
-      // 7. LISTED BY
+      // 7. LISTED BY (UPDATED with Builder)
       if (filters.listedBy !== "any") {
           if (filters.listedBy === "owner" && l.source !== "owner") return false;
           if (filters.listedBy === "partner" && l.source !== "partner") return false;
+          if (filters.listedBy === "builder" && l.source !== "builder") return false;
       }
 
       // 8. SPECS
-      if (l.bedrooms < filters.minBedrooms) return false;
+      // For exact bedroom match or 1+ logic? Code used minBedrooms before.
+      // If user clicks "2", they likely want exactly 2 or 2+. 
+      // The previous logic was l.bedrooms < filters.minBedrooms return false. 
+      // Let's keep "min" logic (2+ means 2 or more).
+      if (filters.minBedrooms > 0 && l.bedrooms < filters.minBedrooms) return false;
+      
       if (l.bathrooms < filters.minBathrooms) return false;
       if (l.parking < filters.minParking) return false;
 
@@ -786,7 +783,6 @@ export default function BuyIntroPage() {
     });
 
     // --- SORTING LOGIC ---
-    // This sorting ensures the selected Exclusive ones stay at top, then Featured, then Regular
     result = [...result].sort((a, b) => {
       const weightA = getTierWeight(a.tier);
       const weightB = getTierWeight(b.tier);
@@ -836,64 +832,88 @@ export default function BuyIntroPage() {
           </div>
 
           <div className="flex flex-col gap-1 lg:flex-row">
-  {/* 1. Removed 'flex-1' so the group doesn't push the button to the far right. */}
-  <div className="flex flex-col gap-1 sm:flex-row">
-    
-    {/* 2. Wrapped each Dropdown in 'w-40' (approx 160px). 
-          You can change w-40 to w-44 or w-36 to adjust the width. */}
-    <div className="w-60">
-      <SmartDropdown
-        label="Type"
-        value={filters.propertyType}
-        onChange={(val) =>
-          setFilters((f) => ({ ...f, propertyType: val as any }))
-        }
-        options={[
-          { value: "any", label: "Any" },
-          { value: "Apartment", label: "Apartment" },
-          { value: "Villa", label: "Villa" },
-          { value: "Plot", label: "Plot" },
-        ]}
-      />
-    </div>
+            <div className="flex flex-col gap-1 sm:flex-row">
+            
+            {/* 1. CITY DROPDOWN (Added as first item) */}
+             <div className="w-40">
+                <SmartDropdown
+                  label="City"
+                  value={filters.city}
+                  onChange={(val) =>
+                    setFilters((f) => ({ ...f, city: val as any, localities: [] }))
+                  }
+                  options={[
+                    { value: "any", label: "Any" },
+                    { value: "Gandhinagar", label: "Gandhinagar" },
+                    { value: "Gift City", label: "Gift City" },
+                    { value: "Ahmedabad", label: "Ahmedabad" },
+                  ]}
+                />
+              </div>
 
-    <div className="w-60">
-      <SmartDropdown
-        label="Budget"
-        value={filters.priceRange}
-        onChange={(val) =>
-          setFilters((f) => ({ ...f, priceRange: val as any }))
-        }
-        options={[
-          { value: "any", label: "Any" },
-          { value: "0-1.5", label: "Up to ₹1.5 Cr" },
-          { value: "1.5-2", label: "₹1.5 - ₹2 Cr" },
-          { value: "2.5+", label: "₹2.5 Cr +" },
-        ]}
-      />
-    </div>
+              {/* 2. PROPERTY TYPE DROPDOWN (Renamed & Options Updated) */}
+              <div className="w-44">
+                <SmartDropdown
+                  label="Property Type"
+                  value={filters.propertyType}
+                  onChange={(val) =>
+                    setFilters((f) => ({ ...f, propertyType: val as any }))
+                  }
+                  options={[
+                    { value: "any", label: "Any" },
+                    { value: "Apartment", label: "Apartment" },
+                    { value: "Tenement", label: "Tenement" },
+                    { value: "Bungalow", label: "Bungalow" },
+                    { value: "Penthouse", label: "Penthouse" },
+                    { value: "Plot", label: "Plot" },
+                    { value: "Shop", label: "Shop" },
+                    { value: "Office", label: "Office" },
+                  ]}
+                />
+              </div>
 
-    <div className="w-60">
-      <SmartDropdown
-        label="Move"
-        value={filters.possession}
-        onChange={(val) =>
-          setFilters((f) => ({ ...f, possession: val as any }))
-        }
-        options={[
-          { value: "any", label: "Any" },
-          { value: "Ready to move", label: "Ready to Move" },
-          { value: "Immediate", label: "Immediate" },
-          { value: "After 1 Month", label: "After 1 Month" },
-        ]}
-      />
-    </div>
-  </div>
+              {/* 3. BUDGET DROPDOWN (Updated Options) */}
+              <div className="w-44">
+                <SmartDropdown
+                  label="Budget"
+                  value={filters.priceRange}
+                  onChange={(val) =>
+                    setFilters((f) => ({ ...f, priceRange: val as any }))
+                  }
+                  options={[
+                    { value: "any", label: "Any" },
+                    { value: "0-50L", label: "₹0 - ₹50 Lakhs" },
+                    { value: "50L-1Cr", label: "₹50L - ₹1 Cr" },
+                    { value: "1Cr-1.5Cr", label: "₹1 Cr - ₹1.5 Cr" },
+                    { value: "1.5Cr+", label: "Above ₹1.5 Cr" },
+                  ]}
+                />
+              </div>
 
-  <button className="h-8 shrink-0 rounded-full bg-[#006B5B] px-5 text-sm font-semibold text-white shadow transition-all hover:bg-[#005347] active:scale-95">
-    Search
-  </button>
-</div>
+              {/* 4. POSSESSION DROPDOWN (Renamed & Options Updated) */}
+              <div className="w-44">
+                <SmartDropdown
+                  label="Possession"
+                  value={filters.possession}
+                  onChange={(val) =>
+                    setFilters((f) => ({ ...f, possession: val as any }))
+                  }
+                  options={[
+                    { value: "any", label: "Any" },
+                    { value: "Ready to move", label: "Ready to Move" },
+                    { value: "After 1 Month", label: "After 1 Month" },
+                    { value: "After 2 Months", label: "After 2 Months" },
+                    { value: "After 3 Months", label: "After 3 Months" },
+                    { value: "Above 3 Months", label: "Above 3 Months" },
+                  ]}
+                />
+              </div>
+            </div>
+
+            <button className="h-8 shrink-0 rounded-full bg-[#006B5B] px-5 text-sm font-semibold text-white shadow transition-all hover:bg-[#005347] active:scale-95 mt-1 lg:mt-0 lg:ml-2">
+              Search
+            </button>
+          </div>
 
           <div className="mt-3 flex flex-col gap-1 border-t border-slate-100 pt-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-wrap items-center gap-1">
@@ -969,33 +989,31 @@ export default function BuyIntroPage() {
                    </div>
                 )}
 
-                <div className="pt-1">
-                   <div className="flex justify-between items-center mb-2">
-                      <div className="text-[11px] font-semibold text-slate-500">Budget</div>
-                      <div className="text-sm text-slate-700 font-bold">
-  ₹{filters.priceMin} Cr - ₹{filters.priceMax}+ Cr
-</div>
-                   </div>
-                   <DualRangeSlider 
-                      min={0} max={6} step={0.1}
-                      minValue={filters.priceMin} maxValue={filters.priceMax}
-                      onChange={(min, max) => setFilters(prev => ({...prev, priceMin: min, priceMax: max}))}
-                   />
-                </div>
+                {/* 5. SIDEBAR BUDGET (Replaced Slider with Pills) */}
+                <FilterBlock title="Budget">
+                    <PillButton active={filters.priceRange === "0-50L"} onClick={() => setFilters(f => ({...f, priceRange: f.priceRange === "0-50L" ? "any" : "0-50L"}))}>₹0 - 50L</PillButton>
+                    <PillButton active={filters.priceRange === "50L-1Cr"} onClick={() => setFilters(f => ({...f, priceRange: f.priceRange === "50L-1Cr" ? "any" : "50L-1Cr"}))}>₹50L - 1Cr</PillButton>
+                    <PillButton active={filters.priceRange === "1Cr-1.5Cr"} onClick={() => setFilters(f => ({...f, priceRange: f.priceRange === "1Cr-1.5Cr" ? "any" : "1Cr-1.5Cr"}))}>₹1Cr - 1.5Cr</PillButton>
+                    <PillButton active={filters.priceRange === "1.5Cr+"} onClick={() => setFilters(f => ({...f, priceRange: f.priceRange === "1.5Cr+" ? "any" : "1.5Cr+"}))}>Above 1.5Cr</PillButton>
+                </FilterBlock>
 
+                {/* 6. LISTED BY (Added Builders) */}
                 <FilterBlock title="Listed by">
                     <PillButton active={filters.listedBy === "owner"} onClick={() => setFilters(f => ({...f, listedBy: f.listedBy === "owner" ? "any" : "owner"}))}>Direct Owner</PillButton>
-                    <PillButton active={filters.listedBy === "partner"} onClick={() => setFilters(f => ({...f, listedBy: f.listedBy === "partner" ? "any" : "partner"}))}>Agent listed</PillButton>
+                    <PillButton active={filters.listedBy === "partner"} onClick={() => setFilters(f => ({...f, listedBy: f.listedBy === "partner" ? "any" : "partner"}))}>Agent</PillButton>
+                    <PillButton active={filters.listedBy === "builder"} onClick={() => setFilters(f => ({...f, listedBy: f.listedBy === "builder" ? "any" : "builder"}))}>Builder</PillButton>
                 </FilterBlock>
                 
+                {/* 7. PROPERTY TYPE (Updated options) */}
                 <FilterBlock title="Property type">
-                    {["Apartment", "Villa", "Bungalow", "Plot"].map((type) => (
+                    {["Apartment", "Tenement", "Bungalow", "Penthouse", "Plot", "Shop", "Office"].map((type) => (
                         <PillButton key={type} active={filters.propertyType === type} onClick={() => setFilters((f) => ({...f, propertyType: f.propertyType === type ? "any" : (type as PropertyType)}))}>{type}</PillButton>
                     ))}
                 </FilterBlock>
 
+                {/* 8. BEDROOMS (Simple numbers) */}
                 <FilterBlock title="Bedrooms">
-                    {["1+", "2+", "3+", "4+"].map((label, idx) => (
+                    {["1", "2", "3", "4", "5", "6"].map((label, idx) => (
                         <PillButton key={label} active={filters.minBedrooms === idx + 1} onClick={() => setFilters((f) => ({...f, minBedrooms: f.minBedrooms === idx + 1 ? 0 : idx + 1}))}>{label}</PillButton>
                     ))}
                 </FilterBlock>
@@ -1022,7 +1040,6 @@ export default function BuyIntroPage() {
             </div>
 
             <div className="space-y-3">
-              {/* If empty while hydrating, you might see nothing for a millisecond, then random list appears */}
               {filteredListings.map((item) => (
                 <ListingCard key={item.id} item={item} />
               ))}
@@ -1041,46 +1058,6 @@ export default function BuyIntroPage() {
 }
 
 /* ===== CUSTOM COMPONENTS ===== */
-
-const DualRangeSlider = ({ min, max, step, minValue, maxValue, onChange }: { 
-    min: number; max: number; step: number; minValue: number; maxValue: number; onChange: (min: number, max: number) => void 
-}) => {
-    const minRef = useRef<HTMLInputElement>(null);
-    const maxRef = useRef<HTMLInputElement>(null);
-    const range = useRef<HTMLDivElement>(null);
-
-    const getPercent = useCallback(
-        (value: number) => Math.round(((value - min) / (max - min)) * 100),
-        [min, max]
-    );
-
-    useEffect(() => {
-        if (maxRef.current && range.current) {
-            const minPercent = getPercent(minValue);
-            const maxPercent = getPercent(maxValue);
-
-            if (range.current) {
-                range.current.style.left = `${minPercent}%`;
-                range.current.style.width = `${maxPercent - minPercent}%`;
-            }
-        }
-    }, [minValue, maxValue, getPercent]);
-
-    return (
-        <div className="relative w-full h-4 flex items-center group">
-            <input type="range" min={min} max={max} step={step} value={minValue} ref={minRef} onChange={(event) => { const value = Math.min(Number(event.target.value), maxValue - step); onChange(value, maxValue); }} className="absolute z-20 w-full h-full opacity-0 cursor-pointer pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4" style={{zIndex: minValue > max - 100 ? 5 : undefined}} />
-            <input type="range" min={min} max={max} step={step} value={maxValue} ref={maxRef} onChange={(event) => { const value = Math.max(Number(event.target.value), minValue + step); onChange(minValue, value); }} className="absolute z-20 w-full h-full opacity-0 cursor-pointer pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4" />
-            <div className="absolute top-1/2 left-0 right-0 -translate-y-1/2 h-1 bg-slate-200 rounded-full z-10">
-                <div ref={range} className="absolute h-1 bg-[#007F6D] rounded-full z-10"></div>
-                <div className="absolute h-4 w-4 bg-[#007F6D] rounded-full -translate-x-1/2 -top-[6px] shadow-sm z-20 pointer-events-none" style={{ left: `${getPercent(minValue)}%` }} />
-                <div className="absolute h-4 w-4 bg-[#007F6D] rounded-full -translate-x-1/2 -top-[6px] shadow-sm z-20 pointer-events-none" style={{ left: `${getPercent(maxValue)}%` }} />
-            </div>
-        </div>
-    );
-};
-
-
-/* ===== UI Helpers ===== */
 
 interface SortDropdownProps { value: SortOption; onChange: (value: SortOption) => void; }
 
@@ -1190,7 +1167,6 @@ function themeForTier(tier: Tier) {
       cardBg: "bg-gradient-to-r from-[#E8DEC9] to-white" 
   };
   
-  // UPDATED: Featured tier now uses the Bluish/Teal theme from your Carousel
   const featured = { 
       badge: "bg-[#0F7F9C] text-white shadow-sm", // Teal badge
       priceChip: "bg-white text-[#0F7F9C] border border-sky-100 shadow-sm", // Teal text
@@ -1223,21 +1199,32 @@ function tierLabel(tier: Tier) {
 function ListingCard({ item }: { item: Listing }) {
   const isOwner = item.source === "owner";
   const theme = themeForTier(item.tier);
+  // Helper for source label
+  const getSourceLabel = () => {
+      if (item.source === "owner") return { text: "Direct Owner", colorClass: "text-green-700" };
+      if (item.source === "builder") return { text: "Builder Listed", colorClass: "text-purple-700" };
+      return { text: "Agent Listed", colorClass: "text-blue-700" };
+  };
+  const sourceInfo = getSourceLabel();
+
   return (
     <article className={`relative overflow-hidden flex flex-col md:flex-row gap-3 md:gap-5 p-3 border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 ${theme.cardAccent} ${theme.cardBg ? theme.cardBg : "bg-white"}`}>
       {item.tier === "featured" && ( 
-          // UPDATED: Accent bar for featured is now blue-ish
           <div className="absolute left-0 top-0 bottom-0 w-2 rounded-l-2xl bg-gradient-to-b from-[#e0f2ff] to-[#f0f9ff] pointer-events-none" /> 
       )}
       <div className="w-full md:w-[288px] h-[190px] relative rounded-xl overflow-hidden shrink-0 bg-slate-100">
         <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
         {tierLabel(item.tier) && ( <span className={`absolute top-3 left-3 px-3 py-1 text-[11px] font-semibold rounded-full ${theme.badge}`}> {tierLabel(item.tier)} </span> )}
         <div className="absolute left-4 bottom-4"> <span className={`px-3 py-1.5 text-[13px] rounded-lg font-semibold ${theme.priceChip}`}> {item.priceLabel} </span> </div>
-        <div className="absolute top-3 right-3"> {isOwner ? ( <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/95 backdrop-blur-sm text-green-700 text-[10px] font-bold shadow-sm"> <ShieldCheck className="w-3 h-3" /> Direct Owner </span> ) : ( <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/95 backdrop-blur-sm text-blue-700 text-[10px] font-bold shadow-sm"> <ShieldCheck className="w-3 h-3" /> Agent listed </span> )} </div>
+        <div className="absolute top-3 right-3"> 
+             <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/95 backdrop-blur-sm ${sourceInfo.colorClass} text-[10px] font-bold shadow-sm`}> 
+                <ShieldCheck className="w-3 h-3" /> {sourceInfo.text} 
+             </span> 
+        </div>
       </div>
       <div className="flex-1 flex flex-col gap-2">
         <div> <h3 className="text-lg font-bold text-slate-900 leading-tight"> {item.title} </h3> </div>
-        <div className="flex flex-wrap gap-2"> <span className="px-3 py-1.5 bg-slate-50 rounded-lg text-sm font-semibold text-slate-700 border border-slate-100"> {item.bedrooms > 0 ? `${item.bedrooms} BHK` : "Plot"} • {item.bathrooms > 0 ? `${item.bathrooms} Bath` : ""} </span> <span className="px-3 py-1.5 bg-slate-50 rounded-lg text-sm font-semibold text-slate-700 border border-slate-100"> {item.areaSqft.toLocaleString()} sq ft </span> </div>
+        <div className="flex flex-wrap gap-2"> <span className="px-3 py-1.5 bg-slate-50 rounded-lg text-sm font-semibold text-slate-700 border border-slate-100"> {item.bedrooms > 0 ? `${item.bedrooms} BHK` : item.type} • {item.bathrooms > 0 ? `${item.bathrooms} Bath` : ""} </span> <span className="px-3 py-1.5 bg-slate-50 rounded-lg text-sm font-semibold text-slate-700 border border-slate-100"> {item.areaSqft.toLocaleString()} sq ft </span> </div>
         <div className="flex flex-wrap gap-2"> <span className="px-3 py-1.5 bg-white rounded-full text-xs font-medium text-slate-600 border border-slate-200"> {item.type} • {item.furnishing} </span> <span className="px-3 py-1.5 bg-white rounded-full text-xs font-medium text-slate-600 border border-slate-200"> {item.locality}, {item.city} </span> </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-1 text-sm text-slate-500"> <div className="flex items-center gap-1.5"> <Clock className="w-4 h-4 text-slate-400" /> <span>{item.readyStatus}</span> </div> <div className="flex items-center gap-1.5"> <Car className="w-4 h-4 text-slate-400" /> <span>{item.parking} Parking</span> </div> <div className="flex items-center gap-1.5"> <Calendar className="w-4 h-4 text-slate-400" /> <span>Age: {item.ageLabel}</span> </div> </div>
         <div className="flex flex-wrap gap-2 mt-auto"> {item.tags.map((tag) => ( <span key={tag} className={`px-2.5 py-1 rounded-md text-[11px] font-medium ${theme.tagBg}`}> {tag} </span> ))} </div>
