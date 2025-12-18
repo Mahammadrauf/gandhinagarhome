@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types'; // 1. Import PropTypes
 import {
   Instagram,
   Facebook,
@@ -6,211 +7,228 @@ import {
   Youtube,
   MapPin,
   Mail,
-  Phone,
+  Phone
 } from 'lucide-react';
 
+// --- INTERFACES ---
+interface LinkItemProps {
+  href: string;
+  label: string;
+}
+
+interface SocialIconProps {
+  Icon: React.ElementType;
+  label: string;
+}
+
+// --- HELPER COMPONENTS (Moved Outside) ---
+
+// 2. Defined outside Footer to prevent recreation on re-renders
+const LinkItem: React.FC<LinkItemProps> = ({ href, label }) => (
+  <li>
+    <a 
+      href={href} 
+      className="group flex items-center gap-2 text-[13px] font-medium text-slate-500 hover:text-[#006B5B] transition-all duration-300 py-1.5 hover:translate-x-1"
+    >
+      <span className="w-1 h-1 rounded-full bg-slate-300 group-hover:bg-[#006B5B] group-hover:w-2 transition-all duration-300" />
+      {label}
+    </a>
+  </li>
+);
+
+// 3. Added Prop Validation to stop the red underlines
+LinkItem.propTypes = {
+  href: PropTypes.string.isRequired,
+  label: PropTypes.string.isRequired,
+};
+
+const SocialIcon: React.FC<SocialIconProps> = ({ Icon, label }) => (
+  <a 
+    href="#" 
+    aria-label={label}
+    className="w-9 h-9 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:bg-[#006B5B] hover:border-[#006B5B] hover:text-white hover:-translate-y-1 transition-all duration-300 shadow-sm"
+  >
+    <Icon size={18} />
+  </a>
+);
+
+SocialIcon.propTypes = {
+  label: PropTypes.string.isRequired,
+};
+
+// --- MAIN COMPONENT ---
+
 const Footer = () => {
-  // Segments (match your ExploreListing filters)
+  // --- DATA ---
   const bhkLinks = [
     { label: '2 BHK', href: '/listings?beds=2' },
     { label: '3 BHK', href: '/listings?beds=3' },
     { label: '4 BHK', href: '/listings?beds=4' },
     { label: '5 BHK', href: '/listings?beds=5' },
-    { label: 'Bungalow', href: '/listings?category=bungalow' },
-    { label: 'Plot', href: '/listings?category=plot' },
   ];
 
-  // Locations (match your ExploreLocations/ExploreListing usage)
-  const locationLinks = [
-    { label: 'Koba, Gandhinagar', href: '/listings?loc=koba' },
-    { label: 'Kudasan, Gandhinagar', href: '/listings?loc=kudasan' },
-    { label: 'Randesan, Gandhinagar', href: '/listings?loc=randesan' },
-    { label: 'Raysan, Gandhinagar', href: '/listings?loc=raysan' },
-    { label: 'Sargasan, Gandhinagar', href: '/listings?loc=sargasan' },
+  const propertyTypeLinks = [
+    { label: 'Apartment', href: '/listings?type=apartment' },
+    { label: 'Tenement', href: '/listings?type=tenement' },
+    { label: 'Bungalow', href: '/listings?type=bungalow' },
+    { label: 'Penthouse', href: '/listings?type=penthouse' },
+    { label: 'Plot', href: '/listings?type=plot' },
+    { label: 'Shop', href: '/listings?type=shop' },
+    { label: 'Office', href: '/listings?type=office' },
   ];
 
-  const baseLink =
-    'text-gray-700 hover:text-primary transition-colors flex items-center gap-2 group';
+  const gandhinagarLinks = [
+    { label: 'Raysan', href: '/listings?loc=raysan' },
+    { label: 'Randesan', href: '/listings?loc=randesan' },
+    { label: 'Sargasan', href: '/listings?loc=sargasan' },
+    { label: 'Kudasan', href: '/listings?loc=kudasan' },
+    { label: 'Koba', href: '/listings?loc=koba' },
+    { label: 'Sectors', href: '/listings?loc=sectors' },
+  ];
 
-  const bullet =
-    'w-1.5 h-1.5 rounded-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity';
+  const ahmedabadLinks = [
+    { label: 'Motera', href: '/listings?loc=motera' },
+    { label: 'Chandkheda', href: '/listings?loc=chandkheda' },
+    { label: 'Zundal', href: '/listings?loc=zundal' },
+    { label: 'Adalaj', href: '/listings?loc=adalaj' },
+    { label: 'Bhat', href: '/listings?loc=bhat' },
+    { label: 'Tapovan', href: '/listings?loc=tapovan' },
+    { label: 'Vaishnodevi', href: '/listings?loc=vaishnodevi' },
+  ];
 
+  // --- STYLES ---
+  const headingClass = "text-sm font-bold text-slate-900 border-l-[3px] border-[#006B5B] pl-3 mb-5 uppercase tracking-wide";
+    
   return (
-    <footer className="bg-gradient-to-b from-gray-50 to-white border-t-2 border-primary/20 py-12 relative overflow-hidden">
-      {/* Decorative top border */}
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-30" />
+    <footer className="bg-white pt-16 pb-6 relative font-sans text-slate-600 border-t border-slate-100">
+       
+      {/* --- DECORATIVE TOP LINE --- */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#006B5B] via-[#4CC9F0] to-[#006B5B] opacity-90" />
 
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
-          {/* About */}
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-1 h-8 bg-gradient-to-b from-primary to-primary-light rounded-full" />
-              <h3 className="text-xl font-bold text-gray-800">About GandhinagarHomes</h3>
-            </div>
-            <p className="text-gray-600 mb-6 leading-relaxed">
-              Premium real estate in Gandhinagar with a client-first approach and deep local
-              expertise.
+      <div className="container mx-auto px-4 lg:px-8">
+        
+        {/* --- MAIN GRID --- */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-8 gap-y-12 mb-14">
+          
+          {/* 1. BRAND & SOCIAL */}
+          <div className="col-span-2 md:col-span-1 xl:col-span-2 pr-4">
+            <h3 className="text-2xl font-extrabold text-slate-900 mb-4 tracking-tight flex items-center gap-1">
+              Gandhinagar<span className="text-[#006B5B]">Homes</span>
+            </h3>
+            <p className="text-xs leading-relaxed text-slate-500 mb-6 max-w-xs">
+              Premium real estate ecosystem. We simplify buying, selling, and renting with deep local expertise.
             </p>
-
-            <h4 className="font-semibold text-gray-800 mb-3">Follow Us</h4>
-            <div className="flex gap-3">
-              <a
-                href="#"
-                className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/10 to-primary-light/10 hover:from-primary hover:to-primary-dark text-gray-700 hover:text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110 hover:shadow-lg"
-                aria-label="Instagram"
-              >
-                <Instagram className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/10 to-primary-light/10 hover:from-primary hover:to-primary-dark text-gray-700 hover:text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110 hover:shadow-lg"
-                aria-label="Facebook"
-              >
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/10 to-primary-light/10 hover:from-primary hover:to-primary-dark text-gray-700 hover:text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110 hover:shadow-lg"
-                aria-label="Twitter"
-              >
-                <Twitter className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/10 to-primary-light/10 hover:from-primary hover:to-primary-dark text-gray-700 hover:text-white flex items-center justify-center transition-all duration-300 transform hover:scale-110 hover:shadow-lg"
-                aria-label="YouTube"
-              >
-                <Youtube className="w-5 h-5" />
-              </a>
+            
+            <div className="flex gap-2">
+              <SocialIcon Icon={Instagram} label="Instagram" />
+              <SocialIcon Icon={Facebook} label="Facebook" />
+              <SocialIcon Icon={Twitter} label="Twitter" />
+              <SocialIcon Icon={Youtube} label="YouTube" />
             </div>
           </div>
 
-          {/* Quick Links (general) */}
+          {/* 2. QUICK LINKS */}
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-1 h-8 bg-gradient-to-b from-primary to-primary-light rounded-full" />
-              <h3 className="text-xl font-bold text-gray-800">Quick Links</h3>
-            </div>
-            <ul className="space-y-3">
-              <li>
-                <a href="/buy" className={baseLink}>
-                  <span className={bullet} />
-                  <span>Buy</span>
-                </a>
-              </li>
-              <li>
-                <a href="/sell" className={baseLink}>
-                  <span className={bullet} />
-                  <span>Sell</span>
-                </a>
-              </li>
-              <li>
-                <a href="/about" className={baseLink}>
-                  <span className={bullet} />
-                  <span>About Us</span>
-                </a>
-              </li>
-              <li>
-                <a href="/blog" className={baseLink}>
-                  <span className={bullet} />
-                  <span>Blog</span>
-                </a>
-              </li>
-              <li>
-                <a href="/contact" className={baseLink}>
-                  <span className={bullet} />
-                  <span>Contact</span>
-                </a>
-              </li>
+            <h3 className={headingClass}>Quick Links</h3>
+            <ul className="space-y-1">
+              <LinkItem href="/buy" label="Buy Properties" />
+              <LinkItem href="/sell" label="List Your Property" />
+              <LinkItem href="/about" label="About Us" />
+              <LinkItem href="/blog" label="Real Estate News" />
+              <LinkItem href="/contact" label="Contact Support" />
             </ul>
           </div>
 
-          {/* Buy by Type (segments) */}
+          {/* 3. BUY BY BHK */}
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-1 h-8 bg-gradient-to-b from-primary to-primary-light rounded-full" />
-              <h3 className="text-xl font-bold text-gray-800">Buy by Type</h3>
-            </div>
-            <ul className="grid grid-cols-2 gap-x-6 gap-y-3">
-              {bhkLinks.map((l) => (
-                <li key={l.href}>
-                  <a href={l.href} className={baseLink}>
-                    <span className={bullet} />
-                    <span>{l.label}</span>
-                  </a>
-                </li>
-              ))}
+            <h3 className={headingClass}>Buy by BHK</h3>
+            <ul className="space-y-1">
+              {bhkLinks.map((l) => <LinkItem key={l.href} {...l} />)}
             </ul>
           </div>
 
-          {/* Popular Locations */}
+          {/* 4. PROPERTY TYPE */}
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-1 h-8 bg-gradient-to-b from-primary to-primary-light rounded-full" />
-              <h3 className="text-xl font-bold text-gray-800">Popular Locations</h3>
-            </div>
-            <ul className="space-y-3">
-              {locationLinks.map((l) => (
-                <li key={l.href}>
-                  <a href={l.href} className={baseLink}>
-                    <span className={bullet} />
-                    <span>{l.label}</span>
-                  </a>
-                </li>
-              ))}
+            <h3 className={headingClass}>Property Type</h3>
+            <ul className="space-y-1">
+              {propertyTypeLinks.map((l) => <LinkItem key={l.href} {...l} />)}
+            </ul>
+          </div>
+
+          {/* 5. GANDHINAGAR */}
+          <div>
+            <h3 className={headingClass}>Gandhinagar</h3>
+            <ul className="space-y-1">
+              {gandhinagarLinks.map((l) => <LinkItem key={l.href} href={l.href} label={l.label} />)}
+            </ul>
+          </div>
+
+          {/* 6. AHMEDABAD */}
+          <div>
+            <h3 className={headingClass}>Ahmedabad</h3>
+            <ul className="space-y-1">
+              {ahmedabadLinks.map((l) => <LinkItem key={l.href} href={l.href} label={l.label} />)}
             </ul>
           </div>
         </div>
 
-        {/* Contact strip */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <a href="https://maps.google.com?q=Premium+Plaza+Sargasan+Cross+Road+Gandhinagar" target="_blank" rel="noopener noreferrer"
-             className="flex items-start gap-3 text-gray-700 hover:text-primary transition-colors">
-            <span className="text-primary mt-1 flex-shrink-0">
-              <MapPin className="w-5 h-5" />
-            </span>
-            <span>
-              <strong className="text-gray-800">Address:</strong> 201, Premium Plaza, Sargasan Cross Rd, Gandhinagar
-            </span>
-          </a>
-          <a href="mailto:hello@gandhinagarhomes.in" className="flex items-start gap-3 text-gray-700 hover:text-primary transition-colors">
-            <span className="text-primary mt-1 flex-shrink-0">
-              <Mail className="w-5 h-5" />
-            </span>
-            <span>
-              <strong className="text-gray-800">Email:</strong> hello@gandhinagarhomes.in
-            </span>
-          </a>
-          <a href="tel:+919876543210" className="flex items-start gap-3 text-gray-700 hover:text-primary transition-colors">
-            <span className="text-primary mt-1 flex-shrink-0">
-              <Phone className="w-5 h-5" />
-            </span>
-            <span>
-              <strong className="text-gray-800">Phone:</strong> +91 98765 43210
-            </span>
-          </a>
+        {/* --- CONTACT STRIP --- */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-8 mb-10">
+            {/* Address Card */}
+            <div className="group flex items-center gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-[#006B5B]/30 hover:shadow-md transition-all duration-300 cursor-pointer">
+              <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 text-[#006B5B] group-hover:bg-[#006B5B] group-hover:text-white transition-colors duration-300">
+                <MapPin size={18} />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Visit Us</h4>
+                <p className="text-sm font-semibold text-slate-700 group-hover:text-slate-900">
+                  Premium Plaza, Gandhinagar
+                </p>
+              </div>
+            </div>
+
+            {/* Email Card */}
+            <a href="mailto:hello@gandhinagarhomes.in" className="group flex items-center gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-[#006B5B]/30 hover:shadow-md transition-all duration-300">
+              <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 text-[#006B5B] group-hover:bg-[#006B5B] group-hover:text-white transition-colors duration-300">
+                <Mail size={18} />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Email Us</h4>
+                <p className="text-sm font-semibold text-slate-700 group-hover:text-[#006B5B] transition-colors">
+                  hello@gandhinagarhomes.in
+                </p>
+              </div>
+            </a>
+
+            {/* Phone Card */}
+            <a href="tel:+919876543210" className="group flex items-center gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-[#006B5B]/30 hover:shadow-md transition-all duration-300">
+              <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 text-[#006B5B] group-hover:bg-[#006B5B] group-hover:text-white transition-colors duration-300">
+                <Phone size={18} />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Call Us</h4>
+                <p className="text-sm font-semibold text-slate-700 group-hover:text-[#006B5B] transition-colors">
+                  +91 98765 43210
+                </p>
+              </div>
+            </a>
         </div>
 
-        {/* Bottom bar */}
-        <div className="border-t border-gray-200 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-gray-600 text-center md:text-left">
-            &copy; {new Date().getFullYear()} <span className="text-primary font-semibold">GandhinagarHomes</span>. All rights reserved.
+        {/* --- BOTTOM BAR --- */}
+        <div className="border-t border-slate-200 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-slate-500 font-medium text-center md:text-left">
+            &copy; {new Date().getFullYear()} <span className="text-slate-900 font-bold">GandhinagarHomes</span>. All rights reserved.
           </p>
 
-          <ul className="flex flex-wrap items-center gap-x-6 gap-y-2 text-gray-600">
-            <li>
-              <a href="/privacy" className="hover:text-primary">Privacy Policy</a>
-            </li>
-            <li>
-              <a href="/terms" className="hover:text-primary">Terms of Use</a>
-            </li>
-            <li>
-              <a href="/sitemap.xml" className="hover:text-primary">Sitemap</a>
-            </li>
-            <li>
-              <a href="/disclaimer" className="hover:text-primary">Disclaimer</a>
-            </li>
+          <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+            {['Privacy Policy', 'Terms of Use', 'Sitemap', 'Disclaimer'].map((item) => (
+              <li key={item}>
+                <a href={`/${item.toLowerCase().replace(/ /g, '-')}`} className="text-xs font-medium text-slate-500 hover:text-[#006B5B] transition-colors relative group">
+                  {item}
+                  <span className="absolute -bottom-1 left-0 w-0 h-px bg-[#006B5B] group-hover:w-full transition-all duration-300"></span>
+                </a>
+              </li>
+            ))}
           </ul>
         </div>
       </div>

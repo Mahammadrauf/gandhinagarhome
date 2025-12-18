@@ -72,7 +72,8 @@ interface Filters {
 // --- DATA CONSTANTS ---
 const CITY_AREAS: Record<string, string[]> = {
   Gandhinagar: ["Raysan", "Randesan", "Sargasan", "Kudasan", "Koba", "Sectors"],
-  Ahmedabad: ["Motera", "Chandkheda", "Zundal", "Adalaj", "Bhat", "Tapovan"],
+  // UPDATED: Added Vaishnodevi here as requested
+  Ahmedabad: ["Motera", "Chandkheda", "Zundal", "Adalaj", "Bhat", "Tapovan", "Vaishnodevi"],
 };
 
 // --- EXPANDED DATASET (Source of Truth) ---
@@ -835,7 +836,7 @@ export default function BuyIntroPage() {
             <div className="flex flex-col gap-1 sm:flex-row">
             
             {/* 1. CITY DROPDOWN (Added as first item) */}
-             <div className="w-40">
+             <div className="w-60">
                 <SmartDropdown
                   label="City"
                   value={filters.city}
@@ -852,7 +853,7 @@ export default function BuyIntroPage() {
               </div>
 
               {/* 2. PROPERTY TYPE DROPDOWN (Renamed & Options Updated) */}
-              <div className="w-44">
+              <div className="w-60">
                 <SmartDropdown
                   label="Property Type"
                   value={filters.propertyType}
@@ -873,7 +874,7 @@ export default function BuyIntroPage() {
               </div>
 
               {/* 3. BUDGET DROPDOWN (Updated Options) */}
-              <div className="w-44">
+              <div className="w-60">
                 <SmartDropdown
                   label="Budget"
                   value={filters.priceRange}
@@ -891,7 +892,7 @@ export default function BuyIntroPage() {
               </div>
 
               {/* 4. POSSESSION DROPDOWN (Renamed & Options Updated) */}
-              <div className="w-44">
+              <div className="w-60">
                 <SmartDropdown
                   label="Possession"
                   value={filters.possession}
@@ -978,7 +979,7 @@ export default function BuyIntroPage() {
 
                 {/* CONDITIONAL LOCALITY */}
                 {(filters.city === "Gandhinagar" || filters.city === "Ahmedabad") && (
-                   <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="animate-in fade-in slide-in-from-top-2 duration-300">
                       <FilterBlock title={`Locality (${filters.city})`}>
                           {CITY_AREAS[filters.city].map(area => (
                              <PillButton key={area} active={filters.localities.includes(area)} onClick={() => handleLocalityToggle(area)}>
@@ -986,7 +987,7 @@ export default function BuyIntroPage() {
                              </PillButton>
                           ))}
                       </FilterBlock>
-                   </div>
+                    </div>
                 )}
 
                 {/* 5. SIDEBAR BUDGET (Replaced Slider with Pills) */}
@@ -1217,9 +1218,9 @@ function ListingCard({ item }: { item: Listing }) {
         {tierLabel(item.tier) && ( <span className={`absolute top-3 left-3 px-3 py-1 text-[11px] font-semibold rounded-full ${theme.badge}`}> {tierLabel(item.tier)} </span> )}
         <div className="absolute left-4 bottom-4"> <span className={`px-3 py-1.5 text-[13px] rounded-lg font-semibold ${theme.priceChip}`}> {item.priceLabel} </span> </div>
         <div className="absolute top-3 right-3"> 
-             <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/95 backdrop-blur-sm ${sourceInfo.colorClass} text-[10px] font-bold shadow-sm`}> 
+              <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/95 backdrop-blur-sm ${sourceInfo.colorClass} text-[10px] font-bold shadow-sm`}> 
                 <ShieldCheck className="w-3 h-3" /> {sourceInfo.text} 
-             </span> 
+              </span> 
         </div>
       </div>
       <div className="flex-1 flex flex-col gap-2">
