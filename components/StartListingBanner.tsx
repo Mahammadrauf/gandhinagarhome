@@ -10,6 +10,40 @@ const stepTitles = ["Basic Information", "Specifications", "Location", "Media Up
 const validateEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
 const onlyDigitsOrSymbols = (v: string) => /^[0-9+\-\s()]*$/.test(v);
 
+// Utility functions for data formatting
+const formatPrice = (price: string): string => {
+  const numPrice = parseFloat(price);
+  if (isNaN(numPrice)) return price;
+  
+  if (numPrice >= 10000000) { // 1 Cr = 10,000,000
+    const cr = (numPrice / 10000000).toFixed(1);
+    return `₹${cr} Cr`;
+  } else if (numPrice >= 100000) { // 1 Lac = 100,000
+    const lac = (numPrice / 100000).toFixed(1);
+    return `₹${lac} Lac`;
+  } else {
+    return `₹${numPrice.toLocaleString()}`;
+  }
+};
+
+const mapAgeToLabel = (age: string): string => {
+  const numAge = age === "25+" ? 25 : parseInt(age);
+  if (isNaN(numAge)) return age;
+  
+  if (numAge === 0 || numAge === 1) return "New";
+  if (numAge >= 2 && numAge <= 5) return "1-5 Years";
+  if (numAge >= 6 && numAge <= 10) return "5-10 Years";
+  if (numAge >= 11 && numAge <= 15) return "10-15 Years";
+  if (numAge >= 16 && numAge <= 20) return "15-20 Years";
+  if (numAge >= 21) return "20+ Years";
+  
+  return age;
+};
+
+const formatArea = (size: string, unit: string): string => {
+  return `${size} ${unit}`;
+};
+
 // Small inline chevron icon for dropdowns
 const DropdownChevron = () => (
   <svg
@@ -227,6 +261,7 @@ export default function SellPage() {
     }
 
     const payload = {
+      // Original form data
       firstName, middleName, lastName, email, mobile, alternateNumber,
       title,
       bedrooms,
@@ -247,6 +282,15 @@ export default function SellPage() {
       hasSaleDeed: !!saleDeed,
       hasBrochure: !!brochure,
       submittedAt: new Date().toISOString(),
+      
+      // Formatted data for display components
+      priceLabel: formatPrice(price),
+      priceCr: parseFloat(price) / 10000000, // For sorting/filtering
+      areaSqft: propertySizeUnit === "sq ft" ? parseFloat(propertySize) : 0, // For backward compatibility
+      areaDisplay: formatArea(propertySize, propertySizeUnit),
+      ageLabel: mapAgeToLabel(ageOfProperty),
+      readyStatus: availability, // Map availability to readyStatus
+      type: propertyType, // Map propertyType to type
     };
 
     try {

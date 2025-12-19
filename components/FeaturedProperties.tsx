@@ -254,7 +254,7 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
           {/* --- CONTROLS --- */}
           <button
             onClick={prevSlide}
-            className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-50 w-20 h-20 rounded-full bg-white/20 backdrop-blur-md border border-white/10 shadow-lg items-center justify-center hover:scale-105 hover:bg-white/40 transition-all text-gray-700"
+            className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-40 w-20 h-20 rounded-full bg-white/20 backdrop-blur-md border border-white/10 shadow-lg items-center justify-center hover:scale-105 hover:bg-white/40 transition-all text-gray-700"
           >
             <svg
               className="w-8 h-8"
@@ -273,7 +273,7 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
 
           <button
             onClick={nextSlide}
-            className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-50 w-20 h-20 rounded-full bg-white/20 backdrop-blur-md border border-white/10 shadow-lg items-center justify-center hover:scale-105 hover:bg-white/40 transition-all text-gray-700"
+            className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-40 w-20 h-20 rounded-full bg-white/20 backdrop-blur-md border border-white/10 shadow-lg items-center justify-center hover:scale-105 hover:bg-white/40 transition-all text-gray-700"
           >
             <svg
               className="w-8 h-8"

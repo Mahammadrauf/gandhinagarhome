@@ -37,6 +37,7 @@ interface Listing {
   bedrooms: number;
   bathrooms: number;
   areaSqft: number;
+  areaDisplay?: string; // NEW: Formatted area with unit
   type: PropertyType;
   furnishing: "Unfurnished" | "Semi-furnished" | "Fully furnished";
   readyStatus: Possession;
@@ -91,6 +92,7 @@ const ALL_LISTINGS: Listing[] = [
     bedrooms: 4,
     bathrooms: 4,
     areaSqft: 3400,
+    areaDisplay: "3400 sq ft",
     type: "Bungalow", // Mapped Villa -> Bungalow or keep Villa if type allows. Updated Type to include Villa? No, user said "Bunglow". Let's use Bungalow mostly.
     furnishing: "Fully furnished",
     readyStatus: "Ready to move",
@@ -1225,7 +1227,7 @@ function ListingCard({ item }: { item: Listing }) {
       </div>
       <div className="flex-1 flex flex-col gap-2">
         <div> <h3 className="text-lg font-bold text-slate-900 leading-tight"> {item.title} </h3> </div>
-        <div className="flex flex-wrap gap-2"> <span className="px-3 py-1.5 bg-slate-50 rounded-lg text-sm font-semibold text-slate-700 border border-slate-100"> {item.bedrooms > 0 ? `${item.bedrooms} BHK` : item.type} • {item.bathrooms > 0 ? `${item.bathrooms} Bath` : ""} </span> <span className="px-3 py-1.5 bg-slate-50 rounded-lg text-sm font-semibold text-slate-700 border border-slate-100"> {item.areaSqft.toLocaleString()} sq ft </span> </div>
+        <div className="flex flex-wrap gap-2"> <span className="px-3 py-1.5 bg-slate-50 rounded-lg text-sm font-semibold text-slate-700 border border-slate-100"> {item.bedrooms > 0 ? `${item.bedrooms} BHK` : item.type} • {item.bathrooms > 0 ? `${item.bathrooms} Bath` : ""} </span> <span className="px-3 py-1.5 bg-slate-50 rounded-lg text-sm font-semibold text-slate-700 border border-slate-100"> {item.areaDisplay || `${item.areaSqft.toLocaleString()} sq ft`} </span> </div>
         <div className="flex flex-wrap gap-2"> <span className="px-3 py-1.5 bg-white rounded-full text-xs font-medium text-slate-600 border border-slate-200"> {item.type} • {item.furnishing} </span> <span className="px-3 py-1.5 bg-white rounded-full text-xs font-medium text-slate-600 border border-slate-200"> {item.locality}, {item.city} </span> </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-1 text-sm text-slate-500"> <div className="flex items-center gap-1.5"> <Clock className="w-4 h-4 text-slate-400" /> <span>{item.readyStatus}</span> </div> <div className="flex items-center gap-1.5"> <Car className="w-4 h-4 text-slate-400" /> <span>{item.parking} Parking</span> </div> <div className="flex items-center gap-1.5"> <Calendar className="w-4 h-4 text-slate-400" /> <span>Age: {item.ageLabel}</span> </div> </div>
         <div className="flex flex-wrap gap-2 mt-auto"> {item.tags.map((tag) => ( <span key={tag} className={`px-2.5 py-1 rounded-md text-[11px] font-medium ${theme.tagBg}`}> {tag} </span> ))} </div>

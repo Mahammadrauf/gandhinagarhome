@@ -81,17 +81,17 @@ const WhatsAppIcon = () => (
     </svg>
 );
 
-// ---- MOCK DATA ----
+// ---- MOCK DATA (Updated to match seller form data structure) ----
 const propertyType = 'exclusive';
 
 const property = {
   id: 'GH-XL-1024',
   type: propertyType,
-  title: 'Raysan Luxury Villa • Corner Plot',
-  subtitle: '₹3.10 Cr • 4 BHK • 3,400 sq ft • Villa • Fully furnished',
-  price: '₹3.10 Cr',
+  title: 'Raysan Luxury Apartment • Corner Plot', // Will be populated from title field
+  subtitle: '₹3.10 Cr • 4 BHK • 3,400 sq ft • Apartment • Fully furnished', // Will be dynamically generated
+  price: '₹3.10 Cr', // Will be populated from priceLabel
   priceNote: '+ Stamp Duty',
-  location: 'Raysan, Gandhinagar',
+  location: 'Raysan, Gandhinagar', // Will be populated from locality + city
   // 1. CHANGED: Badges to build trust instead of "Exclusive Listing" etc.
   badges: [
     { text: 'Verified Property', icon: CheckCircle2 },
@@ -106,36 +106,36 @@ const property = {
     'https://images.unsplash.com/photo-1560185127-6ed189bf02f4?auto=format&fit=crop&w=800&q=80',
   ],
   videoUrl: 'https://samplelib.com/lib/preview/mp4/sample-5s.mp4',
-  hasSaleDeed: true,
-  hasBrochure: true,
-  // 2. CHANGED: Age to Single Digit ('5 Years' instead of '5-10 years')
+  hasSaleDeed: true, // Will be populated from hasSaleDeed
+  hasBrochure: true, // Will be populated from hasBrochure
+  // 2. UPDATED: Overview to use dynamic data
   overview: [
-    { label: 'Price', value: '₹3.10 Cr', icon: FileText },
-    { label: 'Bedrooms', value: '4 BHK', icon: BedDouble },
-    { label: 'Built-up Area', value: '3,400 sq ft', icon: Maximize2 },
-    { label: 'Furnishing', value: 'Fully furnished', icon: Home },
-    { label: 'Status', value: 'Ready to move', icon: CheckCircle2 },
-    { label: 'Parking', value: '2 covered', icon: Car },
-    { label: 'Age', value: '5 Years', icon: Clock }, 
-    { label: 'Bathrooms', value: '4 Baths', icon: Bath },
+    { label: 'Price', value: '₹3.10 Cr', icon: FileText }, // priceLabel
+    { label: 'Bedrooms', value: '4 BHK', icon: BedDouble }, // bedrooms
+    { label: 'Built-up Area', value: '3,400 sq ft', icon: Maximize2 }, // areaDisplay
+    { label: 'Furnishing', value: 'Fully furnished', icon: Home }, // furnishing
+    { label: 'Status', value: 'Ready to move', icon: CheckCircle2 }, // readyStatus
+    { label: 'Parking', value: '2 covered', icon: Car }, // parking
+    { label: 'Age', value: '5 Years', icon: Clock }, // ageLabel
+    { label: 'Bathrooms', value: '4 Baths', icon: Bath }, // bathrooms
   ],
   details: [
-    { label: 'Title', value: 'Raysan Luxury Villa 4 BHK' },
-    { label: 'Type', value: 'Villa' },
-    { label: 'Price', value: '₹3.10 Cr' },
-    { label: 'Built-up Area', value: '3,400 sq ft' },
-    { label: 'Bedrooms', value: '4' },
-    { label: 'Bathrooms', value: '4' },
-    { label: 'Balconies', value: '2' },
-    { label: 'Parking', value: '2 covered' },
-    { label: 'Furnishing', value: 'Fully furnished' },
-    { label: 'Availability', value: 'Ready to move' },
-    { label: 'Age of property', value: '5 Years' }, // Changed here too
+    { label: 'Title', value: 'Raysan Luxury Apartment 4 BHK' }, // title
+    { label: 'Type', value: 'Apartment' }, // type (from propertyType)
+    { label: 'Price', value: '₹3.10 Cr' }, // priceLabel
+    { label: 'Built-up Area', value: '3,400 sq ft' }, // areaDisplay
+    { label: 'Bedrooms', value: '4' }, // bedrooms
+    { label: 'Bathrooms', value: '4' }, // bathrooms
+    { label: 'Balconies', value: '2' }, // balcony
+    { label: 'Parking', value: '2 covered' }, // parking
+    { label: 'Furnishing', value: 'Fully furnished' }, // furnishing
+    { label: 'Availability', value: 'Ready to move' }, // readyStatus
+    { label: 'Age of property', value: '5 Years' }, // ageLabel
   ],
   seller: {
-    name: 'Rajesh K. Patel',
-    phone: '+91 98XX-XXXXXX',
-    email: 'Hidden • Unlock to view',
+    name: 'Rajesh K. Patel', // Will be populated from firstName + lastName
+    phone: '+91 98XX-XXXXXX', // Will be populated from mobile
+    email: 'Hidden • Unlock to view', // Will be populated from email
     whatsapp: 'Shared after connect',
     verification: 'OTP verified',
     isVerified: true,
@@ -143,7 +143,7 @@ const property = {
   },
   amenities: [
     'Gym', 'Lift', 'Garden', '24×7 Security', 'Vaastu friendly', 'Smart home', 'Clubhouse', 'Jogging Track', 'Children Play Area'
-  ],
+  ], // Will be populated from amenities array
 };
 
 // ---- MOCK SIMILAR PROPERTIES ----
@@ -660,7 +660,7 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-xl p-6 relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r" style={{ background: `linear-gradient(to right, ${theme.primary}, #f4c15b)` }} />
                   
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Total Price</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Price</p>
                   <h2 className="text-3xl lg:text-4xl font-extrabold text-gray-900 mb-1 tracking-tight">{property.price}</h2>
                   <p className="text-xs text-gray-500 font-medium mb-6">{property.priceNote}</p>
 
