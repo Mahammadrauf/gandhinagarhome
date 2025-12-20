@@ -1,5 +1,5 @@
 import React from 'react';
-import PropTypes from 'prop-types'; // 1. Import PropTypes
+import PropTypes from 'prop-types';
 import {
   Instagram,
   Facebook,
@@ -21,22 +21,22 @@ interface SocialIconProps {
   label: string;
 }
 
-// --- HELPER COMPONENTS (Moved Outside) ---
+// --- HELPER COMPONENTS ---
 
-// 2. Defined outside Footer to prevent recreation on re-renders
 const LinkItem: React.FC<LinkItemProps> = ({ href, label }) => (
   <li>
     <a 
       href={href} 
-      className="group flex items-center gap-2 text-[13px] font-medium text-slate-500 hover:text-[#006B5B] transition-all duration-300 py-1.5 hover:translate-x-1"
+      // CHANGED: text-slate-500 to text-black
+      className="group flex items-center gap-2 text-[13px] font-semibold text-black hover:text-[#006B5B] transition-all duration-300 py-1.5 hover:translate-x-1"
     >
-      <span className="w-1 h-1 rounded-full bg-slate-300 group-hover:bg-[#006B5B] group-hover:w-2 transition-all duration-300" />
+      {/* CHANGED: bg-slate-300 to bg-slate-900 for the bullet dot */}
+      <span className="w-1 h-1 rounded-full bg-black group-hover:bg-[#006B5B] group-hover:w-2 transition-all duration-300" />
       {label}
     </a>
   </li>
 );
 
-// 3. Added Prop Validation to stop the red underlines
 LinkItem.propTypes = {
   href: PropTypes.string.isRequired,
   label: PropTypes.string.isRequired,
@@ -65,6 +65,7 @@ const Footer = () => {
     { label: '3 BHK', href: '/listings?beds=3' },
     { label: '4 BHK', href: '/listings?beds=4' },
     { label: '5 BHK', href: '/listings?beds=5' },
+    { label: '6 BHK', href: '/listings?beds=6' },
   ];
 
   const propertyTypeLinks = [
@@ -97,25 +98,24 @@ const Footer = () => {
   ];
 
   // --- STYLES ---
-  const headingClass = "text-sm font-bold text-slate-900 border-l-[3px] border-[#006B5B] pl-3 mb-5 uppercase tracking-wide";
+  const headingClass = "text-sm font-bold text-black border-l-[3px] border-[#006B5B] pl-3 mb-5 uppercase tracking-wide";
     
   return (
-    <footer className="bg-white pt-16 pb-6 relative font-sans text-slate-600 border-t border-slate-100">
-       
-      {/* --- DECORATIVE TOP LINE --- */}
+    <footer className="bg-white pt-16 pb-6 relative font-sans text-black border-t border-slate-100">
+        
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#006B5B] via-[#4CC9F0] to-[#006B5B] opacity-90" />
 
       <div className="container mx-auto px-4 lg:px-8">
         
-        {/* --- MAIN GRID --- */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-8 gap-y-12 mb-14">
           
           {/* 1. BRAND & SOCIAL */}
           <div className="col-span-2 md:col-span-1 xl:col-span-2 pr-4">
-            <h3 className="text-2xl font-extrabold text-slate-900 mb-4 tracking-tight flex items-center gap-1">
+            <h3 className="text-2xl font-extrabold text-black mb-4 tracking-tight flex items-center gap-1">
               Gandhinagar<span className="text-[#006B5B]">Homes</span>
             </h3>
-            <p className="text-xs leading-relaxed text-slate-500 mb-6 max-w-xs">
+            {/* CHANGED: text-slate-500 to text-black */}
+            <p className="text-xs leading-relaxed text-black font-medium mb-6 max-w-xs">
               Premium real estate ecosystem. We simplify buying, selling, and renting with deep local expertise.
             </p>
             
@@ -174,40 +174,40 @@ const Footer = () => {
 
         {/* --- CONTACT STRIP --- */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-8 mb-10">
-            {/* Address Card */}
             <div className="group flex items-center gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-[#006B5B]/30 hover:shadow-md transition-all duration-300 cursor-pointer">
               <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 text-[#006B5B] group-hover:bg-[#006B5B] group-hover:text-white transition-colors duration-300">
                 <MapPin size={18} />
               </div>
               <div>
-                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Visit Us</h4>
-                <p className="text-sm font-semibold text-slate-700 group-hover:text-slate-900">
+                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-0.5">Visit Us</h4>
+                {/* CHANGED: text-slate-700 to text-black */}
+                <p className="text-sm font-bold text-black group-hover:text-black">
                   Premium Plaza, Gandhinagar
                 </p>
               </div>
             </div>
 
-            {/* Email Card */}
             <a href="mailto:hello@gandhinagarhomes.in" className="group flex items-center gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-[#006B5B]/30 hover:shadow-md transition-all duration-300">
               <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 text-[#006B5B] group-hover:bg-[#006B5B] group-hover:text-white transition-colors duration-300">
                 <Mail size={18} />
               </div>
               <div>
-                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Email Us</h4>
-                <p className="text-sm font-semibold text-slate-700 group-hover:text-[#006B5B] transition-colors">
+                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-0.5">Email Us</h4>
+                {/* CHANGED: text-slate-700 to text-black */}
+                <p className="text-sm font-bold text-black group-hover:text-[#006B5B] transition-colors">
                   hello@gandhinagarhomes.in
                 </p>
               </div>
             </a>
 
-            {/* Phone Card */}
             <a href="tel:+919876543210" className="group flex items-center gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-[#006B5B]/30 hover:shadow-md transition-all duration-300">
               <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 text-[#006B5B] group-hover:bg-[#006B5B] group-hover:text-white transition-colors duration-300">
                 <Phone size={18} />
               </div>
               <div>
-                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Call Us</h4>
-                <p className="text-sm font-semibold text-slate-700 group-hover:text-[#006B5B] transition-colors">
+                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-0.5">Call Us</h4>
+                {/* CHANGED: text-slate-700 to text-black */}
+                <p className="text-sm font-bold text-black group-hover:text-[#006B5B] transition-colors">
                   +91 98765 43210
                 </p>
               </div>
@@ -216,14 +216,16 @@ const Footer = () => {
 
         {/* --- BOTTOM BAR --- */}
         <div className="border-t border-slate-200 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-slate-500 font-medium text-center md:text-left">
-            &copy; {new Date().getFullYear()} <span className="text-slate-900 font-bold">GandhinagarHomes</span>. All rights reserved.
+          {/* CHANGED: text-slate-500 to text-black */}
+          <p className="text-xs text-black font-semibold text-center md:text-left">
+            &copy; {new Date().getFullYear()} <span className="text-black font-bold">GandhinagarHomes</span>. All rights reserved.
           </p>
 
           <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2">
             {['Privacy Policy', 'Terms of Use', 'Sitemap', 'Disclaimer'].map((item) => (
               <li key={item}>
-                <a href={`/${item.toLowerCase().replace(/ /g, '-')}`} className="text-xs font-medium text-slate-500 hover:text-[#006B5B] transition-colors relative group">
+                {/* CHANGED: text-slate-500 to text-black */}
+                <a href={`/${item.toLowerCase().replace(/ /g, '-')}`} className="text-xs font-bold text-black hover:text-[#006B5B] transition-colors relative group">
                   {item}
                   <span className="absolute -bottom-1 left-0 w-0 h-px bg-[#006B5B] group-hover:w-full transition-all duration-300"></span>
                 </a>

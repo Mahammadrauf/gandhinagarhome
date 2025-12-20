@@ -56,9 +56,9 @@ const LinkItem: React.FC<LinkItemProps> = ({ href, label }) => (
   <li>
     <a 
       href={href} 
-      className="group flex items-center gap-2 text-[13px] font-medium text-slate-500 hover:text-[#006B5B] transition-all duration-300 py-1.5 hover:translate-x-1"
+      className="group flex items-center gap-2 text-[13px] font-medium text-black hover:text-[#006B5B] transition-all duration-300 py-1.5 hover:translate-x-1"
     >
-      <span className="w-1 h-1 rounded-full bg-slate-300 group-hover:bg-[#006B5B] group-hover:w-2 transition-all duration-300" />
+      <span className="w-1 h-1 rounded-full bg-black group-hover:bg-[#006B5B] group-hover:w-2 transition-all duration-300" />
       {label}
     </a>
   </li>
@@ -282,6 +282,7 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
     { label: '3 BHK', href: '/listings?beds=3' },
     { label: '4 BHK', href: '/listings?beds=4' },
     { label: '5 BHK', href: '/listings?beds=5' },
+    { label: '6 BHK', href: '/listings?beds=6' },
   ];
 
   const propertyTypeLinks = [
