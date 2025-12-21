@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import Link from 'next/link';
 import {
   Instagram,
   Facebook,
@@ -28,7 +29,7 @@ const LinkItem: React.FC<LinkItemProps> = ({ href, label }) => (
     <a 
       href={href} 
       // CHANGED: text-slate-500 to text-black
-      className="group flex items-center gap-2 text-[13px] font-semibold text-black hover:text-[#006B5B] transition-all duration-300 py-1.5 hover:translate-x-1"
+      className="group flex items-center gap-2 text-[15px] font-semibold text-black hover:text-[#006B5B] transition-all duration-300 py-1.5 hover:translate-x-1"
     >
       {/* CHANGED: bg-slate-300 to bg-slate-900 for the bullet dot */}
       <span className="w-1 h-1 rounded-full bg-black group-hover:bg-[#006B5B] group-hover:w-2 transition-all duration-300" />

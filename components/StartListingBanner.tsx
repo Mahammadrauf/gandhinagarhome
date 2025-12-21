@@ -85,20 +85,20 @@ export default function SellPage() {
 
   // Specifications
   const [title, setTitle] = useState(""); // property name
-  const [bedrooms, setBedrooms] = useState("2");
+  const [bedrooms, setBedrooms] = useState("");
   
   // UPDATED DEFAULT
-  const [propertyType, setPropertyType] = useState("Apartment");
+  const [propertyType, setPropertyType] = useState("");
   
-  const [bathrooms, setBathrooms] = useState("2");
-  const [balcony, setBalcony] = useState("0");
-  const [parking, setParking] = useState("None");
+  const [bathrooms, setBathrooms] = useState("");
+  const [balcony, setBalcony] = useState("");
+  const [parking, setParking] = useState("");
   // Age of property 1–25 and 25+
-  const [ageOfProperty, setAgeOfProperty] = useState("1");
-  const [furnishing, setFurnishing] = useState<"Unfurnished" | "Semi-furnished" | "Fully furnished">("Unfurnished");
+  const [ageOfProperty, setAgeOfProperty] = useState("");
+  const [furnishing, setFurnishing] = useState<string>("");
   
   // UPDATED DEFAULT STATE FOR AVAILABILITY
-  const [availability, setAvailability] = useState("Ready to Move");
+  const [availability, setAvailability] = useState("");
   
   const [price, setPrice] = useState("");
   const [amenities, setAmenities] = useState<string[]>([]);
@@ -110,7 +110,7 @@ export default function SellPage() {
 
   // Location
   // UPDATED: Default matches new dropdown
-  const [city, setCity] = useState("Gandhinagar");
+  const [city, setCity] = useState("");
   const [locality, setLocality] = useState("");
   const [society, setSociety] = useState(""); 
   const [unitNo, setUnitNo] = useState(""); 
@@ -137,7 +137,7 @@ export default function SellPage() {
   const isFirstNameValid = firstName.trim().length >= 2; 
   const isLastNameValid = lastName.trim().length >= 2; 
   const isEmailValid = validateEmail(email);
-  const isMobileValid = mobile.trim().length >= 10 && onlyDigitsOrSymbols(mobile); 
+  const isMobileValid = mobile.length === 10; 
   const canContinueStep1 = isFirstNameValid && isLastNameValid && isEmailValid && isMobileValid && isOtpVerified;
 
   // Step 2 Validation
@@ -150,7 +150,7 @@ export default function SellPage() {
   // Step 3 Validation
   const isCityValid = city.trim().length > 2;
   const isLocalityValid = locality.trim().length > 2;
-  const isPincodeValid = pincode.trim().length >= 6 && onlyDigitsOrSymbols(pincode);
+  const isPincodeValid = pincode.length === 6;
   const isSocietyValid = society.trim().length >= 3; 
   const isUnitNoValid = unitNo.trim().length > 0; 
   const canContinueStep3 = isCityValid && isLocalityValid && isPincodeValid && isSocietyValid && isUnitNoValid;
@@ -559,12 +559,17 @@ export default function SellPage() {
                         <div>
                           <label className={fieldLabel}>Mobile Number <span className="text-[#0b6b53]">*</span></label>
                           <div className="flex gap-2">
+                            <div className="flex items-center justify-center h-12 px-4 rounded-xl border border-gray-100 bg-gray-100 text-gray-700 font-semibold">+91</div>
                             <input
                               value={mobile}
-                              onChange={(e) => setMobile(e.target.value)}
-                              placeholder="+91 9XXXXXXXXX"
-                              className={`${triedContinue && !isMobileValid ? inputError : inputNormal}`}
-                              disabled={otpSent} 
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                setMobile(value);
+                              }}
+                              placeholder="9XXXXXXXXX"
+                              className={`${triedContinue && !isMobileValid ? inputError : inputNormal} flex-1`}
+                              disabled={otpSent}
+                              maxLength={10}
                             />
                             <button
                               onClick={handleSendOtp}
@@ -665,7 +670,7 @@ export default function SellPage() {
                       <Listbox value={propertyType} onChange={setPropertyType}>
                         <div className="relative">
                           <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
-                            <span className="block truncate">{propertyType}</span>
+                            <span className="block truncate">{propertyType || "Select property type"}</span>
                             <DropdownChevron />
                           </Listbox.Button>
                           <Transition
@@ -711,7 +716,7 @@ export default function SellPage() {
                         <Listbox value={bedrooms} onChange={setBedrooms}>
                         <div className="relative">
                           <Listbox.Button className={`${selectNormal} ${triedContinue && !isBedroomsValid ? 'border-red-200' : 'border-gray-100'} flex items-center justify-between`}>
-                            <span className="block truncate">{bedrooms}</span>
+                            <span className="block truncate">{bedrooms || "Select bedrooms"}</span>
                             <DropdownChevron />
                           </Listbox.Button>
                           <Transition
@@ -755,7 +760,7 @@ export default function SellPage() {
                       <Listbox value={balcony} onChange={setBalcony}>
                         <div className="relative">
                           <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
-                            <span className="block truncate">{balcony}</span>
+                            <span className="block truncate">{balcony || "Select balcony"}</span>
                             <DropdownChevron />
                           </Listbox.Button>
                           <Transition
@@ -798,7 +803,7 @@ export default function SellPage() {
                       <Listbox value={bathrooms} onChange={setBathrooms}>
                         <div className="relative">
                           <Listbox.Button className={`${selectNormal} ${triedContinue && !isBathroomsValid ? 'border-red-200' : 'border-gray-100'} flex items-center justify-between`}>
-                            <span className="block truncate">{bathrooms}</span>
+                            <span className="block truncate">{bathrooms || "Select bathrooms"}</span>
                             <DropdownChevron />
                           </Listbox.Button>
                           <Transition
@@ -845,7 +850,7 @@ export default function SellPage() {
                       <Listbox value={parking} onChange={setParking}>
                         <div className="relative">
                           <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
-                            <span className="block truncate">{parking}</span>
+                            <span className="block truncate">{parking || "Select parking"}</span>
                             <DropdownChevron />
                           </Listbox.Button>
                           <Transition
@@ -888,7 +893,7 @@ export default function SellPage() {
                       <Listbox value={ageOfProperty} onChange={setAgeOfProperty}>
                         <div className="relative">
                           <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
-                            <span className="block truncate">{ageOfProperty}</span>
+                            <span className="block truncate">{ageOfProperty || "Select age of property"}</span>
                             <DropdownChevron />
                           </Listbox.Button>
                           <Transition
@@ -931,7 +936,7 @@ export default function SellPage() {
                       <Listbox value={furnishing} onChange={setFurnishing as any}>
                         <div className="relative">
                           <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
-                            <span className="block truncate">{furnishing}</span>
+                            <span className="block truncate">{furnishing || "Select furnishing"}</span>
                             <DropdownChevron />
                           </Listbox.Button>
                           <Transition
@@ -1022,7 +1027,7 @@ export default function SellPage() {
                         </Listbox>
                       </div>
                       <p className="text-xs text-gray-500 mt-2">
-                        Example: 1200 sq ft (carpet / built-up as per your local standard).
+                        Example: 1200 sq ft (built-up as per your local standard).
                       </p>
                     </div>
                   </div>
@@ -1036,7 +1041,7 @@ export default function SellPage() {
                          <div className="relative">
                            <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
                              {/* UPDATED: Directly show value */}
-                             <span className="block truncate">{availability}</span>
+                             <span className="block truncate">{availability || "Select availability"}</span>
                              <DropdownChevron />
                            </Listbox.Button>
                            <Transition
@@ -1229,9 +1234,13 @@ export default function SellPage() {
                       </label>
                       <input
                         value={pincode}
-                        onChange={(e) => setPincode(e.target.value)}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                          setPincode(value);
+                        }}
                         placeholder="e.g., 382421"
                         className={`${triedContinue && !isPincodeValid ? inputError : inputNormal}`}
+                        maxLength={6}
                       />
                       {triedContinue && !isPincodeValid && (
                         <div className="text-xs text-red-600 mt-2">
@@ -1251,7 +1260,7 @@ export default function SellPage() {
                       <Listbox value={city} onChange={setCity}>
                         <div className="relative">
                           <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
-                            <span className="block truncate">{city}</span>
+                            <span className="block truncate">{city || "Select city"}</span>
                             <DropdownChevron />
                           </Listbox.Button>
                           <Transition
