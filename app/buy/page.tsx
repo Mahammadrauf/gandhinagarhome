@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import { 
   MapPin, Clock, Car, Calendar, Map as MapIcon, 
   ShieldCheck, X, List, Plus, Minus, ArrowLeft, Filter 
@@ -974,33 +975,37 @@ export default function BuyIntroPage() {
           </section>
       ) : (
           // === NEW TRENDY MAP VIEW LAYOUT ===
-          <div className="fixed inset-0 top-[64px] z-40 bg-[#F7F6F4] p-4 flex gap-4 animate-in fade-in duration-300">
+          <div className="fixed inset-0 top-[64px] z-40 bg-[#F7F6F4] p-4 flex flex-col h-full overflow-y-auto animate-in fade-in duration-300">
             
-            {/* --- LEFT FILTER CARD --- */}
-            {/* White rounded card for filters, separated from map */}
-            <div className="w-[300px] shrink-0 h-full flex flex-col bg-white rounded-3xl shadow-xl overflow-hidden border border-white/60 relative z-30">
-               {/* Back Button Header */}
-               <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-3 bg-white/50 backdrop-blur-sm">
-                   <button onClick={() => setIsMapView(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-500 hover:text-slate-800">
-                       <ArrowLeft className="w-5 h-5" />
-                   </button>
-                   <div>
-                       <h1 className="text-lg font-bold text-slate-900 leading-tight">Map Search</h1>
-                       <p className="text-[10px] text-slate-500 font-medium">{filteredListings.length} properties found</p>
-                   </div>
-               </div>
+            <div className="flex-1 flex gap-4">
+              {/* --- LEFT FILTER CARD --- */}
+              {/* White rounded card for filters, separated from map */}
+              <div className="w-[300px] shrink-0 h-full flex flex-col bg-white rounded-3xl shadow-xl overflow-hidden border border-white/60 relative z-30">
+                 {/* Back Button Header */}
+                 <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-3 bg-white/50 backdrop-blur-sm">
+                     <button onClick={() => setIsMapView(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-500 hover:text-slate-800">
+                         <ArrowLeft className="w-5 h-5" />
+                     </button>
+                     <div>
+                         <h1 className="text-lg font-bold text-slate-900 leading-tight">Map Search</h1>
+                         <p className="text-[10px] text-slate-500 font-medium">{filteredListings.length} properties found</p>
+                     </div>
+                 </div>
 
-               {/* Reuse EXACT Filter Sidebar Content */}
-               <div className="flex-1 overflow-hidden relative">
-                   <FilterSidebarContent />
-               </div>
+                 {/* Reuse EXACT Filter Sidebar Content */}
+                 <div className="flex-1 overflow-hidden relative">
+                     <FilterSidebarContent />
+                 </div>
+              </div>
+      
+              {/* --- RIGHT MAP AREA --- */}
+              {/* Floating rounded card for the map */}
+              <div className="flex-1 min-h-[80vh] rounded-3xl overflow-hidden shadow-xl border border-white/60 relative bg-slate-200 z-20">
+                   <InteractiveMap listings={filteredListings} />
+              </div>
             </div>
-    
-            {/* --- RIGHT MAP AREA --- */}
-            {/* Floating rounded card for the map */}
-            <div className="flex-1 h-full rounded-3xl overflow-hidden shadow-xl border border-white/60 relative bg-slate-200 z-20">
-                 <InteractiveMap listings={filteredListings} />
-            </div>
+
+            <Footer />
           </div>
       )}
     </main>
