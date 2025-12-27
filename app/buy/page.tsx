@@ -3,6 +3,7 @@
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import MapComponent from "@/components/MapComponent";
 import { 
   MapPin, Clock, Car, Calendar, Map as MapIcon, 
   ShieldCheck, X, List, Plus, Minus, ArrowLeft, Filter 
@@ -11,7 +12,7 @@ import {
 // --- TYPES ---
 type Tier = "exclusive" | "featured" | "regular";
 type PropertyType = "Apartment" | "Tenement" | "Bungalow" | "Penthouse" | "Plot" | "Shop" | "Office";
-type Possession = "Ready to move" | "After 1 Month" | "After 2 Months" | "After 3 Months" | "Above 3 Months";
+type PropertyAge = "New Property" | "1–3 Years Old" | "3–6 Years Old" | "6–9 Years Old" | "9+ Years Old";
 
 type PriceRangeValue = 
   | "any" 
@@ -41,7 +42,7 @@ interface Listing {
   areaDisplay?: string;
   type: PropertyType;
   furnishing: "Unfurnished" | "Semi-furnished" | "Fully furnished";
-  readyStatus: Possession;
+  readyStatus: string;
   parking: number;
   ageLabel: string;
   priceCr: number;
@@ -59,7 +60,7 @@ interface Filters {
   localities: string[]; 
   propertyType: "any" | PropertyType;
   priceRange: PriceRangeValue; 
-  possession: "any" | Possession;
+  ageOfProperty: "any" | PropertyAge;
   listedBy: "any" | "owner" | "partner" | "builder"; 
   minBedrooms: number; 
   minBathrooms: number;
@@ -76,7 +77,7 @@ const CITY_AREAS: Record<string, string[]> = {
   Ahmedabad: ["Motera", "Chandkheda", "Zundal", "Adalaj", "Bhat", "Tapovan", "Vaishnodevi"],
 };
 
-// --- FULL DATASET (RESTORED ALL PROPERTIES) ---
+// --- FULL DATASET ---
 const ALL_LISTINGS: Listing[] = [
   // === 6 EXCLUSIVE PROPERTIES ===
   {
@@ -94,7 +95,7 @@ const ALL_LISTINGS: Listing[] = [
     furnishing: "Fully furnished",
     readyStatus: "Ready to move",
     parking: 2,
-    ageLabel: "5–10 years",
+    ageLabel: "6–9 Years Old",
     priceCr: 3.1,
     priceLabel: "₹3.10 Cr",
     media: "Video • Floor plan",
@@ -115,9 +116,9 @@ const ALL_LISTINGS: Listing[] = [
     areaSqft: 5000,
     type: "Bungalow",
     furnishing: "Fully furnished",
-    readyStatus: "After 1 Month",
+    readyStatus: "Ready to move",
     parking: 4,
-    ageLabel: "New",
+    ageLabel: "New Property",
     priceCr: 5.5,
     priceLabel: "₹5.50 Cr",
     media: "Video • Tour",
@@ -140,7 +141,7 @@ const ALL_LISTINGS: Listing[] = [
     furnishing: "Fully furnished",
     readyStatus: "Ready to move",
     parking: 3,
-    ageLabel: "0-1 years",
+    ageLabel: "New Property",
     priceCr: 4.2,
     priceLabel: "₹4.20 Cr",
     media: "Video",
@@ -161,9 +162,9 @@ const ALL_LISTINGS: Listing[] = [
     areaSqft: 3800,
     type: "Bungalow",
     furnishing: "Semi-furnished",
-    readyStatus: "After 1 Month",
+    readyStatus: "Ready to move",
     parking: 3,
-    ageLabel: "2-5 years",
+    ageLabel: "1–3 Years Old",
     priceCr: 3.8,
     priceLabel: "₹3.80 Cr",
     media: "Photos only",
@@ -184,9 +185,9 @@ const ALL_LISTINGS: Listing[] = [
     areaSqft: 5500,
     type: "Apartment",
     furnishing: "Fully furnished",
-    readyStatus: "After 2 Months",
+    readyStatus: "Ready to move",
     parking: 4,
-    ageLabel: "New",
+    ageLabel: "New Property",
     priceCr: 6.5,
     priceLabel: "₹6.50 Cr",
     media: "Video",
@@ -209,7 +210,7 @@ const ALL_LISTINGS: Listing[] = [
     furnishing: "Unfurnished",
     readyStatus: "Ready to move",
     parking: 5,
-    ageLabel: "5-10 years",
+    ageLabel: "9+ Years Old",
     priceCr: 5.1,
     priceLabel: "₹5.10 Cr",
     media: "Photos",
@@ -232,9 +233,9 @@ const ALL_LISTINGS: Listing[] = [
     areaSqft: 1950,
     type: "Apartment",
     furnishing: "Semi-furnished",
-    readyStatus: "After 3 Months",
+    readyStatus: "Ready to move",
     parking: 1,
-    ageLabel: "<5 years",
+    ageLabel: "3–6 Years Old",
     priceCr: 1.65,
     priceLabel: "₹1.65 Cr",
     media: "Video",
@@ -257,7 +258,7 @@ const ALL_LISTINGS: Listing[] = [
     furnishing: "Unfurnished",
     readyStatus: "Ready to move",
     parking: 1,
-    ageLabel: "1-5 years",
+    ageLabel: "1–3 Years Old",
     priceCr: 0.65,
     priceLabel: "₹65 Lac",
     media: "Photos",
@@ -278,9 +279,9 @@ const ALL_LISTINGS: Listing[] = [
     areaSqft: 2800,
     type: "Tenement",
     furnishing: "Unfurnished",
-    readyStatus: "After 1 Month",
+    readyStatus: "Ready to move",
     parking: 2,
-    ageLabel: "0-1 years",
+    ageLabel: "New Property",
     priceCr: 2.25,
     priceLabel: "₹2.25 Cr",
     media: "Photos",
@@ -303,7 +304,7 @@ const ALL_LISTINGS: Listing[] = [
     furnishing: "Semi-furnished",
     readyStatus: "Ready to move",
     parking: 2,
-    ageLabel: "2-5 years",
+    ageLabel: "1–3 Years Old",
     priceCr: 1.45,
     priceLabel: "₹1.45 Cr",
     media: "Video",
@@ -324,9 +325,9 @@ const ALL_LISTINGS: Listing[] = [
     areaSqft: 3100,
     type: "Bungalow",
     furnishing: "Fully furnished",
-    readyStatus: "After 2 Months",
+    readyStatus: "Ready to move",
     parking: 2,
-    ageLabel: "5-10 years",
+    ageLabel: "6–9 Years Old",
     priceCr: 2.8,
     priceLabel: "₹2.80 Cr",
     media: "Photos",
@@ -349,7 +350,7 @@ const ALL_LISTINGS: Listing[] = [
     furnishing: "Unfurnished",
     readyStatus: "Ready to move",
     parking: 1,
-    ageLabel: "New",
+    ageLabel: "New Property",
     priceCr: 1.15,
     priceLabel: "₹1.15 Cr",
     media: "Photos",
@@ -372,7 +373,7 @@ const ALL_LISTINGS: Listing[] = [
     furnishing: "Unfurnished",
     readyStatus: "Ready to move",
     parking: 0,
-    ageLabel: "N/A",
+    ageLabel: "New Property",
     priceCr: 3.5,
     priceLabel: "₹3.50 Cr",
     media: "Map",
@@ -395,7 +396,7 @@ const ALL_LISTINGS: Listing[] = [
     furnishing: "Semi-furnished",
     readyStatus: "Ready to move",
     parking: 1,
-    ageLabel: "10+ years",
+    ageLabel: "9+ Years Old",
     priceCr: 1.9,
     priceLabel: "₹1.90 Cr",
     media: "Photos",
@@ -416,9 +417,9 @@ const ALL_LISTINGS: Listing[] = [
     areaSqft: 1200,
     type: "Apartment",
     furnishing: "Fully furnished",
-    readyStatus: "Above 3 Months",
+    readyStatus: "Ready to move",
     parking: 1,
-    ageLabel: "1-5 years",
+    ageLabel: "1–3 Years Old",
     priceCr: 0.75,
     priceLabel: "₹75 Lac",
     media: "Photos",
@@ -441,7 +442,7 @@ const ALL_LISTINGS: Listing[] = [
     furnishing: "Fully furnished",
     readyStatus: "Ready to move",
     parking: 1,
-    ageLabel: "5-10 years",
+    ageLabel: "6–9 Years Old",
     priceCr: 0.95,
     priceLabel: "₹95 Lac",
     media: "Photos",
@@ -462,9 +463,9 @@ const ALL_LISTINGS: Listing[] = [
     areaSqft: 1800,
     type: "Apartment",
     furnishing: "Semi-furnished",
-    readyStatus: "After 1 Month",
+    readyStatus: "Ready to move",
     parking: 2,
-    ageLabel: "New",
+    ageLabel: "New Property",
     priceCr: 1.35,
     priceLabel: "₹1.35 Cr",
     media: "Video",
@@ -487,7 +488,7 @@ const ALL_LISTINGS: Listing[] = [
     furnishing: "Unfurnished",
     readyStatus: "Ready to move",
     parking: 1,
-    ageLabel: "New",
+    ageLabel: "New Property",
     priceCr: 1.1,
     priceLabel: "₹1.10 Cr",
     media: "Photos",
@@ -512,7 +513,7 @@ const ALL_LISTINGS: Listing[] = [
     furnishing: "Unfurnished",
     readyStatus: "Ready to move",
     parking: 1,
-    ageLabel: "5–10 years",
+    ageLabel: "6–9 Years Old",
     priceCr: 1.25,
     priceLabel: "₹1.25 Cr",
     media: "Photos",
@@ -533,9 +534,9 @@ const ALL_LISTINGS: Listing[] = [
     areaSqft: 1800,
     type: "Apartment",
     furnishing: "Semi-furnished",
-    readyStatus: "After 2 Months",
+    readyStatus: "Ready to move",
     parking: 1,
-    ageLabel: "1–5 years",
+    ageLabel: "1–3 Years Old",
     priceCr: 1.55,
     priceLabel: "₹1.55 Cr",
     media: "Video",
@@ -558,7 +559,7 @@ const ALL_LISTINGS: Listing[] = [
     furnishing: "Fully furnished",
     readyStatus: "Ready to move",
     parking: 2,
-    ageLabel: "5–10 years",
+    ageLabel: "6–9 Years Old",
     priceCr: 2.1,
     priceLabel: "₹2.10 Cr",
     media: "Video",
@@ -581,7 +582,7 @@ const ALL_LISTINGS: Listing[] = [
     furnishing: "Semi-furnished",
     readyStatus: "Ready to move",
     parking: 1,
-    ageLabel: "5-10 years",
+    ageLabel: "6–9 Years Old",
     priceCr: 0.85,
     priceLabel: "₹85 Lac",
     media: "Photos",
@@ -604,7 +605,7 @@ const ALL_LISTINGS: Listing[] = [
     furnishing: "Unfurnished",
     readyStatus: "Ready to move",
     parking: 0,
-    ageLabel: "N/A",
+    ageLabel: "New Property",
     priceCr: 1.1,
     priceLabel: "₹1.10 Cr",
     media: "Map",
@@ -627,7 +628,7 @@ const ALL_LISTINGS: Listing[] = [
     furnishing: "Semi-furnished",
     readyStatus: "Ready to move",
     parking: 2,
-    ageLabel: "2-5 years",
+    ageLabel: "1–3 Years Old",
     priceCr: 1.05,
     priceLabel: "₹1.05 Cr",
     media: "Photos",
@@ -645,7 +646,7 @@ const initialFilters: Filters = {
   localities: [],
   propertyType: "any",
   priceRange: "any",
-  possession: "any",
+  ageOfProperty: "any",
   listedBy: "any", 
   minBedrooms: 0,
   minBathrooms: 0,
@@ -677,23 +678,39 @@ export default function BuyIntroPage() {
   const [sortBy, setSortBy] = useState<SortOption>("Newest");
   const [rotatedListings, setRotatedListings] = useState<Listing[]>([]);
   
-  // NEW: Toggle for Map View
+  // Toggle for Map View
   const [isMapView, setIsMapView] = useState(false);
 
-  // --- ROTATION LOGIC (RESTORES YOUR 10-PROPERTY MIX) ---
+  // --- ROTATION LOGIC ---
   useEffect(() => {
-    // Filter by tiers from the full dataset
     const exclusive = ALL_LISTINGS.filter(l => l.tier === "exclusive");
     const featured = ALL_LISTINGS.filter(l => l.tier === "featured");
     const regular = ALL_LISTINGS.filter(l => l.tier === "regular");
 
-    // Logic: Select 2 Exclusive + 2 Featured + All 6 Regular = 10 items displayed initially
     const selectedExclusive = shuffleArray(exclusive).slice(0, 2);
     const selectedFeatured = shuffleArray(featured).slice(0, 2);
 
     const combined = [...selectedExclusive, ...selectedFeatured, ...regular];
     setRotatedListings(combined);
   }, []);
+
+  // --- BACK BUTTON HANDLING ---
+  useEffect(() => {
+    if (isMapView) {
+      // Push a dummy state to history when entering map view
+      window.history.pushState(null, '', '');
+      
+      const handlePopState = () => {
+        setIsMapView(false);
+      };
+      
+      window.addEventListener('popstate', handlePopState);
+      
+      return () => {
+        window.removeEventListener('popstate', handlePopState);
+      };
+    }
+  }, [isMapView]);
 
   const handleClearFilters = () => setFilters(initialFilters);
 
@@ -721,15 +738,7 @@ export default function BuyIntroPage() {
   };
 
   const filteredListings = useMemo(() => {
-    // If Map View is active, we might want to search against ALL_LISTINGS to populate map?
-    // But per your request, we stick to the 10 rotated ones or the full list?
-    // Usually map search shows MORE. Let's use the rotatedListings to keep the "10 properties" 
-    // count consistent with your complaint, unless filters are applied.
-    
-    // However, if the user starts filtering, they expect to see results from ALL data.
-    // For this specific request ("I had 10 properties... I want that back"), 
-    // we default to rotatedListings. If filters are active, we search ALL.
-    const hasFilters = filters.city !== "any" || filters.priceRange !== "any" || filters.propertyType !== "any";
+    const hasFilters = filters.city !== "any" || filters.priceRange !== "any" || filters.propertyType !== "any" || filters.ageOfProperty !== "any";
     const sourceData = hasFilters ? ALL_LISTINGS : (rotatedListings.length > 0 ? rotatedListings : []);
 
     let result = sourceData.filter((l) => {
@@ -748,7 +757,8 @@ export default function BuyIntroPage() {
         if (filters.priceRange === "1Cr-1.5Cr" && !(price > 1 && price <= 1.5)) return false;
         if (filters.priceRange === "1.5Cr+" && !(price > 1.5)) return false;
       }
-      if (filters.possession !== "any" && l.readyStatus !== filters.possession) return false;
+      if (filters.ageOfProperty !== "any" && l.ageLabel !== filters.ageOfProperty) return false;
+      
       if (filters.listedBy !== "any") {
           if (filters.listedBy === "owner" && l.source !== "owner") return false;
           if (filters.listedBy === "partner" && l.source !== "partner") return false;
@@ -783,7 +793,6 @@ export default function BuyIntroPage() {
 
   // --- COMPONENT CHUNKS ---
   
-  // 1. Sidebar Filter Component (Reusable)
   const FilterSidebarContent = () => (
     <div className="bg-white px-4 py-5 text-xs text-slate-700 shadow-sm h-full flex flex-col">
         <div className="flex items-start justify-between gap-2">
@@ -823,6 +832,14 @@ export default function BuyIntroPage() {
             <PillButton active={filters.priceRange === "1.5Cr+"} onClick={() => setFilters(f => ({...f, priceRange: f.priceRange === "1.5Cr+" ? "any" : "1.5Cr+"}))}>Above 1.5Cr</PillButton>
         </FilterBlock>
 
+        <FilterBlock title="Age of Property">
+            {["New Property", "1–3 Years Old", "3–6 Years Old", "6–9 Years Old", "9+ Years Old"].map((label) => (
+              <PillButton key={label} active={filters.ageOfProperty === label} onClick={() => setFilters(f => ({...f, ageOfProperty: f.ageOfProperty === label ? "any" : (label as PropertyAge)}))}>
+                {label}
+              </PillButton>
+            ))}
+        </FilterBlock>
+
         <FilterBlock title="Listed by">
             <PillButton active={filters.listedBy === "owner"} onClick={() => setFilters(f => ({...f, listedBy: f.listedBy === "owner" ? "any" : "owner"}))}>Direct Owner</PillButton>
             <PillButton active={filters.listedBy === "partner"} onClick={() => setFilters(f => ({...f, listedBy: f.listedBy === "partner" ? "any" : "partner"}))}>Agent</PillButton>
@@ -851,7 +868,6 @@ export default function BuyIntroPage() {
     </div>
   );
 
-  // 2. The Search Bar Component (Reusable)
   const TopSearchBar = () => (
     <div className="rounded-2xl border border-slate-200 bg-white px-3 sm:px-4 py-2 shadow-sm">
         <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between mb-3">
@@ -884,7 +900,7 @@ export default function BuyIntroPage() {
             <SmartDropdown label="Budget" value={filters.priceRange} onChange={(val) => setFilters((f) => ({ ...f, priceRange: val as any }))} options={[{ value: "any", label: "Any" }, { value: "0-50L", label: "₹0 - ₹50 Lakhs" }, { value: "50L-1Cr", label: "₹50L - ₹1 Cr" }, { value: "1Cr-1.5Cr", label: "₹1 Cr - ₹1.5 Cr" }, { value: "1.5Cr+", label: "Above ₹1.5 Cr" }]} />
             </div>
             <div className="w-60">
-            <SmartDropdown label="Possession" value={filters.possession} onChange={(val) => setFilters((f) => ({ ...f, possession: val as any }))} options={[{ value: "any", label: "Any" }, { value: "Ready to move", label: "Ready to Move" }, { value: "After 1 Month", label: "After 1 Month" }, { value: "After 2 Months", label: "After 2 Months" }, { value: "After 3 Months", label: "After 3 Months" }, { value: "Above 3 Months", label: "Above 3 Months" }]} />
+            <SmartDropdown label="Age" value={filters.ageOfProperty} onChange={(val) => setFilters((f) => ({ ...f, ageOfProperty: val as any }))} options={[{ value: "any", label: "Any" }, { value: "New Property", label: "New Property" }, { value: "1–3 Years Old", label: "1–3 Years Old" }, { value: "3–6 Years Old", label: "3–6 Years Old" }, { value: "6–9 Years Old", label: "6–9 Years Old" }, { value: "9+ Years Old", label: "9+ Years Old" }]} />
             </div>
         </div>
         <button className="h-8 shrink-0 rounded-full bg-[#006B5B] px-5 text-sm font-semibold text-white shadow transition-all hover:bg-[#005347] active:scale-95 mt-1 lg:mt-0 lg:ml-2">
@@ -894,7 +910,6 @@ export default function BuyIntroPage() {
 
         <div className="mt-3 flex flex-col gap-1 border-t border-slate-100 pt-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-wrap items-center gap-1">
-                {/* Info Pills */}
                 <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[11px] font-medium text-slate-600">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400">
                     <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
@@ -904,7 +919,6 @@ export default function BuyIntroPage() {
             </div>
 
             <div className="relative mt-0.5 lg:mt-0 flex items-center gap-2">
-               {/* SHOW LIST VIEW BUTTON IF IN MAP MODE */}
                {isMapView && (
                    <button onClick={() => setIsMapView(false)} className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-medium text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50">
                         <List className="w-3.5 h-3.5" />
@@ -921,15 +935,12 @@ export default function BuyIntroPage() {
     <main className="min-h-screen bg-[#F5F7F9] overflow-hidden flex flex-col font-sans">
       <Header />
 
-      {/* CONDITIONAL LAYOUT: STANDARD vs MAP SPLIT */}
       {!isMapView ? (
-          // === STANDARD GRID VIEW ===
           <section className="w-full px-3 sm:px-4 lg:px-6 xl:px-10 py-6 overflow-y-auto flex-1">
             <TopSearchBar />
 
             <div className="mt-2 grid gap-3 md:grid-cols-[270px,1fr]">
                 <aside className="h-fit">
-                    {/* View on Map Trigger */}
                     <div onClick={() => setIsMapView(true)} className="mb-3 w-full aspect-square rounded-2xl border border-slate-200 bg-slate-100 overflow-hidden relative group cursor-pointer shadow-sm">
                         <img 
                             src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScDLQeIDVShuT2tL3g-BkmQUdq0tId_aQP9g&s"
@@ -974,202 +985,13 @@ export default function BuyIntroPage() {
             </div>
           </section>
       ) : (
-          // === NEW TRENDY MAP VIEW LAYOUT ===
-          <div className="fixed inset-0 top-[64px] z-40 bg-[#F7F6F4] p-4 flex flex-col h-full overflow-y-auto animate-in fade-in duration-300">
-            
-            <div className="flex-1 flex gap-4">
-              {/* --- LEFT FILTER CARD --- */}
-              {/* White rounded card for filters, separated from map */}
-              <div className="w-[300px] shrink-0 h-full flex flex-col bg-white rounded-3xl shadow-xl overflow-hidden border border-white/60 relative z-30">
-                 {/* Back Button Header */}
-                 <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-3 bg-white/50 backdrop-blur-sm">
-                     <button onClick={() => setIsMapView(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-500 hover:text-slate-800">
-                         <ArrowLeft className="w-5 h-5" />
-                     </button>
-                     <div>
-                         <h1 className="text-lg font-bold text-slate-900 leading-tight">Map Search</h1>
-                         <p className="text-[10px] text-slate-500 font-medium">{filteredListings.length} properties found</p>
-                     </div>
-                 </div>
-
-                 {/* Reuse EXACT Filter Sidebar Content */}
-                 <div className="flex-1 overflow-hidden relative">
-                     <FilterSidebarContent />
-                 </div>
-              </div>
-      
-              {/* --- RIGHT MAP AREA --- */}
-              {/* Floating rounded card for the map */}
-              <div className="flex-1 min-h-[80vh] rounded-3xl overflow-hidden shadow-xl border border-white/60 relative bg-slate-200 z-20">
-                   <InteractiveMap listings={filteredListings} />
-              </div>
-            </div>
-
-            <Footer />
-          </div>
+          <MapComponent listings={filteredListings} onBack={() => setIsMapView(false)} FilterSidebar={<FilterSidebarContent />} />
       )}
+
+      <Footer />
     </main>
   );
 }
-
-/* ===== NEW COMPONENT: INTERACTIVE MAP WITH ZOOM, HOVER POPUP & COLORED PINS ===== */
-function InteractiveMap({ listings }: { listings: Listing[] }) {
-    const [hoveredId, setHoveredId] = useState<number | null>(null);
-    const [zoom, setZoom] = useState(1);
-    const [position, setPosition] = useState({ x: 0, y: 0 });
-    const isDragging = useRef(false);
-    const lastPosition = useRef({ x: 0, y: 0 });
-
-    // Handle Zoom
-    const handleZoomIn = () => setZoom(z => Math.min(z + 0.5, 4));
-    const handleZoomOut = () => setZoom(z => Math.max(z - 0.5, 1));
-
-    // Simple Drag Logic implementation
-    const onMouseDown = (e: React.MouseEvent) => {
-       isDragging.current = true;
-       lastPosition.current = { x: e.clientX, y: e.clientY };
-    };
-    const onMouseMove = (e: React.MouseEvent) => {
-       if (!isDragging.current) return;
-       const dx = e.clientX - lastPosition.current.x;
-       const dy = e.clientY - lastPosition.current.y;
-       setPosition(p => ({ x: p.x + dx, y: p.y + dy }));
-       lastPosition.current = { x: e.clientX, y: e.clientY };
-    };
-    const onMouseUp = () => isDragging.current = false;
-
-    // Helper for pin colors matching your request
-    const getPinColor = (tier: Tier) => {
-        if (tier === "exclusive") return "#DCCEB9"; // Gold
-        if (tier === "featured") return "#0F7F9C";  // Blueish Teal
-        return "#004D40";                           // Green (Standard)
-    };
-
-    return (
-        <div 
-            className="w-full h-full relative overflow-hidden bg-[#eef0f2] cursor-grab active:cursor-grabbing group"
-            onMouseDown={onMouseDown}
-            onMouseMove={onMouseMove}
-            onMouseUp={onMouseUp}
-            onMouseLeave={onMouseUp}
-        >
-            {/* Map Plane Layer */}
-            <div 
-                className="w-full h-full absolute top-0 left-0 transition-transform duration-100 ease-out origin-center"
-                style={{ transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})` }}
-            >
-                {/* Background Grid Pattern (Subtle map texture) */}
-                <div className="absolute inset-[-100%] w-[300%] h-[300%] opacity-30 pointer-events-none" 
-                     style={{ 
-                         backgroundImage: 'linear-gradient(#cbd5e1 1px, transparent 1px), linear-gradient(90deg, #cbd5e1 1px, transparent 1px)', 
-                         backgroundSize: '40px 40px' 
-                     }} 
-                />
-                
-                {/* Simulated Roads/Paths for visual appeal */}
-                <svg className="absolute inset-0 w-full h-full text-slate-300 pointer-events-none opacity-40" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M-500 200 Q 400 600 1200 200 T 2000 400" stroke="currentColor" strokeWidth="20" fill="none" />
-                    <path d="M500 -200 Q 400 500 200 1500" stroke="currentColor" strokeWidth="15" fill="none" />
-                </svg>
-
-                {/* Render Pins */}
-                {listings.map((l) => {
-                    // Stable random position based on ID
-                    const top = ((l.id * 17) % 70) + 15; 
-                    const left = ((l.id * 31) % 70) + 15;
-                    const isHovered = hoveredId === l.id;
-                    const color = getPinColor(l.tier);
-                    
-                    return (
-                        <div 
-                            key={l.id} 
-                            className={`absolute transform -translate-x-1/2 -translate-y-full cursor-pointer transition-all duration-200 ${isHovered ? "z-50 scale-110" : "z-20"}`}
-                            style={{ top: `${top}%`, left: `${left}%` }}
-                            onMouseEnter={() => setHoveredId(l.id)}
-                            onMouseLeave={() => setHoveredId(null)}
-                        >
-                            <CustomPin color={color} isSelected={isHovered} />
-
-                            {/* --- HOVER POPUP CARD (Anchored to Pin) --- */}
-                            {isHovered && (
-                                <div className="absolute bottom-[calc(100%+12px)] left-1/2 -translate-x-1/2 w-[280px] pointer-events-none z-50">
-                                    <div className="bg-white rounded-2xl shadow-2xl p-0 overflow-hidden border border-slate-100 animate-in slide-in-from-bottom-2 duration-200">
-                                        <div className="h-32 w-full bg-slate-200 relative">
-                                            <img src={l.image} className="absolute inset-0 w-full h-full object-cover" />
-                                            <div className="absolute top-2 left-2">
-                                                <span className={`px-2 py-0.5 text-[9px] font-bold rounded-md text-white shadow-sm uppercase tracking-wide ${l.tier === "exclusive" ? "bg-[#DCCEB9] text-[#5A4A2E]" : l.tier === "featured" ? "bg-[#0F7F9C]" : "bg-[#004D40]"}`}>
-                                                    {l.tier}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div className="p-3">
-                                            <h3 className="font-bold text-sm text-slate-900 leading-tight mb-1 truncate">{l.title}</h3>
-                                            <div className="text-[10px] text-slate-500 mb-2">{l.locality}, {l.city}</div>
-                                            <div className="flex items-center justify-between border-t border-slate-50 pt-2">
-                                                <div className="font-bold text-base text-slate-900">{l.priceLabel}</div>
-                                                <div className="text-[10px] font-medium text-slate-500">{l.bedrooms} Bed • {l.areaSqft} sqft</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {/* Triangle Arrow */}
-                                    <div className="w-4 h-4 bg-white absolute -bottom-2 left-1/2 transform -translate-x-1/2 rotate-45 shadow-sm border-r border-b border-slate-100"></div>
-                                </div>
-                            )}
-                        </div>
-                    );
-                })}
-            </div>
-
-            {/* --- CONTROLS --- */}
-            <div className="absolute bottom-8 right-8 flex flex-col gap-2 z-40">
-                <button onClick={handleZoomIn} className="w-10 h-10 bg-white rounded-xl shadow-lg border border-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
-                    <Plus className="w-5 h-5" />
-                </button>
-                <button onClick={handleZoomOut} className="w-10 h-10 bg-white rounded-xl shadow-lg border border-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
-                    <Minus className="w-5 h-5" />
-                </button>
-            </div>
-
-            {/* --- LEGEND (Without white box background as requested per "remove white box from exclusive") --- */}
-            <div className="absolute top-6 left-6 z-20 flex gap-2 pointer-events-none">
-                <div className="bg-white/80 backdrop-blur-md px-3 py-1.5 rounded-full shadow-sm border border-white/50 flex items-center gap-3 pointer-events-auto">
-                     <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-600">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#DCCEB9]"></span> Exclusive
-                     </div>
-                     <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-600">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#0F7F9C]"></span> Featured
-                     </div>
-                     <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-600">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#004D40]"></span> Regular
-                     </div>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-// Custom Pin SVG Component
-function CustomPin({ color, isSelected }: { color: string; isSelected: boolean }) {
-    return (
-        <div className={`relative group transition-transform duration-300 ${isSelected ? "scale-125 -translate-y-2" : ""}`}>
-            <svg 
-                width="44" 
-                height="54" 
-                viewBox="0 0 384 512" 
-                fill={color} 
-                className="drop-shadow-lg"
-                xmlns="http://www.w3.org/2000/svg"
-            >
-                {/* Teardrop shape */}
-                <path d="M172.268 501.67C26.97 291.031 0 269.413 0 192 0 85.961 85.961 0 192 0s192 85.961 192 192c0 77.413-26.97 99.031-172.268 309.67-9.535 13.774-29.93 13.773-39.464 0z"/>
-            </svg>
-            {/* Inner White Circle (The Hole) */}
-            <div className="absolute top-[13px] left-[11px] w-[22px] h-[22px] bg-white rounded-full shadow-inner" />
-        </div>
-    );
-}
-
-/* ===== EXISTING CUSTOM COMPONENTS (Unchanged) ===== */
 
 interface SortDropdownProps { value: SortOption; onChange: (value: SortOption) => void; }
 
@@ -1319,7 +1141,8 @@ function ListingCard({ item }: { item: Listing }) {
   const sourceInfo = getSourceLabel();
 
   return (
-    <article className={`relative overflow-hidden flex flex-col md:flex-row gap-3 md:gap-5 p-3 border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 ${theme.cardAccent} ${theme.cardBg ? theme.cardBg : "bg-white"}`}>
+    // ADDED md:items-center to the main article tag to align image and text content vertically
+    <article className={`relative overflow-hidden flex flex-col md:flex-row md:items-center gap-3 md:gap-5 p-3 border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 ${theme.cardAccent} ${theme.cardBg ? theme.cardBg : "bg-white"}`}>
       {item.tier === "featured" && ( 
           <div className="absolute left-0 top-0 bottom-0 w-2 rounded-l-2xl bg-gradient-to-b from-[#e0f2ff] to-[#f0f9ff] pointer-events-none" /> 
       )}

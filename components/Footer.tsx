@@ -28,10 +28,8 @@ const LinkItem: React.FC<LinkItemProps> = ({ href, label }) => (
   <li>
     <a 
       href={href} 
-      // CHANGED: text-slate-500 to text-black
       className="group flex items-center gap-2 text-[15px] font-semibold text-black hover:text-[#006B5B] transition-all duration-300 py-1.5 hover:translate-x-1"
     >
-      {/* CHANGED: bg-slate-300 to bg-slate-900 for the bullet dot */}
       <span className="w-1 h-1 rounded-full bg-black group-hover:bg-[#006B5B] group-hover:w-2 transition-all duration-300" />
       {label}
     </a>
@@ -62,6 +60,7 @@ SocialIcon.propTypes = {
 const Footer = () => {
   // --- DATA ---
   const bhkLinks = [
+    { label: '1 BHK', href: '/listings?beds=1' }, // Added 1 BHK here
     { label: '2 BHK', href: '/listings?beds=2' },
     { label: '3 BHK', href: '/listings?beds=3' },
     { label: '4 BHK', href: '/listings?beds=4' },
@@ -115,7 +114,6 @@ const Footer = () => {
             <h3 className="text-2xl font-extrabold text-black mb-4 tracking-tight flex items-center gap-1">
               Gandhinagar<span className="text-[#006B5B]">Homes</span>
             </h3>
-            {/* CHANGED: text-slate-500 to text-black */}
             <p className="text-xs leading-relaxed text-black font-medium mb-6 max-w-xs">
               Premium real estate ecosystem. We simplify buying, selling, and renting with deep local expertise.
             </p>
@@ -181,7 +179,6 @@ const Footer = () => {
               </div>
               <div>
                 <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-0.5">Visit Us</h4>
-                {/* CHANGED: text-slate-700 to text-black */}
                 <p className="text-sm font-bold text-black group-hover:text-black">
                   Premium Plaza, Gandhinagar
                 </p>
@@ -194,7 +191,6 @@ const Footer = () => {
               </div>
               <div>
                 <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-0.5">Email Us</h4>
-                {/* CHANGED: text-slate-700 to text-black */}
                 <p className="text-sm font-bold text-black group-hover:text-[#006B5B] transition-colors">
                   hello@gandhinagarhomes.in
                 </p>
@@ -207,7 +203,6 @@ const Footer = () => {
               </div>
               <div>
                 <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-0.5">Call Us</h4>
-                {/* CHANGED: text-slate-700 to text-black */}
                 <p className="text-sm font-bold text-black group-hover:text-[#006B5B] transition-colors">
                   +91 98765 43210
                 </p>
@@ -217,7 +212,6 @@ const Footer = () => {
 
         {/* --- BOTTOM BAR --- */}
         <div className="border-t border-slate-200 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          {/* CHANGED: text-slate-500 to text-black */}
           <p className="text-xs text-black font-semibold text-center md:text-left">
             &copy; {new Date().getFullYear()} <span className="text-black font-bold">GandhinagarHomes</span>. All rights reserved.
           </p>
@@ -225,7 +219,6 @@ const Footer = () => {
           <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2">
             {['Privacy Policy', 'Terms of Use', 'Sitemap', 'Disclaimer'].map((item) => (
               <li key={item}>
-                {/* CHANGED: text-slate-500 to text-black */}
                 <a href={`/${item.toLowerCase().replace(/ /g, '-')}`} className="text-xs font-bold text-black hover:text-[#006B5B] transition-colors relative group">
                   {item}
                   <span className="absolute -bottom-1 left-0 w-0 h-px bg-[#006B5B] group-hover:w-full transition-all duration-300"></span>
