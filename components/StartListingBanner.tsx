@@ -191,14 +191,17 @@ export default function SellPage() {
   const propertySizeUnitOptions: Array<"sq ft" | "sq m" | "sq yd"> = ["sq ft", "sq m", "sq yd"];
 
  const handlePriceInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, ""); // Remove non-digits
-    if (value === "") {
-      setPrice("");
-    } else {
-      const numValue = parseInt(value, 10);
-      setPrice(numValue.toLocaleString('en-IN')); // Formats as 10,00,000
+  const value = e.target.value.replace(/\D/g, ""); // Remove non-digits
+  if (value === "") {
+    setPrice("");
+  } else {
+    const numValue = parseInt(value, 10);
+    // Limit price to 99,99,99,999 (one less than 100 Crore)
+    if (numValue <= 999999999) {
+      setPrice(numValue.toLocaleString('en-IN'));
     }
-  };
+  }
+};
 
   const canNavigateTo = (target: number) => {
     if (target === 0) return true;
@@ -678,8 +681,9 @@ export default function SellPage() {
                       <Listbox value={propertyType} onChange={setPropertyType}>
                         <div className="relative">
                           <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
-                            <span className="block truncate">{propertyType || "Select property type"}</span>
-                            <DropdownChevron />
+<span className={`block truncate ${!propertyType ? 'text-gray-400' : 'text-black'}`}>
+  {propertyType || "Select property type"}
+</span>                            <DropdownChevron />
                           </Listbox.Button>
                           <Transition
                             as={Fragment}
@@ -723,8 +727,9 @@ export default function SellPage() {
                         <Listbox value={bedrooms} onChange={setBedrooms}>
                         <div className="relative">
                           <Listbox.Button className={`${selectNormal} ${triedContinue && !isBedroomsValid ? 'border-red-200' : 'border-gray-100'} flex items-center justify-between`}>
-                            <span className="block truncate">{bedrooms || "Select bedrooms"}</span>
-                            <DropdownChevron />
+<span className={`block truncate ${!bedrooms ? 'text-gray-400' : 'text-black'}`}>
+  {bedrooms || "Select bedrooms"}
+</span>                            <DropdownChevron />
                           </Listbox.Button>
                           <Transition
                             as={Fragment}
@@ -766,8 +771,9 @@ export default function SellPage() {
                       <Listbox value={balcony} onChange={setBalcony}>
                         <div className="relative">
                           <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
-                            <span className="block truncate">{balcony || "Select balcony"}</span>
-                            <DropdownChevron />
+<span className={`block truncate ${!balcony ? 'text-gray-400' : 'text-black'}`}>
+  {balcony || "Select balcony"}
+</span>                            <DropdownChevron />
                           </Listbox.Button>
                           <Transition
                             as={Fragment}
@@ -808,8 +814,9 @@ export default function SellPage() {
                       <Listbox value={bathrooms} onChange={setBathrooms}>
                         <div className="relative">
                           <Listbox.Button className={`${selectNormal} ${triedContinue && !isBathroomsValid ? 'border-red-200' : 'border-gray-100'} flex items-center justify-between`}>
-                            <span className="block truncate">{bathrooms || "Select bathrooms"}</span>
-                            <DropdownChevron />
+<span className={`block truncate ${!bathrooms ? 'text-gray-400' : 'text-black'}`}>
+  {bathrooms || "Select bathrooms"}
+</span>                            <DropdownChevron />
                           </Listbox.Button>
                           <Transition
                             as={Fragment}
@@ -854,8 +861,9 @@ export default function SellPage() {
                       <Listbox value={parking} onChange={setParking}>
                         <div className="relative">
                           <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
-                            <span className="block truncate">{parking || "Select parking"}</span>
-                            <DropdownChevron />
+<span className={`block truncate ${!parking ? 'text-gray-400' : 'text-black'}`}>
+  {parking || "Select parking"}
+</span>                            <DropdownChevron />
                           </Listbox.Button>
                           <Transition
                             as={Fragment}
@@ -892,12 +900,13 @@ export default function SellPage() {
                     </div>
 
                     <div>
-                      <label className={fieldLabel}>Age of Property</label>
+                      <label className={fieldLabel}>Property Age</label>
                       <Listbox value={ageOfProperty} onChange={setAgeOfProperty}>
                         <div className="relative">
                           <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
-                            <span className="block truncate">{ageOfProperty || "Select age of property"}</span>
-                            <DropdownChevron />
+<span className={`block truncate ${!ageOfProperty ? 'text-gray-400' : 'text-black'}`}>
+  {ageOfProperty || "Select age of property"}
+</span>                            <DropdownChevron />
                           </Listbox.Button>
                           <Transition
                             as={Fragment}
@@ -938,8 +947,9 @@ export default function SellPage() {
                       <Listbox value={furnishing} onChange={setFurnishing as any}>
                         <div className="relative">
                           <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
-                            <span className="block truncate">{furnishing || "Select furnishing"}</span>
-                            <DropdownChevron />
+<span className={`block truncate ${!furnishing ? 'text-gray-400' : 'text-black'}`}>
+  {furnishing || "Select furnishing"}
+</span>                            <DropdownChevron />
                           </Listbox.Button>
                           <Transition
                             as={Fragment}
@@ -1034,28 +1044,33 @@ export default function SellPage() {
                     </div>
 
                     <div>
-  <label className={fieldLabel}>Asking Price (₹) <span className="text-[#0b6b53]">*</span></label>
+  {/* Flex container to put label and info text side-by-side */}
+  <div className="flex items-center justify-between mb-2">
+    <label className="text-sm font-semibold text-gray-800">
+      Asking Price (₹) <span className="text-[#0b6b53]">*</span>
+    </label>
+    <span className="text-xs text-gray-500 font-normal">
+      All-inclusive(Excl.Stamp Duty)
+    </span>
+  </div>
+
   <div className="relative">
     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-black font-small">₹</span>
     <input 
-      value={price} 
+      value={price === "0.00" || price === "" ? "" : price} 
       onChange={handlePriceInput} 
-      placeholder="e.g. 1,20,01,111" 
-      className={`${triedContinue && !isPriceValid ? inputError : inputNormal} pl-8 text-medium font-regular text-black`} 
+      placeholder="0.00" 
+      className={`${triedContinue && !isPriceValid ? inputError : inputNormal} pl-8 text-medium font-regular ${price && price !== "0.00" ? 'text-black' : 'text-gray-400'}`} 
     />
   </div>
   
-  {/* PRICE IN WORDS LABEL (Matches your screenshot) */}
   {price && (
     <div className="mt-2 px-1 text-sm font-medium text-black flex items-start gap-2 animate-in fade-in slide-in-from-top-1">
-     
       <span>{priceToWords(parseInt(price.replace(/,/g, ''), 10))}</span>
     </div>
   )}
 
-  <p className="text-xs text-gray-500 mt-2">
-    (Includes everything except stamp duty & registration)
-  </p>
+  {/* Removed the bottom <p> tag as per your request */}
   {triedContinue && !isPriceValid && <div className="text-xs text-red-600 mt-2">Required</div>}
 </div>
                   </div>
@@ -1148,39 +1163,37 @@ export default function SellPage() {
                     </div>
                   </div>
 
-                  {/* Card 1: Society / Project Name (Single Source & Read-only) */}
-                  <div className={cardWrapper + " grid grid-cols-1 gap-6"}>
-                    <div>
-                      <label className={fieldLabel}>
-                        Society / Project Name <span className="text-[#0b6b53]">*</span>
-                      </label>
-                      <input
-                        value={title}
-                        readOnly
-                        placeholder="e.g., Shilp Residency"
-                        className={inputNormal + " bg-gray-50 text-gray-500 cursor-not-allowed"}
-                      />
-                    </div>
-                  </div>
+                  {/* Combined Card: Project Details & Unit Number */}
+                  <div className={cardWrapper + " space-y-6"}>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {/* Project Name - Occupies 2/3 of the width */}
+                      <div className="md:col-span-2">
+                        <label className={fieldLabel}>
+                          Society / Project Name <span className="text-[#0b6b53]">*</span>
+                        </label>
+                        <input
+                          value={title}
+                          readOnly
+                          placeholder="e.g., Shilp Residency"
+                          className={inputNormal + " bg-gray-50 text-gray-500 cursor-not-allowed"}
+                        />
+                      </div>
 
-                  {/* Card 2: Unit No / Address / Locality / Pincode */}
-                  <div className={cardWrapper + " grid grid-cols-1 gap-6"}>
-                    {/* Unit No First */}
-                    <div>
-                      <label className={fieldLabel}>
-                        Unit No <span className="text-[#0b6b53]">*</span>
-                      </label>
-                      <input
-                        value={unitNo}
-                        onChange={(e) => setUnitNo(e.target.value)}
-                        placeholder="e.g., B-701"
-                        className={`${triedContinue && !isUnitNoValid ? inputError : inputNormal}`}
-                      />
-                      {triedContinue && !isUnitNoValid && (
-                        <div className="text-xs text-red-600 mt-2">
-                          Please enter a unit number.
-                        </div>
-                      )}
+                      {/* Unit No - Occupies 1/3 of the width */}
+                      <div className="md:col-span-1">
+                        <label className={fieldLabel}>
+                          Unit No <span className="text-[#0b6b53]">*</span>
+                        </label>
+                        <input
+                          value={unitNo}
+                          onChange={(e) => setUnitNo(e.target.value)}
+                          placeholder="e.g., B-701"
+                          className={`${triedContinue && !isUnitNoValid ? inputError : inputNormal}`}
+                        />
+                        {triedContinue && !isUnitNoValid && (
+                          <div className="text-xs text-red-600 mt-2">Required</div>
+                        )}
+                      </div>
                     </div>
 
                     {/* Address Field (Before Locality) */}
@@ -1251,8 +1264,9 @@ export default function SellPage() {
                       <Listbox value={city} onChange={setCity}>
                         <div className="relative">
                           <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
-                            <span className="block truncate">{city || "Select city"}</span>
-                            <DropdownChevron />
+<span className={`block truncate ${!city ? 'text-gray-400' : 'text-black'}`}>
+  {city || "Select city"}
+</span>                            <DropdownChevron />
                           </Listbox.Button>
                           <Transition
                             as={Fragment}

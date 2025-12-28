@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useMemo, useState, useRef, useEffect } from "react";
+import React, { useMemo, useState, useRef, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import MapComponent from "@/components/MapComponent";
@@ -673,13 +674,32 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 // --- MAIN PAGE COMPONENT ---
-export default function BuyIntroPage() {
+function BuyIntroPage() {
+  const searchParams = useSearchParams();
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [sortBy, setSortBy] = useState<SortOption>("Newest");
   const [rotatedListings, setRotatedListings] = useState<Listing[]>([]);
   
   // Toggle for Map View
   const [isMapView, setIsMapView] = useState(false);
+
+  // Initialize filters from URL params
+  useEffect(() => {
+    const city = searchParams.get("city");
+    const propertyType = searchParams.get("propertyType");
+    const priceRange = searchParams.get("priceRange");
+    const ageOfProperty = searchParams.get("ageOfProperty");
+
+    if (city || propertyType || priceRange || ageOfProperty) {
+      setFilters(prev => ({
+        ...prev,
+        city: city || prev.city,
+        propertyType: propertyType as PropertyType || prev.propertyType,
+        priceRange: priceRange as PriceRangeValue || prev.priceRange,
+        ageOfProperty: ageOfProperty as PropertyAge || prev.ageOfProperty,
+      }));
+    }
+  }, [searchParams]);
 
   // --- ROTATION LOGIC ---
   useEffect(() => {
@@ -832,7 +852,7 @@ export default function BuyIntroPage() {
             <PillButton active={filters.priceRange === "1.5Cr+"} onClick={() => setFilters(f => ({...f, priceRange: f.priceRange === "1.5Cr+" ? "any" : "1.5Cr+"}))}>Above 1.5Cr</PillButton>
         </FilterBlock>
 
-        <FilterBlock title="Age of Property">
+        <FilterBlock title="Property Age">
             {["New Property", "1–3 Years Old", "3–6 Years Old", "6–9 Years Old", "9+ Years Old"].map((label) => (
               <PillButton key={label} active={filters.ageOfProperty === label} onClick={() => setFilters(f => ({...f, ageOfProperty: f.ageOfProperty === label ? "any" : (label as PropertyAge)}))}>
                 {label}
@@ -900,7 +920,7 @@ export default function BuyIntroPage() {
             <SmartDropdown label="Budget" value={filters.priceRange} onChange={(val) => setFilters((f) => ({ ...f, priceRange: val as any }))} options={[{ value: "any", label: "Any" }, { value: "0-50L", label: "₹0 - ₹50 Lakhs" }, { value: "50L-1Cr", label: "₹50L - ₹1 Cr" }, { value: "1Cr-1.5Cr", label: "₹1 Cr - ₹1.5 Cr" }, { value: "1.5Cr+", label: "Above ₹1.5 Cr" }]} />
             </div>
             <div className="w-60">
-            <SmartDropdown label="Age" value={filters.ageOfProperty} onChange={(val) => setFilters((f) => ({ ...f, ageOfProperty: val as any }))} options={[{ value: "any", label: "Any" }, { value: "New Property", label: "New Property" }, { value: "1–3 Years Old", label: "1–3 Years Old" }, { value: "3–6 Years Old", label: "3–6 Years Old" }, { value: "6–9 Years Old", label: "6–9 Years Old" }, { value: "9+ Years Old", label: "9+ Years Old" }]} />
+            <SmartDropdown label="Property Age" value={filters.ageOfProperty} onChange={(val) => setFilters((f) => ({ ...f, ageOfProperty: val as any }))} options={[{ value: "any", label: "Any" }, { value: "New Property", label: "New Property" }, { value: "1–3 Years Old", label: "1–3 Years Old" }, { value: "3–6 Years Old", label: "3–6 Years Old" }, { value: "6–9 Years Old", label: "6–9 Years Old" }, { value: "9+ Years Old", label: "9+ Years Old" }]} />
             </div>
         </div>
         <button className="h-8 shrink-0 rounded-full bg-[#006B5B] px-5 text-sm font-semibold text-white shadow transition-all hover:bg-[#005347] active:scale-95 mt-1 lg:mt-0 lg:ml-2">
@@ -992,6 +1012,16 @@ export default function BuyIntroPage() {
     </main>
   );
 }
+
+function BuyPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <BuyIntroPage />
+    </Suspense>
+  );
+}
+
+export default BuyPage;
 
 interface SortDropdownProps { value: SortOption; onChange: (value: SortOption) => void; }
 

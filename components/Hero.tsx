@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Manrope } from 'next/font/google';
 import * as Select from '@radix-ui/react-select';
@@ -39,13 +39,17 @@ const BUTTON_BASE_CLASSES = `
 const Dropdown = ({ 
   placeholder, 
   options, 
+  value,
+  onValueChange,
   triggerClassName = "" 
 }: { 
   placeholder: string; 
   options: string[];
+  value?: string;
+  onValueChange?: (value: string) => void;
   triggerClassName?: string;
 }) => (
-  <Select.Root>
+  <Select.Root value={value} onValueChange={onValueChange}>
     <Select.Trigger className={`inline-flex items-center justify-between w-full gap-2 px-4 lg:px-6 py-3 rounded-full border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#056F5E] shadow-sm font-medium ${manrope.className} tracking-tight transition-all hover:border-[#056F5E]/50 ${triggerClassName}`}>
       <Select.Value placeholder={placeholder} />
       <Select.Icon>
@@ -53,7 +57,6 @@ const Dropdown = ({
       </Select.Icon>
     </Select.Trigger>
     
-    {/* Added position="popper" and sideOffset to make it appear BELOW the trigger */}
     <Select.Portal>
       <Select.Content 
         position="popper" 
@@ -80,6 +83,35 @@ const Dropdown = ({
 );
 
 const Hero = () => {
+  // State for search filters
+  const [city, setCity] = useState("");
+  const [propertyType, setPropertyType] = useState("");
+  const [budget, setBudget] = useState("");
+  const [age, setAge] = useState("");
+
+  // Map display budget to internal filter keys used in /buy page
+  const getBudgetParams = (displayValue: string) => {
+    const map: Record<string, string> = {
+      "₹0 - ₹50 Lakhs": "0-50L",
+      "₹50L - ₹1 Cr": "50L-1Cr",
+      "₹1 Cr - ₹1.5 Cr": "1Cr-1.5Cr",
+      "Above ₹1.5 Cr": "1.5Cr+"
+    };
+    return map[displayValue] || "";
+  };
+
+  // Build the search URL with query parameters
+  const getSearchUrl = () => {
+    const params = new URLSearchParams();
+    if (city) params.append("city", city);
+    if (propertyType) params.append("propertyType", propertyType);
+    if (budget) params.append("priceRange", getBudgetParams(budget));
+    if (age) params.append("ageOfProperty", age);
+    
+    const queryString = params.toString();
+    return queryString ? `/buy?${queryString}` : '/buy';
+  };
+
   return (
     <section className={`relative bg-white flex flex-col ${manrope.className}`}>
       
@@ -119,7 +151,6 @@ const Hero = () => {
 
           {/* SEARCH BAR */}
           <div className="absolute bottom-0 left-0 right-0 z-20 px-4 pb-6 animate-rise delay-300">
-            {/* CHANGED: max-w-6xl -> max-w-5xl to reduce width as requested */}
             <div className="max-w-5xl mx-auto bg-white/95 backdrop-blur-md rounded-[2rem] md:rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-2.5 border border-gray-100">
               
               <div className="flex flex-col md:flex-row gap-2">
@@ -129,6 +160,8 @@ const Hero = () => {
                     <Dropdown 
                         placeholder="City" 
                         options={["Gandhinagar", "Gift City", "Ahmedabad"]} 
+                        value={city}
+                        onValueChange={setCity}
                     />
                 </div>
 
@@ -137,6 +170,8 @@ const Hero = () => {
                   <Dropdown 
                     placeholder="Type" 
                     options={["Apartment", "Tenement", "Bungalow", "Penthouse", "Plot", "Shop", "Office"]} 
+                    value={propertyType}
+                    onValueChange={setPropertyType}
                   />
                 </div>
 
@@ -145,19 +180,26 @@ const Hero = () => {
                   <Dropdown 
                     placeholder="Budget" 
                     options={["₹0 - ₹50 Lakhs", "₹50L - ₹1 Cr", "₹1 Cr - ₹1.5 Cr", "Above ₹1.5 Cr"]} 
+                    value={budget}
+                    onValueChange={setBudget}
                   />
                 </div>
 
-                {/* 4. POSSESSION */}
+                {/* 4. AGE OF PROPERTY (REPLACED POSSESSION) */}
                 <div className="w-full md:flex-1 min-w-0">
                   <Dropdown 
-                    placeholder="Possession" 
-                    options={["Ready to Move", "After 1 Month", "After 2 Months", "After 3 Months", "Above 3 Months"]} 
+                    placeholder="Property Age" 
+                    options={["New Property", "1–3 Years Old", "3–6 Years Old", "6–9 Years Old", "9+ Years Old"]} 
+                    value={age}
+                    onValueChange={setAge}
                   />
                 </div>
 
                 {/* Search button */}
-                <Link href="/buy" className={`${BUTTON_BASE_CLASSES} w-full md:w-auto flex-shrink-0 flex items-center justify-center`}>
+                <Link 
+                  href={getSearchUrl()} 
+                  className={`${BUTTON_BASE_CLASSES} w-full md:w-auto flex-shrink-0 flex items-center justify-center`}
+                >
                   Search
                 </Link>
               </div>
