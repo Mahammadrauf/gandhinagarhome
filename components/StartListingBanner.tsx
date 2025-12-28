@@ -26,6 +26,13 @@ const formatPrice = (price: string): string => {
   }
 };
 
+/// City and locality data  
+const CITY_AREAS: Record<string, string[]> = {
+  Gandhinagar: ["Raysan", "Randesan", "Sargasan", "Kudasan", "Koba", "Sectors"],
+  Ahmedabad: ["Motera", "Chandkheda", "Zundal", "Adalaj", "Bhat", "Tapovan", "Vaishnodevi"],
+  "Gift City": ["Gift City"],
+};
+
 const priceToWords = (num: number): string => {
   if (!num || isNaN(num)) return "";
   const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
@@ -1139,212 +1146,170 @@ export default function SellPage() {
 
 
               {/* --- STEP 2: LOCATION --- */}
-              {step === 2 && (
-                <div className="space-y-6">
-                  {/* Row 0: Header */}
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold">Step 3: Location</h3>
-                    <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
-                        <circle cx="12" cy="10" r="3"></circle>
-                      </svg>
-                      Keep it simple
-                    </div>
-                  </div>
+{step === 2 && (
+  <div className="space-y-6">
+    {/* Row 0: Header */}
+    <div className="flex items-center justify-between">
+      <h3 className="text-lg font-semibold">Step 3: Location</h3>
+      <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+          <circle cx="12" cy="10" r="3"></circle>
+        </svg>
+        Keep it simple
+      </div>
+    </div>
 
-                  {/* Combined Card: Project Details & Unit Number */}
-                  <div className={cardWrapper + " space-y-6"}>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {/* Project Name - Occupies 2/3 of the width */}
-                      <div className="md:col-span-2">
-                        <label className={fieldLabel}>
-                          Society / Project Name <span className="text-[#0b6b53]">*</span>
-                        </label>
-                        <input
-                          value={title}
-                          readOnly
-                          placeholder="e.g., Shilp Residency"
-                          className={inputNormal + " bg-gray-50 text-gray-500 cursor-not-allowed"}
-                        />
-                      </div>
+    {/* Combined Card: Project Details, Address, City, Locality & Pincode */}
+    <div className={cardWrapper + " space-y-6"}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-2">
+          <label className={fieldLabel}>Society / Project Name <span className="text-[#0b6b53]">*</span></label>
+          <input
+            value={title}
+            readOnly
+            placeholder="e.g., Shilp Residency"
+            className={inputNormal + " bg-gray-50 text-gray-500 cursor-not-allowed"}
+          />
+        </div>
 
-                      {/* Unit No - Occupies 1/3 of the width */}
-                      <div className="md:col-span-1">
-                        <label className={fieldLabel}>
-                          Unit No <span className="text-[#0b6b53]">*</span>
-                        </label>
-                        <input
-                          value={unitNo}
-                          onChange={(e) => setUnitNo(e.target.value)}
-                          placeholder="e.g., B-701"
-                          className={`${triedContinue && !isUnitNoValid ? inputError : inputNormal}`}
-                        />
-                        {triedContinue && !isUnitNoValid && (
-                          <div className="text-xs text-red-600 mt-2">Required</div>
-                        )}
-                      </div>
-                    </div>
+        <div className="md:col-span-1">
+          <label className={fieldLabel}>Unit No <span className="text-[#0b6b53]">*</span></label>
+          <input
+            value={unitNo}
+            onChange={(e) => setUnitNo(e.target.value)}
+            placeholder="e.g., B-701"
+            className={`${triedContinue && !isUnitNoValid ? inputError : inputNormal}`}
+          />
+          {triedContinue && !isUnitNoValid && <div className="text-xs text-red-600 mt-2">Required</div>}
+        </div>
+      </div>
 
-                    {/* Address Field (Before Locality) */}
-                    <div>
-                      <label className={fieldLabel}>
-                        Address <span className="text-[#0b6b53]">*</span>
-                      </label>
-                      <textarea
-                        value={address}
-                        onChange={(e) => setAddress(e.target.value)}
-                        placeholder="Enter full property address"
-                        className={`${triedContinue && !isAddressValid ? "border-red-200 bg-red-50" : "border-gray-100 bg-white"} w-full rounded-xl px-4 py-3 border outline-none shadow-sm min-h-[100px]`}
-                      />
-                      {triedContinue && !isAddressValid && (
-                        <div className="text-xs text-red-600 mt-2">
-                          Please enter full address.
-                        </div>
-                      )}
-                    </div>
+      {/* Address Field */}
+      <div>
+        <label className={fieldLabel}>Address <span className="text-[#0b6b53]">*</span></label>
+        <textarea
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          placeholder="Enter full property address"
+          className={`${triedContinue && !isAddressValid ? "border-red-200 bg-red-50" : "border-gray-100 bg-white"} w-full rounded-xl px-4 py-3 border outline-none shadow-sm min-h-[100px]`}
+        />
+        {triedContinue && !isAddressValid && <div className="text-xs text-red-600 mt-2">Please enter full address.</div>}
+      </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className={fieldLabel}>
-                          Locality / Area <span className="text-[#0b6b53]">*</span>
-                        </label>
-                        <input
-                          value={locality}
-                          onChange={(e) => setLocality(e.target.value)}
-                          placeholder="e.g., Kudasan"
-                          className={`${triedContinue && !isLocalityValid ? inputError : inputNormal}`}
-                        />
-                        {triedContinue && !isLocalityValid && (
-                          <div className="text-xs text-red-600 mt-2">
-                            Please enter a locality.
-                          </div>
-                        )}
-                      </div>
-                      <div>
-                        <label className={fieldLabel}>
-                          Pincode <span className="text-[#0b6b53]">*</span>
-                        </label>
-                        <input
-                          value={pincode}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/\D/g, '').slice(0, 6);
-                            setPincode(value);
-                          }}
-                          placeholder="e.g., 382421"
-                          className={`${triedContinue && !isPincodeValid ? inputError : inputNormal}`}
-                          maxLength={6}
-                        />
-                        {triedContinue && !isPincodeValid && (
-                          <div className="text-xs text-red-600 mt-2">
-                            Please enter a valid 6-digit pincode.
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+      {/* City and Locality Side-by-Side */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* City Dropdown */}
+        <div>
+          <label className={fieldLabel}>City <span className="text-[#0b6b53]">*</span></label>
+          <Listbox value={city} onChange={(val) => { setCity(val); setLocality(""); }}>
+            <div className="relative">
+              <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
+                <span className={`block truncate ${!city ? 'text-gray-400' : 'text-black'}`}>
+                  {city || "Select city"}
+                </span>
+                <DropdownChevron />
+              </Listbox.Button>
+              <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
+                <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-20">
+                  {cityOptions.map((option, idx) => (
+                    <Listbox.Option
+                      key={idx}
+                      className={({ active }) => `relative cursor-default select-none py-2 px-4 ${active ? 'bg-[#f1faf6] text-[#0b6b53]' : 'text-gray-900'}`}
+                      value={option}
+                    >
+                      {({ selected }) => <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>{option}</span>}
+                    </Listbox.Option>
+                  ))}
+                </Listbox.Options>
+              </Transition>
+            </div>
+          </Listbox>
+          {triedContinue && !isCityValid && <div className="text-xs text-red-600 mt-2">Please enter a city.</div>}
+        </div>
 
-                  {/* Card 3: City */}
-                  <div className={cardWrapper + " grid grid-cols-1"}>
-                    <div>
-                      <label className={fieldLabel}>
-                        City <span className="text-[#0b6b53]">*</span>
-                      </label>
-                      
-                      <Listbox value={city} onChange={setCity}>
-                        <div className="relative">
-                          <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
-<span className={`block truncate ${!city ? 'text-gray-400' : 'text-black'}`}>
-  {city || "Select city"}
-</span>                            <DropdownChevron />
-                          </Listbox.Button>
-                          <Transition
-                            as={Fragment}
-                            leave="transition ease-in duration-100"
-                            leaveFrom="opacity-100"
-                            leaveTo="opacity-0"
-                          >
-                            <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-20">
-                              {cityOptions.map((option, optionIdx) => (
-                                <Listbox.Option
-                                  key={optionIdx}
-                                  className={({ active }) =>
-                                    `relative cursor-default select-none py-2 px-4 ${
-                                      active ? 'bg-[#f1faf6] text-[#0b6b53]' : 'text-gray-900'
-                                    }`
-                                  }
-                                  value={option}
-                                >
-                                  {({ selected }) => (
-                                    <span
-                                      className={`block truncate ${
-                                        selected ? 'font-medium' : 'font-normal'
-                                      }`}
-                                    >
-                                      {option}
-                                    </span>
-                                  )}
-                                </Listbox.Option>
-                              ))}
-                            </Listbox.Options>
-                          </Transition>
-                        </div>
-                      </Listbox>
+        {/* Locality Dropdown */}
+        <div>
+          <label className={fieldLabel}>Locality / Area <span className="text-[#0b6b53]">*</span></label>
+          <Listbox value={locality} onChange={setLocality} disabled={!city}>
+            <div className="relative">
+              <Listbox.Button className={`${selectNormal} flex items-center justify-between ${!city ? 'bg-gray-50 opacity-60 cursor-not-allowed' : ''}`}>
+                <span className={`block truncate ${!locality ? 'text-gray-400' : 'text-black'}`}>
+                  {!city ? "Select city first" : (locality || "Select locality")}
+                </span>
+                <DropdownChevron />
+              </Listbox.Button>
+              <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
+                <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-20">
+                  {city && CITY_AREAS[city]?.map((area, idx) => (
+                    <Listbox.Option
+                      key={idx}
+                      className={({ active }) => `relative cursor-default select-none py-2 px-4 ${active ? 'bg-[#f1faf6] text-[#0b6b53]' : 'text-gray-900'}`}
+                      value={area}
+                    >
+                      {({ selected }) => <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>{area}</span>}
+                    </Listbox.Option>
+                  ))}
+                </Listbox.Options>
+              </Transition>
+            </div>
+          </Listbox>
+          
+          {/* Helper Message Added Here */}
+          {city && (
+            <p className="text-[11px] text-gray-500 mt-2 px-1 leading-relaxed">
+Can’t find your area? Select the nearest major locality.            </p>
+          )}
 
-                      {triedContinue && !isCityValid && (
-                        <div className="text-xs text-red-600 mt-2">
-                          Please enter a city.
-                        </div>
-                      )}
-                    </div>
-                  </div>
+          {triedContinue && !isLocalityValid && <div className="text-xs text-red-600 mt-2">Please enter a locality.</div>}
+        </div>
+      </div>
 
-                  {/* Card 4: Map */}
-                  <div className={cardWrapper + " p-2"}>
-                    <p className="text-sm text-gray-600 mb-3 px-1">
-                      Click on the map to open the location picker, search your address and drop a pin so buyers can see your exact location.
-                    </p>
+      {/* Pincode Bottom (Full Width) */}
+      <div>
+        <label className={fieldLabel}>Pincode <span className="text-[#0b6b53]">*</span></label>
+        <input
+          value={pincode}
+          onChange={(e) => {
+            const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+            setPincode(value);
+          }}
+          placeholder="e.g., 382421"
+          className={`${triedContinue && !isPincodeValid ? inputError : inputNormal}`}
+          maxLength={6}
+        />
+        {triedContinue && !isPincodeValid && <div className="text-xs text-red-600 mt-2">Please enter a valid 6-digit pincode.</div>}
+      </div>
+    </div>
 
-                    <div className="h-60 rounded-lg bg-gray-200 grid place-items-center text-sm text-gray-500 overflow-hidden cursor-pointer">
-                      <img
-                        src="https://placehold.co/800x400/e2e8f0/64748b?text=Map+Integration+Placeholder"
-                        alt="Map placeholder"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  </div>
+    {/* Card 4: Map */}
+    <div className={cardWrapper + " p-2"}>
+      <p className="text-sm text-gray-600 mb-3 px-1">
+        Click on the map to open the location picker, search your address and drop a pin so buyers can see your exact location.
+      </p>
+      <div className="h-60 rounded-lg bg-gray-200 grid place-items-center text-sm text-gray-500 overflow-hidden cursor-pointer">
+        <img
+          src="https://placehold.co/800x400/e2e8f0/64748b?text=Map+Integration+Placeholder"
+          alt="Map placeholder"
+          className="w-full h-full object-cover"
+        />
+      </div>
+    </div>
 
-                  <p className="text-sm text-gray-500">
-                    Accurate location helps buyers filter results effectively.
-                  </p>
-
-                  {/* Footer: Buttons */}
-                  <div className="flex items-center justify-between mt-4">
-                    <div className="flex items-center gap-3">
-                      <button onClick={() => setStep(1)} className={btnLight}>
-                        Back to Specifications
-                      </button>
-                      <button
-                        onClick={onContinueFromStep3}
-                        className={canContinueStep3 ? btnPrimary : btnDisabled}
-                        disabled={!canContinueStep3}
-                      >
-                        Continue to Media Upload
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
+    <div className="flex items-center justify-between mt-4">
+      <div className="flex items-center gap-3">
+        <button onClick={() => setStep(1)} className={btnLight}>Back to Specifications</button>
+        <button
+          onClick={onContinueFromStep3}
+          className={canContinueStep3 ? btnPrimary : btnDisabled}
+          disabled={!canContinueStep3}
+        >
+          Continue to Media Upload
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
 
               {/* --- STEP 3: MEDIA --- */}
