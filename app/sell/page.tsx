@@ -1,3 +1,4 @@
+﻿// app/sell/page.tsx
 "use client";
 
 import React from "react";
@@ -11,10 +12,10 @@ export default function SellIntroPage() {
 
       <section className="w-full flex items-center justify-center py-16">
         <div className="container mx-auto px-4">
-          
+
           {/* Main Card */}
           <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden flex flex-col lg:flex-row items-center gap-6 p-6 lg:p-8 animate-card-in">
-            
+
             {/* LEFT SIDE */}
             <div className="flex-1 min-w-0">
               <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 leading-tight animate-fade-up">
@@ -22,7 +23,7 @@ export default function SellIntroPage() {
               </h1>
 
               <p className="mt-3 text-slate-600 max-w-xl text-sm sm:text-base animate-fade-up delay-75">
-                One simple form. Verified local buyers. No broker spam. 
+                One simple form. Verified local buyers. No broker spam.
                 Get the best offer without wasting time.
               </p>
             </div>
@@ -31,7 +32,7 @@ export default function SellIntroPage() {
             <div className="flex-shrink-0 w-full sm:w-auto text-center lg:text-right">
               <Link
                 href="/sell/form"
-                className="inline-flex items-center justify-center px-8 py-4 text-lg rounded-full bg-gradient-to-r from-primary to-primary-dark text-white font-bold shadow-xl hover:scale-[1.03] hover:shadow-2xl transition-all duration-300 ease-in-out animate-cta-in relative group overflow-hidden"
+                className="inline-flex items-center justify-center px-8 py-4 text-lg rounded-full bg-gradient-to-r from-[#0b6b53] to-[#085341] text-white font-bold shadow-xl hover:scale-[1.03] hover:shadow-2xl transition-all duration-300 ease-in-out animate-cta-in relative group overflow-hidden"
               >
                 <span className="relative z-10">Start Listing Now</span>
                 <span className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
@@ -41,10 +42,10 @@ export default function SellIntroPage() {
 
           {/* TRUST & VALUE CHIPS */}
           <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-            
+
             {/* Chip 1 */}
-            <div className="bg-gradient-to-br from-primary/5 via-primary/10 to-white rounded-xl p-6 shadow-md border border-primary/15 animate-chip-in group cursor-pointer hover:scale-[1.02] hover:shadow-lg transition-all duration-300 transform-gpu hover:-translate-y-1">
-              <div className="text-xs font-semibold uppercase tracking-wide text-primary/80">
+            <div className="bg-gradient-to-br from-[#0b6b53]/5 via-[#0b6b53]/10 to-white rounded-xl p-6 shadow-md border border-[#0b6b53]/15 animate-chip-in group cursor-pointer hover:scale-[1.02] hover:shadow-lg transition-all duration-300 transform-gpu hover:-translate-y-1">
+              <div className="text-xs font-semibold uppercase tracking-wide text-[#0b6b53]">
                 Verified buyers
               </div>
               <div className="text-xl font-bold text-slate-900 mt-2">Quality leads only</div>
@@ -54,8 +55,8 @@ export default function SellIntroPage() {
             </div>
 
             {/* Chip 2 */}
-            <div className="bg-gradient-to-br from-primary/5 via-slate-50 to-white rounded-xl p-6 shadow-md border border-slate-200 animate-chip-in delay-75 group cursor-pointer hover:scale-[1.02] hover:shadow-lg transition-all duration-300 transform-gpu hover:-translate-y-1">
-              <div className="text-xs font-semibold uppercase tracking-wide text-primary/80">
+            <div className="bg-gradient-to-br from-[#0b6b53]/5 via-slate-50 to-white rounded-xl p-6 shadow-md border border-slate-200 animate-chip-in delay-75 group cursor-pointer hover:scale-[1.02] hover:shadow-lg transition-all duration-300 transform-gpu hover:-translate-y-1">
+              <div className="text-xs font-semibold uppercase tracking-wide text-[#0b6b53]">
                 Gandhinagar focus
               </div>
               <div className="text-xl font-bold text-slate-900 mt-2">Built for this city</div>
@@ -65,7 +66,7 @@ export default function SellIntroPage() {
             </div>
 
             {/* Chip 3 */}
-            <div className="bg-gradient-to-br from-primary/5 via-emerald-50 to-white rounded-xl p-6 shadow-md border border-emerald-100 animate-chip-in delay-150 group cursor-pointer hover:scale-[1.02] hover:shadow-lg transition-all duration-300 transform-gpu hover:-translate-y-1">
+            <div className="bg-gradient-to-br from-[#0b6b53]/5 via-emerald-50 to-white rounded-xl p-6 shadow-md border border-emerald-100 animate-chip-in delay-150 group cursor-pointer hover:scale-[1.02] hover:shadow-lg transition-all duration-300 transform-gpu hover:-translate-y-1">
               <div className="text-xs font-semibold uppercase tracking-wide text-emerald-700/90">
                 Privacy first
               </div>
