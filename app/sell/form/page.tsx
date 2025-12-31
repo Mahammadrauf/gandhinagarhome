@@ -6,6 +6,8 @@ import { useEffect } from "react";
 import { Listbox, Transition } from "@headlessui/react";
 import React, { Fragment, useRef, useState, KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
+import axios from 'axios';
+import API_URL from '@/app/config/config';
 
 type Step = 0 | 1 | 2 | 3;
 const stepTitles = ["Basic Information", "Specifications", "Location", "Media Upload"];
@@ -371,29 +373,91 @@ const handleEditMediaSubmit = () => {
     return;
   }
 
-  const payload = {
-    ...buildPayload(),
-    submittedAt: new Date().toISOString(),
+  try {
+    setSaving(true);
 
-    priceLabel: formatPrice(price),
-    priceCr: parseFloat(price.replace(/,/g, "")) / 10000000,
-    areaSqft: propertySizeUnit === "sq ft" ? parseFloat(propertySize) : 0,
-    areaDisplay: formatArea(propertySize, propertySizeUnit),
-    ageLabel: ageOfProperty,
-    type: propertyType,
-  };
+    // Create FormData for file uploads
+    const formData = new FormData();
 
-  // ✅ Always update latest data
-  localStorage.setItem("pendingListing", JSON.stringify(payload));
+    // Add basic form fields
+    formData.append('firstName', firstName);
+    formData.append('middleName', middleName);
+    formData.append('lastName', lastName);
+    formData.append('email', email);
+    formData.append('mobile', mobile);
+    formData.append('alternateNumber', alternateNumber);
+    formData.append('title', title);
+    formData.append('bedrooms', bedrooms);
+    formData.append('propertyType', propertyType);
+    formData.append('bathrooms', bathrooms);
+    formData.append('balcony', balcony);
+    formData.append('parking', parking);
+    formData.append('ageOfProperty', ageOfProperty);
+    formData.append('furnishing', furnishing);
+    formData.append('availability', 'Immediate'); // Default availability
+    
+    const numericPrice = parseFloat(price.replace(/,/g, ''));
+    formData.append('price', numericPrice.toString());
+    
+    formData.append('amenities', JSON.stringify(amenities));
+    formData.append('propertySize', propertySize);
+    formData.append('propertySizeUnit', propertySizeUnit);
+    formData.append('city', city);
+    formData.append('locality', locality);
+    formData.append('society', title); // Using title as society name
+    formData.append('unitNo', unitNo);
+    formData.append('pincode', pincode);
 
-  // 🔥 KEY FIX: respect edit flow
-  if (isEditMode) {
-    router.push("/sell/confirmation");
-    return;
+    // Add files if they exist
+    if (photos.length > 0) {
+      photos.forEach((photo) => {
+        formData.append('images', photo);
+      });
+    }
+
+    if (video) {
+      formData.append('video', video);
+    }
+
+    // Combine sale deed and brochure into documents array
+    const documents = [];
+    if (saleDeed) documents.push(saleDeed);
+    if (brochure) documents.push(brochure);
+    
+    if (documents.length > 0) {
+      documents.forEach((doc) => {
+        formData.append('documents', doc);
+      });
+    }
+
+    // Make API call
+    const response = await axios.post(`${API_URL}/sell`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    if (response.data.success) {
+      // Store success response
+      localStorage.setItem("pendingListing", JSON.stringify({
+        ...buildPayload(),
+        submittedAt: new Date().toISOString(),
+        apiResponse: response.data.data
+      }));
+
+      alert("Sell request submitted successfully!");
+      router.push("/sell/confirmation");
+    } else {
+      throw new Error(response.data.message || "Failed to submit sell request");
+    }
+
+  } catch (error: any) {
+    console.error("Sell API error:", error);
+    const errorMessage = error.response?.data?.message || error.message || "Error creating sell request";
+    alert(`Failed to submit sell request: ${errorMessage}`);
+  } finally {
+    setSaving(false);
   }
-
-  // Normal new listing flow
-  router.push("/sell/confirmation");
 };
 
 
@@ -1594,9 +1658,10 @@ Can’t find your area? Select the nearest major locality.            </p>
                       <button onClick={handleSaveDraft} className={btnSecondary}>Save Draft</button>
                       <button
   onClick={isEditMode ? handleEditMediaSubmit : handleSubmit}
-  className={btnPrimary}
+  className={saving ? btnDisabled : btnPrimary}
+  disabled={saving}
 >
-  {isEditMode ? "Save & Return to Review" : "Submit Listing"}
+  {saving ? (isEditMode ? "Saving..." : "Submitting...") : (isEditMode ? "Save & Return to Review" : "Submit Listing")}
 </button>
 
                     </div>

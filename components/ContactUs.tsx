@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import axios from 'axios';
+import API_URL from '@/app/config/config';
 
 type FormState = {
   firstName: string;
@@ -8,7 +10,7 @@ type FormState = {
   email: string;
   phone: string;
   message: string;
-  preferred: "call" | "whatsapp" | "email";
+  preferred: "Call" | "WhatsApp" | "Email";
 };
 
 export default function ContactUs() {
@@ -18,7 +20,7 @@ export default function ContactUs() {
     email: "",
     phone: "",
     message: "",
-    preferred: "call", // default
+    preferred: "Call", // default
   });
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<null | { ok: boolean; msg: string }>(
@@ -54,32 +56,32 @@ export default function ContactUs() {
       setLoading(true);
       setStatus(null);
 
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          firstName: form.firstName.trim(),
-          lastName: form.lastName.trim(),
-          email: form.email.trim(),
-          phone: form.phone.trim(),
-          message: form.message.trim(),
-          preferred: form.preferred, // ⭐ send preferred mode
-        }),
+      const response = await axios.post(`${API_URL}/contact`, {
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        email: form.email.trim().toLowerCase(),
+        mobileNo: form.phone.trim(),
+        preferredModeOfContact: form.preferred,
+        query: form.message.trim(),
       });
 
-      if (!res.ok) throw new Error("Failed");
-
-      setStatus({ ok: true, msg: "Thanks! We’ll get back to you shortly." });
-      setForm({
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        message: "",
-        preferred: "call", // reset
-      });
-    } catch {
-      setStatus({ ok: false, msg: "Something went wrong. Please try again." });
+      if (response.data.success) {
+        setStatus({ ok: true, msg: response.data.message || "Thanks! We'll get back to you shortly." });
+        setForm({
+          firstName: "",
+          lastName: "",
+          email: "",
+          phone: "",
+          message: "",
+          preferred: "Call", // reset
+        });
+      } else {
+        throw new Error(response.data.message || "Failed to submit contact form");
+      }
+    } catch (error: any) {
+      console.error("Contact API error:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Something went wrong. Please try again.";
+      setStatus({ ok: false, msg: errorMessage });
     } finally {
       setLoading(false);
     }
@@ -182,13 +184,8 @@ export default function ContactUs() {
                 Preferred Mode of Contact
               </label>
               <div className="flex items-center gap-3 flex-wrap">
-                {(["call", "whatsapp", "email"] as const).map((opt) => {
-                  const label =
-                    opt === "call"
-                      ? "Call"
-                      : opt === "whatsapp"
-                      ? "WhatsApp"
-                      : "Email";
+                {(["Call", "WhatsApp", "Email"] as const).map((opt) => {
+                  const label = opt;
                   const active = form.preferred === opt;
 
                   return (
