@@ -54,7 +54,7 @@ export default function ConfirmationPage() {
     setSubmitting(true);
     setTimeout(() => {
       localStorage.removeItem("pendingListing");
-      router.push("/"); 
+      router.push("/sell/subscription"); 
     }, 2000);
   };
 

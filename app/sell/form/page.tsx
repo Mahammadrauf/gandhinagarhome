@@ -446,15 +446,27 @@ const handleEditMediaSubmit = () => {
       }));
 
       alert("Sell request submitted successfully!");
-      router.push("/sell/confirmation");
     } else {
-      throw new Error(response.data.message || "Failed to submit sell request");
+      // Store data even on failure
+      localStorage.setItem("pendingListing", JSON.stringify({
+        ...buildPayload(),
+        submittedAt: new Date().toISOString(),
+      }));
+      alert("There was an issue submitting, but your data is saved. Please proceed to review.");
     }
+
+    router.push("/sell/confirmation");
 
   } catch (error: any) {
     console.error("Sell API error:", error);
     const errorMessage = error.response?.data?.message || error.message || "Error creating sell request";
-    alert(`Failed to submit sell request: ${errorMessage}`);
+    // Store data even on error
+    localStorage.setItem("pendingListing", JSON.stringify({
+      ...buildPayload(),
+      submittedAt: new Date().toISOString(),
+    }));
+    alert(`There was an issue submitting: ${errorMessage}. Your data is saved, please proceed to review.`);
+    router.push("/sell/confirmation");
   } finally {
     setSaving(false);
   }
@@ -1685,6 +1697,6 @@ Can’t find your area? Select the nearest major locality.            </p>
         }
       `}</style>
     </div>
-  );
+  );  
 }
 
