@@ -2,6 +2,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { useEffect } from "react";
 import { Listbox, Transition } from "@headlessui/react";
 import React, { Fragment, useRef, useState, KeyboardEvent } from "react";
@@ -92,7 +93,7 @@ const DropdownChevron = () => (
  * Updated Sell page
  */
 
-export default function SellFormPage() {
+function SellFormPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isEditMode = searchParams.get("mode") === "edit";
@@ -155,6 +156,12 @@ export default function SellFormPage() {
   const saleDeedRef = useRef<HTMLInputElement | null>(null);
   const brochureRef = useRef<HTMLInputElement | null>(null);
 
+  // Media metadata for edit mode (when File objects are not available)
+  const [existingPhotosCount, setExistingPhotosCount] = useState(0);
+  const [existingHasVideo, setExistingHasVideo] = useState(false);
+  const [existingHasSaleDeed, setExistingHasSaleDeed] = useState(false);
+  const [existingHasBrochure, setExistingHasBrochure] = useState(false);
+
   // UI
   const [triedContinue, setTriedContinue] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -204,6 +211,12 @@ useEffect(() => {
   setAddress(d.address || "");
   setUnitNo(d.unitNo || "");
   setPincode(d.pincode || "");
+  
+  // Load media metadata in edit mode
+  setExistingPhotosCount(d.photosCount || 0);
+  setExistingHasVideo(d.hasVideo || false);
+  setExistingHasSaleDeed(d.hasSaleDeed || false);
+  setExistingHasBrochure(d.hasBrochure || false);
 }, [isEditMode]);
 
 
@@ -213,7 +226,7 @@ useEffect(() => {
   const isLastNameValid = lastName.trim().length >= 2;
   const isEmailValid = validateEmail(email);
   const isMobileValid = mobile.length === 10;
-  const canContinueStep1 = isFirstNameValid && isLastNameValid && isEmailValid && isMobileValid && isOtpVerified;
+  const canContinueStep1 = isFirstNameValid && isLastNameValid && isEmailValid && (isEditMode ? true : (isMobileValid && isOtpVerified));
 
   // Step 2 Validation
   const isTitleValid = title.trim().length >= 3;
@@ -331,10 +344,10 @@ useEffect(() => {
     propertySize,
     propertySizeUnit,
     city, locality, address, unitNo, pincode,
-    photosCount: photos.length,
-    hasVideo: !!video,
-    hasSaleDeed: !!saleDeed,
-    hasBrochure: !!brochure,
+    photosCount: isEditMode && photos.length === 0 ? existingPhotosCount : photos.length,
+    hasVideo: isEditMode && !video ? existingHasVideo : !!video,
+    hasSaleDeed: isEditMode && !saleDeed ? existingHasSaleDeed : !!saleDeed,
+    hasBrochure: isEditMode && !brochure ? existingHasBrochure : !!brochure,
   };
 };
 
@@ -502,11 +515,18 @@ const handleEditMediaSubmit = () => {
   const onContinueFromStep1 = () => {
     setTriedContinue(true);
     if (!canContinueStep1) {
-      if (!isOtpVerified) {
+      if (!isEditMode && !isOtpVerified) {
         alert("Please verify your mobile number to continue.");
       }
       return;
     }
+
+    if (isEditMode) {
+      localStorage.setItem("pendingListing", JSON.stringify(buildPayload()));
+      router.push("/sell/confirmation");
+      return;
+    }
+
     setStep(1);
     setTriedContinue(false);
     window.scrollTo({ top: 0, behavior: 'auto' });
@@ -723,62 +743,64 @@ const handleEditMediaSubmit = () => {
                     </div>
 
                     {/* OTP Section */}
-                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className={fieldLabel}>Mobile Number <span className="text-[#0b6b53]">*</span></label>
-                          <div className="flex gap-2">
-                            <div className="flex items-center justify-center h-12 px-4 rounded-xl border border-gray-100 bg-gray-100 text-gray-700 font-semibold">+91</div>
-                            <input
-                              value={mobile}
-                              onChange={(e) => {
-                                const value = e.target.value.replace(/\D/g, '').slice(0, 10);
-                                setMobile(value);
-                              }}
-                              placeholder="9XXXXXXXXX"
-                              className={`${triedContinue && !isMobileValid ? inputError : inputNormal} flex-1`}
-                              disabled={otpSent}
-                              maxLength={10}
-                            />
-                            <button
-                              onClick={handleSendOtp}
-                              disabled={!isMobileValid || otpSent || isSendingOtp}
-                              className={`h-12 px-4 rounded-lg font-semibold text-sm ${(!isMobileValid || otpSent) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-[#0b6b53] text-white hover:bg-[#0b6b53]'}`}
-                            >
-                              {isSendingOtp ? "Sending..." : (otpSent ? "Sent" : "Send OTP")}
-                            </button>
-                          </div>
-                          {triedContinue && !isMobileValid && <div className="text-xs text-red-600 mt-2">Enter a valid 10-digit number.</div>}
-                        </div>
-
-                        {otpSent && !isOtpVerified && (
+                    {!isEditMode && (
+                      <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <label className={fieldLabel}>Enter OTP <span className="text-[#0b6b53]">*</span></label>
+                            <label className={fieldLabel}>Mobile Number <span className="text-[#0b6b53]">*</span></label>
                             <div className="flex gap-2">
+                              <div className="flex items-center justify-center h-12 px-4 rounded-xl border border-gray-100 bg-gray-100 text-gray-700 font-semibold">+91</div>
                               <input
-                                value={otp}
-                                onChange={(e) => setOtp(e.target.value)}
-                                placeholder="Enter 4-digit OTP"
-                                className={inputNormal}
+                                value={mobile}
+                                onChange={(e) => {
+                                  const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                  setMobile(value);
+                                }}
+                                placeholder="9XXXXXXXXX"
+                                className={`${triedContinue && !isMobileValid ? inputError : inputNormal} flex-1`}
+                                disabled={otpSent || isEditMode}
+                                maxLength={10}
                               />
                               <button
-                                onClick={handleVerifyOtp}
-                                disabled={isVerifying || otp.length < 4}
-                                className={`h-12 px-4 rounded-lg font-semibold text-sm ${isVerifying || otp.length < 4 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
+                                onClick={handleSendOtp}
+                                disabled={!isMobileValid || otpSent || isSendingOtp}
+                                className={`h-12 px-4 rounded-lg font-semibold text-sm ${(!isMobileValid || otpSent) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-[#0b6b53] text-white hover:bg-[#0b6b53]'}`}
                               >
-                                {isVerifying ? "Verifying..." : "Verify"}
+                                {isSendingOtp ? "Sending..." : (otpSent ? "Sent" : "Send OTP")}
                               </button>
                             </div>
+                            {triedContinue && !isMobileValid && <div className="text-xs text-red-600 mt-2">Enter a valid 10-digit number.</div>}
                           </div>
-                        )}
 
-                        {isOtpVerified && (
-                           <div className="flex items-center justify-center h-12 bg-green-100 text-green-700 font-semibold rounded-lg">
-                             ✓ Mobile Verified
-                           </div>
-                        )}
+                          {otpSent && !isOtpVerified && (
+                            <div>
+                              <label className={fieldLabel}>Enter OTP <span className="text-[#0b6b53]">*</span></label>
+                              <div className="flex gap-2">
+                                <input
+                                  value={otp}
+                                  onChange={(e) => setOtp(e.target.value)}
+                                  placeholder="Enter 4-digit OTP"
+                                  className={inputNormal}
+                                />
+                                <button
+                                  onClick={handleVerifyOtp}
+                                  disabled={isVerifying || otp.length < 4}
+                                  className={`h-12 px-4 rounded-lg font-semibold text-sm ${isVerifying || otp.length < 4 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
+                                >
+                                  {isVerifying ? "Verifying..." : "Verify"}
+                                </button>
+                              </div>
+                            </div>
+                          )}
+
+                          {isOtpVerified && (
+                             <div className="flex items-center justify-center h-12 bg-green-100 text-green-700 font-semibold rounded-lg">
+                               ✓ Mobile Verified
+                             </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
 
                   <p className="text-sm text-gray-500">Your contact is partially visible to buyers. Full details require buyer subscription.</p>
@@ -789,7 +811,7 @@ const handleEditMediaSubmit = () => {
                       className={canContinueStep1 ? btnPrimary : btnDisabled}
                       disabled={!canContinueStep1}
                     >
-                      Continue to Specifications
+                      {isEditMode ? "Save Changes" : "Continue to Specifications"}
                     </button>
 
                     <div className="flex items-center gap-2 text-sm text-gray-700 font-medium">
@@ -1282,7 +1304,7 @@ const handleEditMediaSubmit = () => {
                   <div className="flex items-center justify-between mt-4">
                     <div className="flex items-center gap-3">
                       <button onClick={() => setStep(0)} className={btnLight}>Back to Basic Info</button>
-                      <button onClick={onContinueFromStep2} className={canContinueStep2 ? btnPrimary : btnDisabled} disabled={!canContinueStep2}>Continue to Location</button>
+                      <button onClick={onContinueFromStep2} className={canContinueStep2 ? btnPrimary : btnDisabled} disabled={!canContinueStep2}>{isEditMode ? "Save Changes" : "Continue to Location"}</button>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-700 font-medium">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1454,7 +1476,7 @@ Can’t find your area? Select the nearest major locality.            </p>
           className={canContinueStep3 ? btnPrimary : btnDisabled}
           disabled={!canContinueStep3}
         >
-          Continue to Media Upload
+          {isEditMode ? "Save Changes" : "Continue to Media Upload"}
         </button>
       </div>
     </div>
@@ -1512,6 +1534,16 @@ Can’t find your area? Select the nearest major locality.            </p>
                           {photos.length} photo{photos.length > 1 ? "s" : ""} selected
                         </p>
                       )}
+                      {isEditMode && existingPhotosCount > 0 && photos.length === 0 && (
+                        <p className="text-xs text-green-600 mt-2">
+                          ✓ {existingPhotosCount} photo{existingPhotosCount > 1 ? "s" : ""} already uploaded
+                        </p>
+                      )}
+                      {isEditMode && existingPhotosCount > 0 && photos.length > 0 && (
+                        <p className="text-xs text-blue-600 mt-2">
+                          {existingPhotosCount} existing + {photos.length} new photo{photos.length > 1 ? "s" : ""} selected
+                        </p>
+                      )}
                     </div>
 
                     <input
@@ -1523,11 +1555,29 @@ Can’t find your area? Select the nearest major locality.            </p>
                       onChange={(e) => onAddPhotos(e.target.files)}
                     />
 
-                    {photos.length > 0 && (
+                    {(photos.length > 0 || (isEditMode && existingPhotosCount > 0)) && (
                       <div className="mt-4 grid grid-cols-3 md:grid-cols-5 gap-3">
+                        {/* Show existing photos in edit mode */}
+                        {isEditMode && existingPhotosCount > 0 && Array.from({ length: existingPhotosCount }).map((_, i) => (
+                          <div
+                            key={`existing-${i}`}
+                            className="aspect-square rounded-lg border border-green-200 flex items-center justify-center bg-green-50 overflow-hidden relative"
+                          >
+                            <div className="text-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-600 mx-auto mb-1">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                <polyline points="21 15 16 10 5 21"></polyline>
+                              </svg>
+                              <p className="text-xs text-green-700 font-medium">Photo {i + 1}</p>
+                              <p className="text-xs text-green-600">Already uploaded</p>
+                            </div>
+                          </div>
+                        ))}
+                        {/* Show newly added photos */}
                         {photos.map((file, i) => (
                           <div
-                            key={i}
+                            key={`new-${i}`}
                             className="aspect-square rounded-lg border border-gray-200 flex items-center justify-center bg-white overflow-hidden relative"
                           >
                             <img
@@ -1563,6 +1613,15 @@ Can’t find your area? Select the nearest major locality.            </p>
                           </div>
                           <button onClick={removeVideo} className="text-sm text-red-600 font-medium ml-auto">Remove</button>
                         </div>
+                      ) : isEditMode && existingHasVideo ? (
+                        <div className="flex items-center gap-4 w-full">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-600"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+                          <div className="flex-1">
+                            <p className="text-sm text-green-700 font-medium">Video already uploaded</p>
+                            <p className="text-xs text-green-600">Click "Add Video" to replace</p>
+                          </div>
+                          <button onClick={() => videoRef.current?.click()} className="ml-auto h-10 w-32 flex justify-center items-center rounded-lg bg-[#0b6b53] text-white text-sm font-semibold">Replace Video</button>
+                        </div>
                       ) : (
                         <div className="flex items-center gap-4 w-full">
                           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400"><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
@@ -1593,6 +1652,20 @@ Can’t find your area? Select the nearest major locality.            </p>
                             <p className="text-xs text-gray-500">{(saleDeed.size / 1024 / 1024).toFixed(2)} MB</p>
                           </div>
                           <button onClick={removeSaleDeed} className="text-sm text-red-600 font-medium ml-auto">Remove</button>
+                        </div>
+                      ) : isEditMode && existingHasSaleDeed ? (
+                        <div className="flex items-center gap-4 w-full">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-600">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                          </svg>
+                          <div className="flex-1">
+                            <p className="text-sm text-green-700 font-medium">Sale Deed already uploaded</p>
+                            <p className="text-xs text-green-600">Click "Add Document" to replace</p>
+                          </div>
+                          <button onClick={() => saleDeedRef.current?.click()} className="ml-auto h-10 w-40 flex justify-center items-center rounded-lg bg-[#0b6b53] text-white text-sm font-semibold">
+                            Replace Document
+                          </button>
                         </div>
                       ) : (
                         <div className="flex items-center gap-4 w-full">
@@ -1637,6 +1710,22 @@ Can’t find your area? Select the nearest major locality.            </p>
                             <p className="text-xs text-gray-500">{(brochure.size / 1024 / 1024).toFixed(2)} MB</p>
                           </div>
                           <button onClick={removeBrochure} className="text-sm text-red-600 font-medium ml-auto">Remove</button>
+                        </div>
+                      ) : isEditMode && existingHasBrochure ? (
+                        <div className="flex items-center gap-4 w-full">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-600">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                            <path d="M4 4.5A2.5 2.5 0 0 1 6.5 7H20"></path>
+                            <path d="M4 4.5v15"></path>
+                            <path d="M20 4.5v15"></path>
+                          </svg>
+                          <div className="flex-1">
+                            <p className="text-sm text-green-700 font-medium">Brochure already uploaded</p>
+                            <p className="text-xs text-green-600">Click "Add Brochure" to replace</p>
+                          </div>
+                          <button onClick={() => brochureRef.current?.click()} className="ml-auto h-10 w-40 flex justify-center items-center rounded-lg bg-[#0b6b53] text-white text-sm font-semibold">
+                            Replace Brochure
+                          </button>
                         </div>
                       ) : (
                         <div className="flex items-center gap-4 w-full">
@@ -1698,5 +1787,13 @@ Can’t find your area? Select the nearest major locality.            </p>
       `}</style>
     </div>
   );  
+}
+
+export default function SellFormPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SellFormPageContent />
+    </Suspense>
+  );
 }
 

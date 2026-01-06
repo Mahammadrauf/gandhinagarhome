@@ -2,14 +2,38 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 import Header from "@/components/Header";
-import { CheckCircle2, Star, Crown, Zap, ShieldCheck, ArrowRight } from "lucide-react";
+import { 
+  CheckCircle2, 
+  Star, 
+  Crown, 
+  Zap, 
+  ShieldCheck, 
+  ArrowRight, 
+  Lock, 
+  Clock, 
+  Award 
+} from "lucide-react";
 
-// Salesman Strategy: 
-// 1. Standard (10k) is the "Anchor"
-// 2. Featured (13k) is the "Middle"
-// 3. Exclusive (15k) is the "Winner"
+// --- Configuration ---
+
+// Helper to bold numbers in features for readability
+const HighlightText = ({ text, colorClass }: { text: string; colorClass: string }) => {
+  // Regex to find numbers or specific keywords
+  const parts = text.split(/(\d+ Days|Lifetime|\d+ Photos|Top 5|#1 Position)/g);
+  return (
+    <span>
+      {parts.map((part, i) => 
+        // If part matches regex, bold it
+        /(\d+ Days|Lifetime|\d+ Photos|Top 5|#1 Position)/.test(part) ? (
+          <span key={i} className={`font-extrabold ${colorClass}`}>{part}</span>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </span>
+  );
+};
 
 const plans = [
   {
@@ -20,13 +44,15 @@ const plans = [
     fullPrice: "12,500",
     icon: Zap,
     styles: {
-      card: "bg-white border-slate-200 hover:border-[#0b6b53] hover:shadow-xl hover:shadow-[#0b6b53]/10 z-0",
-      title: "text-slate-700",
-      tag: "bg-slate-100 text-slate-600",
+      // STANDARD: Filled with Light Green theme (bg-[#e7fcf7]) by default
+      card: "bg-[#e7fcf7] border-2 border-[#0b6b53] shadow-xl shadow-[#0b6b53]/5 z-0 transform hover:-translate-y-1",
+      title: "text-[#0b6b53]", 
+      tag: "bg-[#0b6b53] text-white", // Filled tag for contrast
       price: "text-[#0b6b53]",
-      button: "bg-white border-2 border-[#0b6b53] text-[#0b6b53] hover:bg-[#0b6b53] hover:text-white",
-      iconBox: "bg-[#0b6b53]/10 text-[#0b6b53]",
-      check: "text-[#0b6b53]"
+      button: "bg-[#0b6b53] text-white hover:bg-[#095c47] hover:shadow-lg hover:shadow-[#0b6b53]/20",
+      iconBox: "bg-white text-[#0b6b53] shadow-sm", // White box to pop against green bg
+      check: "text-[#0b6b53]",
+      featureText: "text-[#0b6b53]" // Darker green text for features
     },
     features: [
       "Listed for 60 Days",
@@ -45,13 +71,15 @@ const plans = [
     fullPrice: "16,000",
     icon: Star,
     styles: {
-      card: "bg-cyan-50/30 border-cyan-200 hover:border-cyan-400 hover:shadow-2xl hover:shadow-cyan-500/10 z-10",
-      title: "text-cyan-900",
-      tag: "bg-cyan-100 text-cyan-700",
-      price: "text-cyan-700",
-      button: "bg-cyan-600 text-white hover:bg-cyan-700 shadow-lg shadow-cyan-500/20",
-      iconBox: "bg-cyan-100 text-cyan-600",
-      check: "text-cyan-500"
+      // FEATURED: Teal/Blue Theme (#0F7F9C)
+      card: "bg-[#f4fbff] border-2 border-[#0F7F9C]/30 hover:border-[#0F7F9C] shadow-xl shadow-[#0F7F9C]/10 z-10 transform hover:-translate-y-1",
+      title: "text-[#022F5A]",
+      tag: "bg-[#e0f2ff] text-[#0F7F9C]",
+      price: "text-[#0F7F9C]",
+      button: "bg-gradient-to-r from-[#0F7F9C] to-[#022F5A] text-white hover:shadow-lg hover:shadow-[#0F7F9C]/25",
+      iconBox: "bg-[#e0f2ff] text-[#0F7F9C]",
+      check: "text-[#0F7F9C]",
+      featureText: "text-[#022F5A]"
     },
     features: [
       "Listed for 90 Days",
@@ -71,14 +99,16 @@ const plans = [
     fullPrice: "25,000",
     icon: Crown,
     styles: {
-      // Reduced scale slightly from 1.05 to 1.03 to fit better
-      card: "bg-[#fffbf0] border-amber-300 ring-4 ring-amber-400/20 shadow-2xl shadow-amber-500/20 scale-[1.02] z-20",
-      title: "text-amber-900",
-      tag: "bg-amber-100 text-amber-800",
-      price: "text-amber-700",
-      button: "bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700 shadow-xl shadow-amber-500/30 transform hover:-translate-y-1",
-      iconBox: "bg-amber-100 text-amber-600",
-      check: "text-amber-600 font-bold"
+      // EXCLUSIVE: Gold/Stone Theme (#B59E78)
+      // Added a subtle gradient background to make it feel premium
+      card: "bg-gradient-to-b from-[#FDFBF7] to-[#fcf8f0] border-2 border-[#B59E78] ring-4 ring-[#B59E78]/10 shadow-2xl shadow-[#B59E78]/25 scale-[1.03] z-20 transform hover:-translate-y-1",
+      title: "text-[#5C5042]", 
+      tag: "bg-[#F5F2EB] text-[#8C7A5B]",
+      price: "text-[#8C7A5B]",
+      button: "bg-gradient-to-r from-[#B59E78] to-[#8C7A5B] text-white hover:shadow-xl hover:shadow-[#B59E78]/40",
+      iconBox: "bg-[#F5F2EB] text-[#B59E78]",
+      check: "text-[#B59E78]",
+      featureText: "text-[#5C5042]"
     },
     features: [
       "Everything in Featured",
@@ -97,121 +127,154 @@ export default function SubscriptionPage() {
   const [hoveredPlan, setHoveredPlan] = useState<string | null>(null);
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-[#F8FAFC]">
       <Header />
 
-      {/* Reduced py-16 to py-8 to remove top whitespace */}
-      <div className="container mx-auto px-4 py-8 lg:py-10">
+      {/* UPDATED: Reduced top padding from py-12 to py-6 */}
+      <div className="container mx-auto px-4 py-6 lg:py-10">
         
-        {/* Sales Header - Reduced margin bottom */}
-        <div className="text-center mb-10 space-y-3">
-          <div className="inline-flex items-center gap-2 bg-[#0b6b53]/10 text-[#0b6b53] px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase">
-            <ShieldCheck size={14} />
-            Verified & Secure Listings
+        {/* --- Header Section --- */}
+        <div className="text-center mb-14 space-y-4">
+          <div className="inline-flex items-center gap-2 bg-white border border-slate-200 text-slate-600 px-4 py-1.5 rounded-full text-xs font-bold tracking-wide shadow-sm">
+            <ShieldCheck size={14} className="text-[#0b6b53]" />
+            <span className="text-[#0b6b53] font-bold">Verified</span> & Secure Payment Gateway
           </div>
-          {/* Reduced text size slightly */}
-          <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900">
-            Sell Faster with Premium
+          
+          <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">
+            Choose Your Selling Power
           </h1>
-          <p className="text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
-            94% of sellers who choose <span className="text-amber-600 font-bold">Exclusive</span> find a buyer within 30 days. Select a plan to unlock Gandhinagar's top buyers.
+          
+          <p className="text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed">
+            Sellers on the <span className="text-[#B59E78] font-bold bg-[#B59E78]/10 px-2 rounded">Exclusive Plan</span> sell 
+            <span className="font-bold text-slate-800"> 3x faster</span>. 
+            Select a plan to unlock Gandhinagar's top buyers.
           </p>
         </div>
 
-        {/* Dynamic Plans Grid - Reduced Max Width to 6xl and gap to make boxes smaller */}
-        <div className="grid md:grid-cols-3 gap-5 lg:gap-6 max-w-6xl mx-auto items-end">
+        {/* --- Pricing Grid --- */}
+        <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto items-end">
           {plans.map((plan) => {
             const Icon = plan.icon;
-            const isHovered = hoveredPlan === plan.id;
             
             return (
               <div
                 key={plan.id}
                 onMouseEnter={() => setHoveredPlan(plan.id)}
                 onMouseLeave={() => setHoveredPlan(null)}
-                // Reduced padding from p-8 to p-6
-                className={`relative rounded-2xl p-6 transition-all duration-300 cursor-pointer flex flex-col h-full ${plan.styles.card} ${isHovered && !plan.highlight ? '-translate-y-2' : ''}`}
+                className={`relative rounded-3xl p-6 transition-all duration-300 cursor-pointer flex flex-col h-full ${plan.styles.card}`}
               >
-                {/* "Best Value" Badge */}
+                {/* Best Value Badge */}
                 {plan.highlight && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-full text-center">
-                    <span className="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-4 py-1.5 rounded-full text-xs font-bold tracking-widest shadow-lg uppercase flex items-center justify-center gap-2 w-fit mx-auto">
-                      <Crown size={12} fill="currentColor" />
+                  <div className="absolute -top-5 left-0 right-0 flex justify-center z-30">
+                    <span className="bg-gradient-to-r from-[#B59E78] to-[#8C7A5B] text-white px-5 py-2 rounded-full text-xs font-black tracking-widest shadow-lg shadow-[#B59E78]/30 uppercase flex items-center gap-2 border-2 border-white">
+                      <Crown size={14} fill="currentColor" />
                       Best Value
                     </span>
                   </div>
                 )}
 
-                {/* Card Header */}
-                <div className="mb-5">
-                    <div className="flex justify-between items-start mb-3">
-                        <div>
-                            <h3 className={`text-xl font-bold ${plan.styles.title}`}>
-                                {plan.name}
-                            </h3>
-                            <span className={`inline-block mt-1.5 px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${plan.styles.tag}`}>
-                                {plan.tagline}
-                            </span>
+                {/* Plan Header */}
+                <div className="mb-6">
+                    <div className="flex justify-between items-start mb-4">
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${plan.styles.iconBox}`}>
+                            <Icon size={24} strokeWidth={2} />
                         </div>
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${plan.styles.iconBox}`}>
-                            <Icon size={20} strokeWidth={1.5} />
-                        </div>
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${plan.styles.tag}`}>
+                            {plan.tagline}
+                        </span>
                     </div>
 
-                    {/* Price Section */}
+                    <h3 className={`text-2xl font-black tracking-tight mb-2 ${plan.styles.title}`}>
+                        {plan.name}
+                    </h3>
+
+                    {/* Price */}
                     <div className="flex items-baseline gap-2">
-                        {/* Reduced price size */}
-                        <span className={`text-3xl font-extrabold tracking-tight ${plan.styles.price}`}>
+                        <span className={`text-4xl font-extrabold tracking-tight ${plan.styles.price}`}>
                             ₹{plan.price}
                         </span>
-                        <span className="text-slate-400 text-sm line-through decoration-slate-300">
+                        <span className="text-slate-400 text-lg line-through decoration-slate-300 font-medium opacity-70">
                             ₹{plan.fullPrice}
                         </span>
                     </div>
-                    <p className="text-slate-500 text-xs mt-1 font-medium">One-time listing fee</p>
+                    <p className="text-slate-500 text-xs mt-1 font-semibold opacity-80">One-time payment • No hidden fees</p>
                 </div>
 
                 {/* Divider */}
-                <div className="h-px w-full bg-slate-200 mb-5"></div>
+                <div className="h-px w-full bg-slate-200/60 mb-6"></div>
 
-                {/* Features List - Reduced spacing */}
-                <ul className="space-y-3 mb-6 flex-grow">
+                {/* Features */}
+                <ul className="space-y-4 mb-8 flex-grow">
                   {plan.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-2.5">
-                      <CheckCircle2 size={16} className={`${plan.styles.check} shrink-0 mt-0.5`} />
-                      <span className={`text-sm font-medium leading-tight ${plan.highlight ? 'text-slate-800' : 'text-slate-600'}`}>
-                        {feature}
+                    <li key={idx} className="flex items-start gap-3 group">
+                      <div className={`mt-0.5 rounded-full p-0.5 ${plan.id === 'standard' ? 'bg-[#0b6b53]/10' : ''}`}>
+                         <CheckCircle2 size={18} className={`${plan.styles.check} stroke-[3px]`} />
+                      </div>
+                      <span className={`text-sm font-medium leading-snug ${plan.styles.featureText || 'text-slate-600'}`}>
+                        {/* Auto-bold numbers/key terms */}
+                        <HighlightText text={feature} colorClass={plan.styles.title} />
                       </span>
                     </li>
                   ))}
                 </ul>
 
-                {/* CTA Button - Reduced padding */}
-                <button className={`w-full py-3 rounded-xl font-bold text-base transition-all duration-300 flex items-center justify-center gap-2 ${plan.styles.button}`}>
-                  {plan.highlight ? "Get Maximum Exposure" : `Choose ${plan.name}`}
-                  {plan.highlight && <ArrowRight size={18} />}
+                {/* CTA Button */}
+                <button className={`w-full py-4 rounded-2xl font-bold text-base transition-all duration-300 flex items-center justify-center gap-2 ${plan.styles.button} active:scale-95`}>
+                  Pay for {plan.name} Plan
+                  {plan.highlight ? <ArrowRight size={18} strokeWidth={2.5} /> : null}
                 </button>
                 
-                {/* Scarcity / Trust Text */}
+                {/* Social Proof Text for Exclusive */}
                 {plan.highlight && (
-                    <p className="text-center text-[10px] text-amber-700 mt-3 font-semibold animate-pulse">
-                        🔥 12 people are viewing this plan
-                    </p>
+                    <div className="mt-4 flex items-center justify-center gap-1.5 animate-pulse">
+                        <div className="flex -space-x-1.5">
+                            <div className="w-4 h-4 rounded-full bg-slate-200 border border-white"></div>
+                            <div className="w-4 h-4 rounded-full bg-slate-300 border border-white"></div>
+                            <div className="w-4 h-4 rounded-full bg-slate-400 border border-white"></div>
+                        </div>
+                        <p className="text-[10px] text-[#8C7A5B] font-bold">
+                             12 people viewing this
+                        </p>
+                    </div>
                 )}
               </div>
             );
           })}
         </div>
 
-        {/* Money Back Guarantee / Trust Section - Reduced margin */}
-        <div className="mt-12 text-center">
-            <p className="text-slate-500 text-sm mb-3">Used by top agents in Gandhinagar</p>
-            <div className="flex justify-center gap-6 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
-                <div className="h-6 w-20 bg-slate-300 rounded"></div>
-                <div className="h-6 w-20 bg-slate-300 rounded"></div>
-                <div className="h-6 w-20 bg-slate-300 rounded"></div>
+        {/* --- Trust & Security Footer --- */}
+        <div className="mt-16 border-t border-slate-200 pt-10">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+                <div className="flex flex-col items-center text-center gap-2">
+                    <div className="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center text-[#0b6b53] mb-1">
+                        <Lock size={20} />
+                    </div>
+                    <h4 className="font-bold text-slate-800 text-sm">Secure Payment</h4>
+                    <p className="text-xs text-slate-500">256-bit SSL encrypted. <br/>Your data is safe.</p>
+                </div>
+                
+                <div className="flex flex-col items-center text-center gap-2">
+                    <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 mb-1">
+                        <Award size={20} />
+                    </div>
+                    <h4 className="font-bold text-slate-800 text-sm">Gandhinagar's #1</h4>
+                    <p className="text-xs text-slate-500">Most trusted property <br/>platform in the city.</p>
+                </div>
+
+                <div className="flex flex-col items-center text-center gap-2">
+                    <div className="w-10 h-10 bg-amber-50 rounded-full flex items-center justify-center text-amber-600 mb-1">
+                        <Clock size={20} />
+                    </div>
+                    <h4 className="font-bold text-slate-800 text-sm">Instant Activation</h4>
+                    <p className="text-xs text-slate-500">Your listing goes live <br/>immediately after payment.</p>
+                </div>
             </div>
+            
+            <p className="text-center text-[10px] text-slate-400 font-medium uppercase tracking-widest mt-10">
+                Gandhinagar Homes • Official Partner
+            </p>
         </div>
+
       </div>
     </main>
   );

@@ -12,7 +12,8 @@ import {
   ShieldCheck,
   FileText,
   CreditCard,
-  AlertCircle
+  AlertCircle,
+  RotateCcw // Added an icon for Start Over
 } from "lucide-react";
 
 // Utility functions
@@ -54,8 +55,13 @@ export default function ConfirmationPage() {
     setSubmitting(true);
     setTimeout(() => {
       localStorage.removeItem("pendingListing");
-      router.push("/sell/subscription"); 
+      router.replace("/sell/subscription"); 
     }, 2000);
+  };
+
+  const handleStartOver = () => {
+    localStorage.removeItem("pendingListing");
+    router.push("/sell/form");
   };
 
   if (loading || !listing) return null;
@@ -172,15 +178,15 @@ export default function ConfirmationPage() {
                 
                 {/* Verification Badge - Compact */}
                 <div className="col-span-1 flex flex-col gap-1.5 w-full">
-                   <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider pl-1 invisible">
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider pl-1 invisible">
                         Status
-                   </span>
-                   <div className="flex items-center justify-center gap-2 px-3 py-3 bg-emerald-50 border border-emerald-100 rounded-xl min-h-[46px]">
+                    </span>
+                    <div className="flex items-center justify-center gap-2 px-3 py-3 bg-emerald-50 border border-emerald-100 rounded-xl min-h-[46px]">
                         <CheckCircle2 size={16} className="text-emerald-600" />
                         <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-tight">
                             Verified
                         </span>
-                   </div>
+                    </div>
                 </div>
               </div>
             </ReviewSection>
@@ -267,6 +273,15 @@ export default function ConfirmationPage() {
                 <StatusTag label="Sale Deed" exists={!!listing.hasSaleDeed} />
               </div>
             </ReviewSection>
+
+            {/* MOVED & STYLED: Start Over Button */}
+            <button
+                onClick={handleStartOver}
+                // w-fit makes it shorter, bg-[#0b6b53] is theme color, text-white
+                className="w-fit px-8 h-12 rounded-2xl bg-[#0b6b53] text-white font-bold hover:bg-[#085341] transition-all shadow-md shadow-[#0b6b53]/20 flex items-center justify-center gap-2"
+            >
+                <RotateCcw size={16} /> Start Over
+            </button>
           </div>
 
           {/* RIGHT SIDEBAR SUMMARY */}
@@ -302,6 +317,8 @@ export default function ConfirmationPage() {
               </div>
 
               <div className="space-y-4">
+                {/* Start Over Button REMOVED from here */}
+                
                 {/* CTA BUTTON */}
                 <button
                     onClick={handleConfirmSubmit}
@@ -310,7 +327,7 @@ export default function ConfirmationPage() {
                 >
                     {submitting ? "Redirecting..." : (
                         <>
-                           Confirm & Proceed <CreditCard size={18} className="group-hover:translate-x-1 transition-transform" />
+                            Confirm & Select Plan <CreditCard size={18} className="group-hover:translate-x-1 transition-transform" />
                         </>
                     )}
                 </button>
