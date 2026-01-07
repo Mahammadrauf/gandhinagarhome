@@ -1,130 +1,336 @@
-'use client';
+  'use client';
 
-import React, { useState, useEffect, ReactNode } from 'react';
-import Link from 'next/link';
-import { Home, Menu, X } from 'lucide-react';
+  import React, { useState, useEffect, useRef, ReactNode } from 'react';
+  import Link from 'next/link';
+  import { Home, Menu, X, User, LogOut, ChevronDown, Loader2, ArrowRight } from 'lucide-react';
 
-interface NavLinkProps {
-  href: string;
-  children: ReactNode;
-  onClick?: () => void;
-  mobile?: boolean;
-}
+  // --- CONFIGURATION ---
+  const BRAND_COLOR = "text-[#006A58]";
+  const BRAND_BG = "bg-[#006A58]";
+  const BRAND_HOVER_BG = "hover:bg-[#005445]";
+  const BRAND_FOCUS_RING = "focus:ring-[#006A58]";
 
-// Custom Brand Color derived from your image
-const BRAND_COLOR = "text-[#006A58]";
-const BRAND_BG = "bg-[#006A58]";
-const BRAND_HOVER_BG = "hover:bg-[#005445]"; // Slightly darker for hover
-const BRAND_LIGHT_BG = "hover:bg-[#006A58]/10"; // Light tint for menu items
-
-const NavLink: React.FC<NavLinkProps> = ({ href, children, onClick, mobile }) => {
-  if (mobile) {
-    return (
-      <Link href={href} onClick={onClick} className="block w-full">
-        <div className={`py-3 px-4 text-gray-600 ${BRAND_LIGHT_BG} hover:text-[#006A58] font-medium transition-colors rounded-lg`}>
-          {children}
-        </div>
-      </Link>
-    );
+  // --- TYPES ---
+  interface NavLinkProps {
+    href: string;
+    children: ReactNode;
+    onClick?: () => void;
+    mobile?: boolean;
   }
 
-  return (
-    <Link href={href} className="relative group py-2">
-      <span className={`text-gray-600 font-medium text-sm group-hover:text-[#006A58] transition-colors`}>
-        {children}
-      </span>
-      {/* Center-out Underline Animation with your Brand Color */}
-      <span className="absolute bottom-0 left-1/2 h-0.5 w-0 bg-[#006A58] transition-all duration-300 ease-out group-hover:w-full group-hover:left-0"></span>
-    </Link>
-  );
-};
+  // --- SUB-COMPONENTS ---
+  const NavLink: React.FC<NavLinkProps> = ({ href, children, onClick, mobile }) => {
+    if (mobile) {
+      return (
+        <Link href={href} onClick={onClick} className="block w-full">
+          <div className={`py-3 px-4 text-gray-600 hover:bg-[#006A58]/5 hover:text-[#006A58] font-medium transition-colors rounded-lg`}>
+            {children}
+          </div>
+        </Link>
+      );
+    }
+    return (
+      <Link href={href} className="relative group py-2">
+        <span className={`text-gray-600 font-medium text-sm group-hover:text-[#006A58] transition-colors`}>
+          {children}
+        </span>
+        <span className="absolute bottom-0 left-1/2 h-0.5 w-0 bg-[#006A58] transition-all duration-300 ease-out group-hover:w-full group-hover:left-0"></span>
+      </Link>
+    );
+  };
 
-const Header = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  // --- MAIN HEADER COMPONENT ---
+  const Header = () => {
+    const [isScrolled, setIsScrolled] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    
+    // Auth States
+    const [isAuthOpen, setIsAuthOpen] = useState(false);
+    const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+    const [step, setStep] = useState<'details' | 'otp'>('details');
+    const [isLoading, setIsLoading] = useState(false);
+    
+    // OTP State
+    const [otp, setOtp] = useState(['', '', '', '']);
+    const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+    // User Data State
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [user, setUser] = useState({ firstName: '', lastName: '', email: '', mobile: '' });
+
+    // Handle Scroll Effect
+    useEffect(() => {
+      const handleScroll = () => setIsScrolled(window.scrollY > 20);
+      window.addEventListener('scroll', handleScroll);
+      return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+
+    // --- PERSISTENT LOOP LOGIC (30s Timer) ---
+    useEffect(() => {
+      let timer: NodeJS.Timeout;
+
+      // Run this logic only if they are NOT logged in AND the popup is currently CLOSED
+      if (!isLoggedIn && !isAuthOpen) {
+        timer = setTimeout(() => {
+          setAuthMode('signup');
+          setStep('details');
+          setIsAuthOpen(true);
+        }, 30000); // 30 Seconds Delay
+      }
+
+      return () => clearTimeout(timer);
+    }, [isLoggedIn, isAuthOpen]); // Dependencies ensure it restarts when auth closes
+
+    // Helper to close auth (which triggers the effect above to restart the timer)
+    const handleCloseLoop = () => {
+      setIsAuthOpen(false);
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
-  return (
-    <>
-      <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
-          isScrolled || isMobileMenuOpen
-            ? 'bg-white/95 backdrop-blur-md shadow-sm py-3' 
-            : 'bg-transparent py-5 border-b border-transparent'
-        }`}
-      >
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between">
-            
-            {/* Logo */}
-            <Link href="/" className="group flex items-center gap-2 flex-shrink-0 z-50">
-              {/* Logo Icon Background matches your green theme */}
-              <div className={`${BRAND_BG} p-1.5 rounded-lg text-white transition-transform group-hover:scale-110 duration-300`}>
-                <Home className="w-5 h-5" strokeWidth={2.5} />
-              </div>
-              <span className={`text-lg font-bold text-gray-800 tracking-tight group-hover:text-[#006A58] transition-colors`}>
-                Gandhinagar<span className="text-[#006A58]">Homes</span>
-              </span>
-            </Link>
 
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-8">
-              <nav className="flex items-center gap-8">
-                <NavLink href="/">Home</NavLink>
-                <NavLink href="/buy">Buy</NavLink>
-                <NavLink href="/sell">Sell</NavLink>
-                <NavLink href="/about">About Us</NavLink>
-                <NavLink href="/contact">Contact Us</NavLink>
-              </nav>
+    // --- OTP LOGIC ---
+    const handleOtpChange = (index: number, value: string) => {
+      if (isNaN(Number(value))) return;
+      const newOtp = [...otp];
+      newOtp[index] = value.substring(value.length - 1);
+      setOtp(newOtp);
+      if (value && index < 3 && otpInputRefs.current[index + 1]) {
+        otpInputRefs.current[index + 1]?.focus();
+      }
+    };
 
-              {/* Sign In Button with Brand Green */}
-              <button className={`${BRAND_BG} ${BRAND_HOVER_BG} text-white px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-300 shadow-lg shadow-[#006A58]/20 hover:shadow-[#006A58]/40 active:scale-95 transform`}>
-                Sign In
-              </button>
-            </div>
+    const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Backspace' && !otp[index] && index > 0 && otpInputRefs.current[index - 1]) {
+        otpInputRefs.current[index - 1]?.focus();
+      }
+    };
 
-            {/* Mobile Menu Button */}
-            <button
-              className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors z-50"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-        </div>
+    const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+      e.preventDefault();
+      const pastedData = e.clipboardData.getData('text').slice(0, 4).split('');
+      if (pastedData.every(char => !isNaN(Number(char)))) {
+        const newOtp = [...otp];
+        pastedData.forEach((val, i) => { if (i < 4) newOtp[i] = val; });
+        setOtp(newOtp);
+        const nextFocusIndex = Math.min(pastedData.length, 3);
+        otpInputRefs.current[nextFocusIndex]?.focus();
+      }
+    };
 
-        {/* Mobile Menu Overlay */}
-        <div
-          className={`absolute top-full left-0 w-full bg-white border-t border-gray-100 shadow-lg md:hidden transition-all duration-300 ease-in-out overflow-hidden ${
-            isMobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-          }`}
-        >
-          <div className="flex flex-col p-4 space-y-1">
-            <NavLink mobile href="/" onClick={() => setIsMobileMenuOpen(false)}>Home</NavLink>
-            <NavLink mobile href="/buy" onClick={() => setIsMobileMenuOpen(false)}>Buy</NavLink>
-            <NavLink mobile href="/sell" onClick={() => setIsMobileMenuOpen(false)}>Sell</NavLink>
-            <NavLink mobile href="/about" onClick={() => setIsMobileMenuOpen(false)}>About Us</NavLink>
-            <NavLink mobile href="/contact" onClick={() => setIsMobileMenuOpen(false)}>Contact Us</NavLink>
-            <div className="pt-4 mt-2 border-t border-gray-100">
-              <button className={`w-full ${BRAND_BG} text-white py-3 rounded-lg font-semibold active:scale-95 transition-transform`}>
-                Sign In
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+    // --- BACKEND DEVELOPER ZONE ---
+    
+    const handleSendOtp = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setIsLoading(true);
+
+      // TODO: [BACKEND] Add your API call here to send SMS
       
-      {/* Spacer */}
-      <div className="h-20" /> 
-    </>
-  );
-};
+      // Simulating API delay
+      setTimeout(() => {
+        setIsLoading(false);
+        setStep('otp');
+        setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
+      }, 1000);
+    };
 
-export default Header;
+    const handleVerifyOtp = async () => {
+      if (otp.join('').length !== 4) return;
+      setIsLoading(true);
+
+      const enteredOtp = otp.join('');
+      // TODO: [BACKEND] Add your API call here to verify OTP
+
+      // Simulating Success
+      setTimeout(() => {
+        setIsLoading(false);
+        setIsLoggedIn(true);
+        setIsAuthOpen(false); // This stops the loop because isLoggedIn becomes true
+        if (authMode === 'login' && !user.firstName) {
+          setUser(prev => ({ ...prev, firstName: 'User' }));
+        }
+      }, 1000);
+    };
+
+    const handleLogout = () => {
+      setIsLoggedIn(false);
+      setUser({ firstName: '', lastName: '', email: '', mobile: '' });
+    };
+
+    // --- RENDER ---
+    const openAuth = (mode: 'login' | 'signup') => {
+      setAuthMode(mode);
+      setStep('details');
+      setOtp(['', '', '', '']);
+      setIsAuthOpen(true);
+      setIsMobileMenuOpen(false);
+    };
+
+    return (
+      <>
+        <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${isScrolled || isMobileMenuOpen ? 'bg-white/95 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-5 border-b border-transparent'}`}>
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-between">
+              {/* Logo */}
+              <Link href="/" className="group flex items-center gap-2 flex-shrink-0 z-50">
+                <div className={`${BRAND_BG} p-1.5 rounded-lg text-white transition-transform group-hover:scale-110 duration-300`}>
+                  <Home className="w-5 h-5" strokeWidth={2.5} />
+                </div>
+                <span className={`text-lg font-bold text-gray-800 tracking-tight group-hover:text-[#006A58] transition-colors`}>Gandhinagar<span className="text-[#006A58]">Homes</span></span>
+              </Link>
+
+              {/* Desktop Navigation */}
+              <div className="hidden md:flex items-center gap-8">
+                <nav className="flex items-center gap-8">
+                  <NavLink href="/">Home</NavLink>
+                  <NavLink href="/buy">Buy</NavLink>
+                  <NavLink href="/sell">Sell</NavLink>
+                  <NavLink href="/about">About Us</NavLink>
+                  <NavLink href="/contact">Contact Us</NavLink>
+                </nav>
+
+                {!isLoggedIn ? (
+                  <div className="flex items-center gap-4">
+                    <button onClick={() => openAuth('login')} className="text-gray-600 font-semibold text-sm hover:text-[#006A58] transition-colors">Log In</button>
+                    <button onClick={() => openAuth('signup')} className={`${BRAND_BG} ${BRAND_HOVER_BG} text-white px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-300 shadow-lg shadow-[#006A58]/20 hover:shadow-[#006A58]/40 active:scale-95 transform`}>Sign Up</button>
+                  </div>
+                ) : (
+                  <div className="group relative cursor-pointer">
+                    <div className="flex items-center gap-2 py-1 px-2 rounded-full hover:bg-gray-100 transition-colors">
+                      <div className={`w-8 h-8 ${BRAND_BG} rounded-full flex items-center justify-center text-white font-bold text-sm`}>{user.firstName[0]?.toUpperCase() || 'U'}</div>
+                      <span className="text-sm font-semibold text-gray-700 max-w-[100px] truncate">{user.firstName}</span>
+                      <ChevronDown className="w-4 h-4 text-gray-500" />
+                    </div>
+                    <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right">
+                      <div className="p-2">
+                        <Link href="/profile" className="flex items-center gap-2 w-full p-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg">
+                          <User className="w-4 h-4" /> My Profile
+                        </Link>
+                        <button onClick={handleLogout} className="flex items-center gap-2 w-full p-2 text-sm text-red-600 hover:bg-red-50 rounded-lg"><LogOut className="w-4 h-4" /> Logout</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Mobile Menu Toggle */}
+              <button className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors z-50" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile Menu */}
+          <div className={`absolute top-full left-0 w-full bg-white border-t border-gray-100 shadow-lg md:hidden transition-all duration-300 ease-in-out overflow-hidden ${isMobileMenuOpen ? 'max-h-[30rem] opacity-100' : 'max-h-0 opacity-0'}`}>
+            <div className="flex flex-col p-4 space-y-1">
+              <NavLink mobile href="/" onClick={() => setIsMobileMenuOpen(false)}>Home</NavLink>
+              <NavLink mobile href="/buy" onClick={() => setIsMobileMenuOpen(false)}>Buy</NavLink>
+              <NavLink mobile href="/sell" onClick={() => setIsMobileMenuOpen(false)}>Sell</NavLink>
+              <NavLink mobile href="/about" onClick={() => setIsMobileMenuOpen(false)}>About Us</NavLink>
+              <NavLink mobile href="/contact" onClick={() => setIsMobileMenuOpen(false)}>Contact Us</NavLink>
+            </div>
+          </div>
+        </header>
+        
+        <div className="h-20" /> 
+
+        {/* ======================= */}
+        {/* COMPACT AUTH MODAL      */}
+        {/* ======================= */}
+        {isAuthOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            
+            {/* BACKDROP: 
+                Using handleCloseLoop here ensures if they click outside, 
+                the timer restarts.
+            */}
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={handleCloseLoop} />
+            
+            <div className="relative bg-white w-full max-w-[400px] rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col">
+              
+              {/* Header: Compact Padding */}
+              <div className={`${BRAND_BG} px-6 py-5 text-center relative shrink-0`}>
+                
+                {/* CLOSE BUTTON:
+                    Using handleCloseLoop here ensures if they click X,
+                    the timer restarts.
+                */}
+                <button onClick={handleCloseLoop} className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors bg-white/10 p-1 rounded-full"><X className="w-4 h-4" /></button>
+                
+                <h2 className="text-xl font-bold text-white tracking-tight">{step === 'otp' ? 'Verify OTP' : (authMode === 'signup' ? 'Create Account' : 'Welcome Back')}</h2>
+                <p className="text-[#a3e0d5] text-xs mt-1 font-medium">{step === 'otp' ? `Code sent to +91 ${user.mobile}` : (authMode === 'signup' ? 'Join GandhinagarHomes' : 'Login to your account')}</p>
+              </div>
+
+              {/* Body: Compact Padding & Inputs */}
+              <div className="p-5">
+                {step === 'details' ? (
+                  <form onSubmit={handleSendOtp} className="space-y-3">
+                    {authMode === 'signup' && (
+                      <div className="grid grid-cols-2 gap-3 animate-in slide-in-from-top-2 duration-300">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-500 ml-1 uppercase tracking-wide">First Name</label>
+                          <input required type="text" className={`w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 ${BRAND_FOCUS_RING} focus:border-transparent transition-all text-sm`} value={user.firstName} onChange={(e) => setUser({...user, firstName: e.target.value})} />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-500 ml-1 uppercase tracking-wide">Last Name</label>
+                          <input required type="text" className={`w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 ${BRAND_FOCUS_RING} focus:border-transparent transition-all text-sm`} value={user.lastName} onChange={(e) => setUser({...user, lastName: e.target.value})} />
+                        </div>
+                        <div className="col-span-2 space-y-1">
+                          <label className="text-[10px] font-bold text-gray-500 ml-1 uppercase tracking-wide">Email Address</label>
+                          <input required type="email" className={`w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 ${BRAND_FOCUS_RING} focus:border-transparent transition-all text-sm`} value={user.email} onChange={(e) => setUser({...user, email: e.target.value})} />
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-500 ml-1 uppercase tracking-wide">Mobile Number</label>
+                      <div className="relative group">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span className="text-gray-500 font-bold text-sm">+91</span><div className="h-4 w-px bg-gray-300 mx-2"></div></div>
+                        <input required type="tel" maxLength={10} pattern="[0-9]{10}" className={`w-full pl-16 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 ${BRAND_FOCUS_RING} focus:border-transparent transition-all font-semibold text-gray-800 tracking-wide text-sm`} value={user.mobile} onChange={(e) => setUser({...user, mobile: e.target.value.replace(/\D/g,'')})} />
+                      </div>
+                    </div>
+
+                    <button type="submit" disabled={isLoading || user.mobile.length < 10} className={`w-full ${BRAND_BG} ${BRAND_HOVER_BG} text-white font-bold py-2.5 rounded-lg shadow-md shadow-[#006A58]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed mt-2 active:scale-[0.98] text-sm`}>
+                      {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (authMode === 'signup' ? 'Get OTP' : 'Get Login OTP')} <ArrowRight className="w-4 h-4" />
+                    </button>
+
+                    <div className="text-center pt-1">
+                      <p className="text-xs text-gray-500">{authMode === 'login' ? "New here? " : "Joined already? "} <button type="button" onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')} className={`font-bold ${BRAND_COLOR} hover:underline`}>{authMode === 'login' ? 'Create Account' : 'Log In'}</button></p>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="flex flex-col items-center space-y-6 animate-in slide-in-from-right-8 duration-300 pb-2">
+                    <div className="flex gap-3 w-full justify-center">
+                      {otp.map((digit, i) => (
+                        <input
+                          key={i}
+                          ref={(el) => { otpInputRefs.current[i] = el }}
+                          type="text"
+                          maxLength={1}
+                          value={digit}
+                          onChange={(e) => handleOtpChange(i, e.target.value)}
+                          onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                          onPaste={handlePaste}
+                          className={`w-12 h-14 text-center text-2xl font-bold bg-white border rounded-lg focus:outline-none focus:scale-105 transition-all caret-[#006A58] ${digit ? `border-[#006A58] text-[#006A58]` : 'border-gray-200 text-gray-800'} focus:border-[#006A58] focus:ring-2 focus:ring-[#006A58]/10 shadow-sm`}
+                        />
+                      ))}
+                    </div>
+                    
+                    <button onClick={handleVerifyOtp} disabled={isLoading || otp.join('').length < 4} className={`w-full ${BRAND_BG} ${BRAND_HOVER_BG} text-white font-bold py-2.5 rounded-lg shadow-md shadow-[#006A58]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm`}>
+                      {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify & Continue'}
+                    </button>
+
+                    <div className="flex flex-col items-center gap-1 w-full text-xs">
+                      <p className="text-gray-500">Didn't receive code? <button className="font-semibold text-gray-800 hover:text-[#006A58]">Resend</button></p>
+                      <button onClick={() => { setStep('details'); setIsLoading(false); }} className="text-gray-400 hover:text-gray-600 transition-colors">Change Number</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </>
+    );
+  };
+
+  export default Header;
