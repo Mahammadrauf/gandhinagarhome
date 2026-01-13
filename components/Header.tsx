@@ -1,336 +1,456 @@
-  'use client';
+'use client';
 
-  import React, { useState, useEffect, useRef, ReactNode } from 'react';
-  import Link from 'next/link';
-  import { Home, Menu, X, User, LogOut, ChevronDown, Loader2, ArrowRight } from 'lucide-react';
+import React, { useState, useEffect, useRef, ReactNode } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Home, Menu, X, User, LogOut, ChevronDown, Loader2, ArrowRight } from 'lucide-react';
 
-  // --- CONFIGURATION ---
-  const BRAND_COLOR = "text-[#006A58]";
-  const BRAND_BG = "bg-[#006A58]";
-  const BRAND_HOVER_BG = "hover:bg-[#005445]";
-  const BRAND_FOCUS_RING = "focus:ring-[#006A58]";
+// --- CONFIGURATION ---
+const BRAND_COLOR = "text-[#006A58]";
+const BRAND_BG = "bg-[#006A58]";
+const BRAND_HOVER_BG = "hover:bg-[#005445]";
+const BRAND_FOCUS_RING = "focus:ring-[#006A58]";
 
-  // --- TYPES ---
-  interface NavLinkProps {
-    href: string;
-    children: ReactNode;
-    onClick?: () => void;
-    mobile?: boolean;
-  }
+// --- TYPES ---
+interface NavLinkProps {
+  href: string;
+  children: ReactNode;
+  onClick?: () => void;
+  mobile?: boolean;
+}
 
-  // --- SUB-COMPONENTS ---
-  const NavLink: React.FC<NavLinkProps> = ({ href, children, onClick, mobile }) => {
-    if (mobile) {
-      return (
-        <Link href={href} onClick={onClick} className="block w-full">
-          <div className={`py-3 px-4 text-gray-600 hover:bg-[#006A58]/5 hover:text-[#006A58] font-medium transition-colors rounded-lg`}>
-            {children}
-          </div>
-        </Link>
-      );
-    }
+// --- SUB-COMPONENTS ---
+const NavLink: React.FC<NavLinkProps> = ({ href, children, onClick, mobile }) => {
+  if (mobile) {
     return (
-      <Link href={href} className="relative group py-2">
-        <span className={`text-gray-600 font-medium text-sm group-hover:text-[#006A58] transition-colors`}>
+      <Link href={href} onClick={onClick} className="block w-full">
+        <div className={`py-3 px-4 text-gray-600 hover:bg-[#006A58]/5 hover:text-[#006A58] font-medium transition-colors rounded-lg`}>
           {children}
-        </span>
-        <span className="absolute bottom-0 left-1/2 h-0.5 w-0 bg-[#006A58] transition-all duration-300 ease-out group-hover:w-full group-hover:left-0"></span>
+        </div>
       </Link>
     );
+  }
+  return (
+    <Link href={href} className="relative group py-2">
+      <span className={`text-gray-600 font-medium text-sm group-hover:text-[#006A58] transition-colors`}>
+        {children}
+      </span>
+      <span className="absolute bottom-0 left-1/2 h-0.5 w-0 bg-[#006A58] transition-all duration-300 ease-out group-hover:w-full group-hover:left-0"></span>
+    </Link>
+  );
+};
+
+// --- MAIN HEADER COMPONENT ---
+const Header = () => {
+  const router = useRouter();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // Auth States
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const [step, setStep] = useState<'role' | 'details' | 'otp'>('details');
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // OTP States (Dual Verification)
+  const [whatsappOtp, setWhatsappOtp] = useState(['', '', '', '']); // 4 Digits
+  const [emailOtp, setEmailOtp] = useState(['', '', '', '', '', '']); // 6 Digits
+  const whatsappRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const emailRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // Timer Ref for Signup Popup
+  const signupTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // User Data State
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // State for country code (backend-driven)
+  const [countryCode, setCountryCode] = useState('+91');
+  const [user, setUser] = useState({ 
+    firstName: '', 
+    lastName: '', 
+    email: '', 
+    mobile: '',
+    role: '' as 'buyer' | 'seller' | '' 
+  });
+
+  // Handle Scroll Effect
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // --- RESTORE SESSION ON MOUNT ---
+  useEffect(() => {
+    const savedUser = localStorage.getItem('gh_user');
+    if (savedUser) {
+      try {
+        const parsedUser = JSON.parse(savedUser);
+        if (parsedUser.isLoggedIn) {
+          setIsLoggedIn(true);
+          setUser({
+            firstName: parsedUser.firstName || '',
+            lastName: parsedUser.lastName || '',
+            email: parsedUser.email || '',
+            mobile: parsedUser.mobile || '',
+            role: parsedUser.role || ''
+          });
+        }
+      } catch (e) {
+        console.error("Failed to restore session", e);
+      }
+    }
+  }, []);
+
+
+  // --- PERSISTENT LOOP LOGIC (30s Timer) ---
+  useEffect(() => {
+    // If logged in, ensure any existing timer is cleared and do not start a new one
+    if (isLoggedIn) {
+      if (signupTimerRef.current) {
+        clearTimeout(signupTimerRef.current);
+        signupTimerRef.current = null;
+      }
+      return;
+    }
+
+    // Only start timer if not logged in and modal is closed
+    if (!isAuthOpen) {
+      signupTimerRef.current = setTimeout(() => {
+        openAuth('signup');
+      }, 30000); 
+    }
+
+    return () => {
+      if (signupTimerRef.current) {
+        clearTimeout(signupTimerRef.current);
+      }
+    };
+  }, [isLoggedIn, isAuthOpen]); 
+
+  const handleCloseLoop = () => {
+    setIsAuthOpen(false);
   };
 
-  // --- MAIN HEADER COMPONENT ---
-  const Header = () => {
-    const [isScrolled, setIsScrolled] = useState(false);
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // --- OTP LOGIC ---
+  const handleOtpChange = (index: number, value: string, type: 'whatsapp' | 'email') => {
+    if (isNaN(Number(value))) return;
     
-    // Auth States
-    const [isAuthOpen, setIsAuthOpen] = useState(false);
-    const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
-    const [step, setStep] = useState<'details' | 'otp'>('details');
-    const [isLoading, setIsLoading] = useState(false);
-    
-    // OTP State
-    const [otp, setOtp] = useState(['', '', '', '']);
-    const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-    // User Data State
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [user, setUser] = useState({ firstName: '', lastName: '', email: '', mobile: '' });
-
-    // Handle Scroll Effect
-    useEffect(() => {
-      const handleScroll = () => setIsScrolled(window.scrollY > 20);
-      window.addEventListener('scroll', handleScroll);
-      return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
-
-    // --- PERSISTENT LOOP LOGIC (30s Timer) ---
-    useEffect(() => {
-      let timer: NodeJS.Timeout;
-
-      // Run this logic only if they are NOT logged in AND the popup is currently CLOSED
-      if (!isLoggedIn && !isAuthOpen) {
-        timer = setTimeout(() => {
-          setAuthMode('signup');
-          setStep('details');
-          setIsAuthOpen(true);
-        }, 30000); // 30 Seconds Delay
-      }
-
-      return () => clearTimeout(timer);
-    }, [isLoggedIn, isAuthOpen]); // Dependencies ensure it restarts when auth closes
-
-    // Helper to close auth (which triggers the effect above to restart the timer)
-    const handleCloseLoop = () => {
-      setIsAuthOpen(false);
-    };
-
-
-    // --- OTP LOGIC ---
-    const handleOtpChange = (index: number, value: string) => {
-      if (isNaN(Number(value))) return;
-      const newOtp = [...otp];
+    if (type === 'whatsapp') {
+      const newOtp = [...whatsappOtp];
       newOtp[index] = value.substring(value.length - 1);
-      setOtp(newOtp);
-      if (value && index < 3 && otpInputRefs.current[index + 1]) {
-        otpInputRefs.current[index + 1]?.focus();
+      setWhatsappOtp(newOtp);
+      if (value && index < 3 && whatsappRefs.current[index + 1]) {
+        whatsappRefs.current[index + 1]?.focus();
       }
-    };
-
-    const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Backspace' && !otp[index] && index > 0 && otpInputRefs.current[index - 1]) {
-        otpInputRefs.current[index - 1]?.focus();
+    } else {
+      const newOtp = [...emailOtp];
+      newOtp[index] = value.substring(value.length - 1);
+      setEmailOtp(newOtp);
+      if (value && index < 5 && emailRefs.current[index + 1]) {
+        emailRefs.current[index + 1]?.focus();
       }
-    };
+    }
+  };
 
-    const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-      e.preventDefault();
-      const pastedData = e.clipboardData.getData('text').slice(0, 4).split('');
-      if (pastedData.every(char => !isNaN(Number(char)))) {
-        const newOtp = [...otp];
-        pastedData.forEach((val, i) => { if (i < 4) newOtp[i] = val; });
-        setOtp(newOtp);
-        const nextFocusIndex = Math.min(pastedData.length, 3);
-        otpInputRefs.current[nextFocusIndex]?.focus();
-      }
-    };
-
-    // --- BACKEND DEVELOPER ZONE ---
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>, type: 'whatsapp' | 'email') => {
+    const otpArr = type === 'whatsapp' ? whatsappOtp : emailOtp;
+    const refs = type === 'whatsapp' ? whatsappRefs : emailRefs;
     
-    const handleSendOtp = async (e: React.FormEvent) => {
-      e.preventDefault();
-      setIsLoading(true);
+    if (e.key === 'Backspace' && !otpArr[index] && index > 0 && refs.current[index - 1]) {
+      refs.current[index - 1]?.focus();
+    }
+  };
 
-      // TODO: [BACKEND] Add your API call here to send SMS
+  const handleSendOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // LOGIC-LEVEL MANDATORY VALIDATION
+    if (authMode === 'signup') {
+      if (!user.firstName.trim() || !user.lastName.trim() || !user.email.trim() || !user.mobile.trim()) {
+        return; 
+      }
+    } else {
+      if (!user.mobile.trim()) return;
+    }
+
+    setIsLoading(true);
+
+    // BACKEND-READY PAYLOAD PREPARATION
+    const fullPhoneNumber = `${countryCode}${user.mobile}`;
+    const payload = {
+      ...user,
+      fullPhone: fullPhoneNumber
+    };
+
+    // Backend simulation for Dual OTP (WhatsApp + Email)
+    setTimeout(() => {
+      setIsLoading(false);
+      setStep('otp');
+      setTimeout(() => whatsappRefs.current[0]?.focus(), 100);
+    }, 1000);
+  };
+
+  const handleVerifyOtp = async () => {
+    const isWaValid = whatsappOtp.join('').length === 4;
+    const isEmailValid = emailOtp.join('').length === 6;
+
+    // Login Flow only requires WhatsApp OTP
+    if (authMode === 'login') {
+      if (!isWaValid) return;
+    } else {
+      // Signup requires both
+      if (!isWaValid || !isEmailValid) return;
+    }
+    
+    setIsLoading(true);
+
+    // Backend simulation for Dual Verification
+    setTimeout(() => {
+      setIsLoading(false);
       
-      // Simulating API delay
-      setTimeout(() => {
-        setIsLoading(false);
-        setStep('otp');
-        setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
-      }, 1000);
-    };
+      const finalFirstName = (authMode === 'login' && !user.firstName) ? 'User' : user.firstName;
+      const updatedUser = { 
+        ...user, 
+        firstName: finalFirstName,
+        isLoggedIn: true 
+      };
 
-    const handleVerifyOtp = async () => {
-      if (otp.join('').length !== 4) return;
-      setIsLoading(true);
+      // Persist login state
+      localStorage.setItem('gh_user', JSON.stringify(updatedUser));
+      
+      setIsLoggedIn(true);
+      setUser(updatedUser);
+      setIsAuthOpen(false);
+      
+      // CRITICAL CHANGE: Redirect to agnostic /profile route
+      router.push('/profile');
+    }, 1000);
+  };
 
-      const enteredOtp = otp.join('');
-      // TODO: [BACKEND] Add your API call here to verify OTP
+  const handleLogout = () => {
+    localStorage.removeItem('gh_user');
+    setIsLoggedIn(false);
+    setUser({ firstName: '', lastName: '', email: '', mobile: '', role: '' });
+  };
 
-      // Simulating Success
-      setTimeout(() => {
-        setIsLoading(false);
-        setIsLoggedIn(true);
-        setIsAuthOpen(false); // This stops the loop because isLoggedIn becomes true
-        if (authMode === 'login' && !user.firstName) {
-          setUser(prev => ({ ...prev, firstName: 'User' }));
-        }
-      }, 1000);
-    };
+  const openAuth = (mode: 'login' | 'signup') => {
+    setAuthMode(mode);
+    setStep(mode === 'signup' ? 'role' : 'details');
+    setWhatsappOtp(['', '', '', '']);
+    setEmailOtp(['', '', '', '', '', '']);
+    setIsAuthOpen(true);
+    setIsMobileMenuOpen(false);
+  };
 
-    const handleLogout = () => {
-      setIsLoggedIn(false);
-      setUser({ firstName: '', lastName: '', email: '', mobile: '' });
-    };
+  return (
+    <>
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${isScrolled || isMobileMenuOpen ? 'bg-white/95 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-5 border-b border-transparent'}`}>
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <Link href="/" className="group flex items-center gap-2 flex-shrink-0 z-50">
+              <div className={`${BRAND_BG} p-1.5 rounded-lg text-white transition-transform group-hover:scale-110 duration-300`}>
+                <Home className="w-5 h-5" strokeWidth={2.5} />
+              </div>
+              <span className={`text-lg font-bold text-gray-800 tracking-tight group-hover:text-[#006A58] transition-colors`}>Gandhinagar<span className="text-[#006A58]">Homes</span></span>
+            </Link>
 
-    // --- RENDER ---
-    const openAuth = (mode: 'login' | 'signup') => {
-      setAuthMode(mode);
-      setStep('details');
-      setOtp(['', '', '', '']);
-      setIsAuthOpen(true);
-      setIsMobileMenuOpen(false);
-    };
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-8">
+              <nav className="flex items-center gap-8">
+                <NavLink href="/">Home</NavLink>
+                <NavLink href="/buy">Buy</NavLink>
+                <NavLink href="/sell">Sell</NavLink>
+                <NavLink href="/about">About Us</NavLink>
+                <NavLink href="/contact">Contact Us</NavLink>
+              </nav>
 
-    return (
-      <>
-        <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${isScrolled || isMobileMenuOpen ? 'bg-white/95 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-5 border-b border-transparent'}`}>
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between">
-              {/* Logo */}
-              <Link href="/" className="group flex items-center gap-2 flex-shrink-0 z-50">
-                <div className={`${BRAND_BG} p-1.5 rounded-lg text-white transition-transform group-hover:scale-110 duration-300`}>
-                  <Home className="w-5 h-5" strokeWidth={2.5} />
+              {!isLoggedIn ? (
+                <div className="flex items-center gap-4">
+                  <button onClick={() => openAuth('login')} className="text-gray-600 font-semibold text-sm hover:text-[#006A58] transition-colors">Log In</button>
+                  <button onClick={() => openAuth('signup')} className={`${BRAND_BG} ${BRAND_HOVER_BG} text-white px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-300 shadow-lg shadow-[#006A58]/20 hover:shadow-[#006A58]/40 active:scale-95 transform`}>Sign Up</button>
                 </div>
-                <span className={`text-lg font-bold text-gray-800 tracking-tight group-hover:text-[#006A58] transition-colors`}>Gandhinagar<span className="text-[#006A58]">Homes</span></span>
-              </Link>
-
-              {/* Desktop Navigation */}
-              <div className="hidden md:flex items-center gap-8">
-                <nav className="flex items-center gap-8">
-                  <NavLink href="/">Home</NavLink>
-                  <NavLink href="/buy">Buy</NavLink>
-                  <NavLink href="/sell">Sell</NavLink>
-                  <NavLink href="/about">About Us</NavLink>
-                  <NavLink href="/contact">Contact Us</NavLink>
-                </nav>
-
-                {!isLoggedIn ? (
-                  <div className="flex items-center gap-4">
-                    <button onClick={() => openAuth('login')} className="text-gray-600 font-semibold text-sm hover:text-[#006A58] transition-colors">Log In</button>
-                    <button onClick={() => openAuth('signup')} className={`${BRAND_BG} ${BRAND_HOVER_BG} text-white px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-300 shadow-lg shadow-[#006A58]/20 hover:shadow-[#006A58]/40 active:scale-95 transform`}>Sign Up</button>
+              ) : (
+                <div className="group relative cursor-pointer">
+                  <div className="flex items-center gap-2 py-1 px-2 rounded-full hover:bg-gray-100 transition-colors">
+                    <div className={`w-8 h-8 ${BRAND_BG} rounded-full flex items-center justify-center text-white font-bold text-sm`}>{user.firstName[0]?.toUpperCase() || 'U'}</div>
+                    <span className="text-sm font-semibold text-gray-700 max-w-[100px] truncate">{user.firstName}</span>
+                    <ChevronDown className="w-4 h-4 text-gray-500" />
                   </div>
-                ) : (
-                  <div className="group relative cursor-pointer">
-                    <div className="flex items-center gap-2 py-1 px-2 rounded-full hover:bg-gray-100 transition-colors">
-                      <div className={`w-8 h-8 ${BRAND_BG} rounded-full flex items-center justify-center text-white font-bold text-sm`}>{user.firstName[0]?.toUpperCase() || 'U'}</div>
-                      <span className="text-sm font-semibold text-gray-700 max-w-[100px] truncate">{user.firstName}</span>
-                      <ChevronDown className="w-4 h-4 text-gray-500" />
-                    </div>
-                    <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right">
-                      <div className="p-2">
-                        <Link href="/profile" className="flex items-center gap-2 w-full p-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg">
-                          <User className="w-4 h-4" /> My Profile
-                        </Link>
-                        <button onClick={handleLogout} className="flex items-center gap-2 w-full p-2 text-sm text-red-600 hover:bg-red-50 rounded-lg"><LogOut className="w-4 h-4" /> Logout</button>
-                      </div>
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right">
+                    <div className="p-2">
+                      <Link href="/profile" className="flex items-center gap-2 w-full p-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg">
+                        <User className="w-4 h-4" /> My Profile
+                      </Link>
+                      <button onClick={handleLogout} className="flex items-center gap-2 w-full p-2 text-sm text-red-600 hover:bg-red-50 rounded-lg"><LogOut className="w-4 h-4" /> Logout</button>
                     </div>
                   </div>
-                )}
-              </div>
-
-              {/* Mobile Menu Toggle */}
-              <button className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors z-50" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-                {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </button>
+                </div>
+              )}
             </div>
-          </div>
 
-          {/* Mobile Menu */}
-          <div className={`absolute top-full left-0 w-full bg-white border-t border-gray-100 shadow-lg md:hidden transition-all duration-300 ease-in-out overflow-hidden ${isMobileMenuOpen ? 'max-h-[30rem] opacity-100' : 'max-h-0 opacity-0'}`}>
-            <div className="flex flex-col p-4 space-y-1">
-              <NavLink mobile href="/" onClick={() => setIsMobileMenuOpen(false)}>Home</NavLink>
-              <NavLink mobile href="/buy" onClick={() => setIsMobileMenuOpen(false)}>Buy</NavLink>
-              <NavLink mobile href="/sell" onClick={() => setIsMobileMenuOpen(false)}>Sell</NavLink>
-              <NavLink mobile href="/about" onClick={() => setIsMobileMenuOpen(false)}>About Us</NavLink>
-              <NavLink mobile href="/contact" onClick={() => setIsMobileMenuOpen(false)}>Contact Us</NavLink>
-            </div>
+            {/* Mobile Menu Toggle */}
+            <button className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors z-50" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </div>
-        </header>
-        
-        <div className="h-20" /> 
+        </div>
 
-        {/* ======================= */}
-        {/* COMPACT AUTH MODAL      */}
-        {/* ======================= */}
-        {isAuthOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        {/* Mobile Menu */}
+        <div className={`absolute top-full left-0 w-full bg-white border-t border-gray-100 shadow-lg md:hidden transition-all duration-300 ease-in-out overflow-hidden ${isMobileMenuOpen ? 'max-h-[30rem] opacity-100' : 'max-h-0 opacity-0'}`}>
+          <div className="flex flex-col p-4 space-y-1">
+            <NavLink mobile href="/" onClick={() => setIsMobileMenuOpen(false)}>Home</NavLink>
+            <NavLink mobile href="/buy" onClick={() => setIsMobileMenuOpen(false)}>Buy</NavLink>
+            <NavLink mobile href="/sell" onClick={() => setIsMobileMenuOpen(false)}>Sell</NavLink>
+            <NavLink mobile href="/about" onClick={() => setIsMobileMenuOpen(false)}>About Us</NavLink>
+            <NavLink mobile href="/contact" onClick={() => setIsMobileMenuOpen(false)}>Contact Us</NavLink>
+          </div>
+        </div>
+      </header>
+      
+      <div className="h-20" /> 
+
+      {/* ======================= */}
+      {/* COMPACT AUTH MODAL      */}
+      {/* ======================= */}
+      {isAuthOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={handleCloseLoop} />
+          
+          <div className="relative bg-white w-full max-w-[400px] rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col">
             
-            {/* BACKDROP: 
-                Using handleCloseLoop here ensures if they click outside, 
-                the timer restarts.
-            */}
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={handleCloseLoop} />
-            
-            <div className="relative bg-white w-full max-w-[400px] rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col">
+            <div className={`${BRAND_BG} px-6 py-5 text-center relative shrink-0`}>
+              <button onClick={handleCloseLoop} className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors bg-white/10 p-1 rounded-full"><X className="w-4 h-4" /></button>
               
-              {/* Header: Compact Padding */}
-              <div className={`${BRAND_BG} px-6 py-5 text-center relative shrink-0`}>
-                
-                {/* CLOSE BUTTON:
-                    Using handleCloseLoop here ensures if they click X,
-                    the timer restarts.
-                */}
-                <button onClick={handleCloseLoop} className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors bg-white/10 p-1 rounded-full"><X className="w-4 h-4" /></button>
-                
-                <h2 className="text-xl font-bold text-white tracking-tight">{step === 'otp' ? 'Verify OTP' : (authMode === 'signup' ? 'Create Account' : 'Welcome Back')}</h2>
-                <p className="text-[#a3e0d5] text-xs mt-1 font-medium">{step === 'otp' ? `Code sent to +91 ${user.mobile}` : (authMode === 'signup' ? 'Join GandhinagarHomes' : 'Login to your account')}</p>
-              </div>
+              <h2 className="text-xl font-bold text-white tracking-tight">
+                  {authMode === 'signup' && step === 'role' ? 'Sign Up' : step === 'otp' ? (authMode === 'login' ? 'Verify WhatsApp OTP' : 'Dual Verification') : (authMode === 'signup' ? 'Create Account' : 'Welcome Back')}
+              </h2>
+              <p className="text-[#a3e0d5] text-xs mt-1 font-medium">
+                  {step === 'otp' ? (authMode === 'login' ? 'Enter the code sent to your WhatsApp' : 'Enter WhatsApp and Email codes') : (authMode === 'signup' ? 'Join GandhinagarHomes' : 'Login to your account')}
+              </p>
+            </div>
 
-              {/* Body: Compact Padding & Inputs */}
-              <div className="p-5">
-                {step === 'details' ? (
-                  <form onSubmit={handleSendOtp} className="space-y-3">
-                    {authMode === 'signup' && (
-                      <div className="grid grid-cols-2 gap-3 animate-in slide-in-from-top-2 duration-300">
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold text-gray-500 ml-1 uppercase tracking-wide">First Name</label>
-                          <input required type="text" className={`w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 ${BRAND_FOCUS_RING} focus:border-transparent transition-all text-sm`} value={user.firstName} onChange={(e) => setUser({...user, firstName: e.target.value})} />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-[10px] font-bold text-gray-500 ml-1 uppercase tracking-wide">Last Name</label>
-                          <input required type="text" className={`w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 ${BRAND_FOCUS_RING} focus:border-transparent transition-all text-sm`} value={user.lastName} onChange={(e) => setUser({...user, lastName: e.target.value})} />
-                        </div>
-                        <div className="col-span-2 space-y-1">
-                          <label className="text-[10px] font-bold text-gray-500 ml-1 uppercase tracking-wide">Email Address</label>
-                          <input required type="email" className={`w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 ${BRAND_FOCUS_RING} focus:border-transparent transition-all text-sm`} value={user.email} onChange={(e) => setUser({...user, email: e.target.value})} />
-                        </div>
+            <div className="p-5">
+              {/* ROLE SELECTION STEP */}
+              {authMode === 'signup' && step === 'role' && (
+                  <div className="flex flex-col gap-3 py-4 animate-in slide-in-from-bottom-2 duration-300">
+                      <button 
+                          onClick={() => { setUser({...user, role: 'buyer'}); setStep('details'); }}
+                          className={`w-full py-4 px-6 rounded-full font-bold text-white ${BRAND_BG} ${BRAND_HOVER_BG} transition-all shadow-md active:scale-95 flex items-center justify-between`}
+                      >
+                          Sign up as Buyer <ArrowRight className="w-4 h-4" />
+                      </button>
+                      <button 
+                          onClick={() => { setUser({...user, role: 'seller'}); setStep('details'); }}
+                          className={`w-full py-4 px-6 rounded-full font-bold text-white ${BRAND_BG} ${BRAND_HOVER_BG} transition-all shadow-md active:scale-95 flex items-center justify-between`}
+                      >
+                          Sign up as Seller <ArrowRight className="w-4 h-4" />
+                      </button>
+                      <div className="text-center pt-2">
+                          <p className="text-xs text-gray-500 font-medium">Joined already? <button type="button" onClick={() => openAuth('login')} className={`font-bold ${BRAND_COLOR} hover:underline`}>Log In</button></p>
                       </div>
-                    )}
+                  </div>
+              )}
 
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-gray-500 ml-1 uppercase tracking-wide">Mobile Number</label>
-                      <div className="relative group">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span className="text-gray-500 font-bold text-sm">+91</span><div className="h-4 w-px bg-gray-300 mx-2"></div></div>
-                        <input required type="tel" maxLength={10} pattern="[0-9]{10}" className={`w-full pl-16 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 ${BRAND_FOCUS_RING} focus:border-transparent transition-all font-semibold text-gray-800 tracking-wide text-sm`} value={user.mobile} onChange={(e) => setUser({...user, mobile: e.target.value.replace(/\D/g,'')})} />
+              {/* DETAILS STEP */}
+              {step === 'details' && (
+                <form onSubmit={handleSendOtp} className="space-y-3">
+                  {authMode === 'signup' && (
+                    <div className="grid grid-cols-2 gap-3 animate-in slide-in-from-top-2 duration-300">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-500 ml-1 uppercase tracking-wide">First Name</label>
+                        <input required type="text" className={`w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 ${BRAND_FOCUS_RING} focus:border-transparent transition-all text-sm`} value={user.firstName} onChange={(e) => setUser({...user, firstName: e.target.value})} />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-500 ml-1 uppercase tracking-wide">Last Name</label>
+                        <input required type="text" className={`w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 ${BRAND_FOCUS_RING} focus:border-transparent transition-all text-sm`} value={user.lastName} onChange={(e) => setUser({...user, lastName: e.target.value})} />
+                      </div>
+                      <div className="col-span-2 space-y-1">
+                        <label className="text-[10px] font-bold text-gray-500 ml-1 uppercase tracking-wide">Email Address</label>
+                        <input required type="email" className={`w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 ${BRAND_FOCUS_RING} focus:border-transparent transition-all text-sm`} value={user.email} onChange={(e) => setUser({...user, email: e.target.value})} />
                       </div>
                     </div>
+                  )}
 
-                    <button type="submit" disabled={isLoading || user.mobile.length < 10} className={`w-full ${BRAND_BG} ${BRAND_HOVER_BG} text-white font-bold py-2.5 rounded-lg shadow-md shadow-[#006A58]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed mt-2 active:scale-[0.98] text-sm`}>
-                      {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (authMode === 'signup' ? 'Get OTP' : 'Get Login OTP')} <ArrowRight className="w-4 h-4" />
-                    </button>
-
-                    <div className="text-center pt-1">
-                      <p className="text-xs text-gray-500">{authMode === 'login' ? "New here? " : "Joined already? "} <button type="button" onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')} className={`font-bold ${BRAND_COLOR} hover:underline`}>{authMode === 'login' ? 'Create Account' : 'Log In'}</button></p>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-500 ml-1 uppercase tracking-wide">WhatsApp Number</label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span className="text-gray-500 font-bold text-sm">{countryCode}</span><div className="h-4 w-px bg-gray-300 mx-2"></div></div>
+                      <input required type="tel" maxLength={10} pattern="[0-9]{10}" className={`w-full pl-16 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 ${BRAND_FOCUS_RING} focus:border-transparent transition-all font-semibold text-gray-800 tracking-wide text-sm`} value={user.mobile} onChange={(e) => setUser({...user, mobile: e.target.value.replace(/\D/g,'')})} />
                     </div>
-                  </form>
-                ) : (
-                  <div className="flex flex-col items-center space-y-6 animate-in slide-in-from-right-8 duration-300 pb-2">
-                    <div className="flex gap-3 w-full justify-center">
-                      {otp.map((digit, i) => (
-                        <input
-                          key={i}
-                          ref={(el) => { otpInputRefs.current[i] = el }}
+                  </div>
+
+                  <button type="submit" disabled={isLoading || user.mobile.length < 10} className={`w-full ${BRAND_BG} ${BRAND_HOVER_BG} text-white font-bold py-2.5 rounded-lg shadow-md shadow-[#006A58]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed mt-2 active:scale-[0.98] text-sm`}>
+                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (authMode === 'signup' ? 'Get Verification Codes' : 'Get Login OTP')} <ArrowRight className="w-4 h-4" />
+                  </button>
+
+                  <div className="text-center pt-1">
+                    <p className="text-xs text-gray-500">{authMode === 'login' ? "New here? " : "Joined already? "} <button type="button" onClick={() => openAuth(authMode === 'login' ? 'signup' : 'login')} className={`font-bold ${BRAND_COLOR} hover:underline`}>{authMode === 'login' ? 'Create Account' : 'Log In'}</button></p>
+                  </div>
+                </form>
+              )}
+
+              {/* OTP STEP */}
+              {step === 'otp' && (
+                <div className="flex flex-col items-center space-y-6 animate-in slide-in-from-right-8 duration-300 pb-2">
+                  {/* WhatsApp OTP Row */}
+                  <div className="w-full space-y-2">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase text-center block tracking-widest">WhatsApp OTP (4 Digits)</label>
+                      <div className="flex gap-2 w-full justify-center">
+                      {whatsappOtp.map((digit, i) => (
+                          <input
+                          key={`wa-${i}`}
+                          ref={(el) => { whatsappRefs.current[i] = el }}
                           type="text"
                           maxLength={1}
                           value={digit}
-                          onChange={(e) => handleOtpChange(i, e.target.value)}
-                          onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                          onPaste={handlePaste}
-                          className={`w-12 h-14 text-center text-2xl font-bold bg-white border rounded-lg focus:outline-none focus:scale-105 transition-all caret-[#006A58] ${digit ? `border-[#006A58] text-[#006A58]` : 'border-gray-200 text-gray-800'} focus:border-[#006A58] focus:ring-2 focus:ring-[#006A58]/10 shadow-sm`}
-                        />
+                          onChange={(e) => handleOtpChange(i, e.target.value, 'whatsapp')}
+                          onKeyDown={(e) => handleOtpKeyDown(i, e, 'whatsapp')}
+                          className={`w-10 h-12 text-center text-xl font-bold bg-white border rounded-lg focus:outline-none focus:scale-105 transition-all caret-[#006A58] ${digit ? `border-[#006A58] text-[#006A58]` : 'border-gray-200 text-gray-800'} focus:border-[#006A58] focus:ring-2 focus:ring-[#006A58]/10 shadow-sm`}
+                          />
                       ))}
-                    </div>
-                    
-                    <button onClick={handleVerifyOtp} disabled={isLoading || otp.join('').length < 4} className={`w-full ${BRAND_BG} ${BRAND_HOVER_BG} text-white font-bold py-2.5 rounded-lg shadow-md shadow-[#006A58]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm`}>
-                      {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify & Continue'}
-                    </button>
-
-                    <div className="flex flex-col items-center gap-1 w-full text-xs">
-                      <p className="text-gray-500">Didn't receive code? <button className="font-semibold text-gray-800 hover:text-[#006A58]">Resend</button></p>
-                      <button onClick={() => { setStep('details'); setIsLoading(false); }} className="text-gray-400 hover:text-gray-600 transition-colors">Change Number</button>
-                    </div>
+                      </div>
                   </div>
-                )}
-              </div>
+
+                  {/* Email OTP Row - Only show if not Login */}
+                  {authMode === 'signup' && (
+                    <div className="w-full space-y-2">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase text-center block tracking-widest">Email OTP (6 Digits)</label>
+                        <div className="flex gap-2 w-full justify-center">
+                        {emailOtp.map((digit, i) => (
+                            <input
+                            key={`em-${i}`}
+                            ref={(el) => { emailRefs.current[i] = el }}
+                            type="text"
+                            maxLength={1}
+                            value={digit}
+                            onChange={(e) => handleOtpChange(i, e.target.value, 'email')}
+                            onKeyDown={(e) => handleOtpKeyDown(i, e, 'email')}
+                            className={`w-9 h-11 text-center text-lg font-bold bg-white border rounded-lg focus:outline-none focus:scale-105 transition-all caret-[#006A58] ${digit ? `border-[#006A58] text-[#006A58]` : 'border-gray-200 text-gray-800'} focus:border-[#006A58] focus:ring-2 focus:ring-[#006A58]/10 shadow-sm`}
+                            />
+                        ))}
+                        </div>
+                    </div>
+                  )}
+                  
+                  <button onClick={handleVerifyOtp} disabled={isLoading || whatsappOtp.join('').length < 4 || (authMode === 'signup' && emailOtp.join('').length < 6)} className={`w-full ${BRAND_BG} ${BRAND_HOVER_BG} text-white font-bold py-2.5 rounded-lg shadow-md shadow-[#006A58]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm`}>
+                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (authMode === 'login' ? 'Verify WhatsApp OTP' : 'Verify Email & WhatsApp OTP')}
+                  </button>
+
+                  <div className="flex flex-col items-center gap-1 w-full text-xs">
+                    <p className="text-gray-500">Problems? <button onClick={() => { setStep('details'); setIsLoading(false); }} className="font-semibold text-gray-800 hover:text-[#006A58]">Change Details</button></p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        )}
-      </>
-    );
-  };
+        </div>
+      )}
+    </>
+  );
+};
 
-  export default Header;
+export default Header;

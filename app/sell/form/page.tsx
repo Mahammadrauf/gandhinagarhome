@@ -104,8 +104,9 @@ function SellFormPageContent() {
   const [middleName, setMiddleName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [mobile, setMobile] = useState("");
-  const [alternateNumber, setAlternateNumber] = useState("");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [mobileNumber, setMobileNumber] = useState("");
+  const [countryCode, setCountryCode] = useState("+91");
 
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
@@ -190,8 +191,9 @@ useEffect(() => {
   setMiddleName(d.middleName || "");
   setLastName(d.lastName || "");
   setEmail(d.email || "");
-  setMobile(d.mobile || "");
-  setAlternateNumber(d.alternateNumber || "");
+  setWhatsappNumber(d.whatsappNumber || "");
+  setMobileNumber(d.mobileNumber || "");
+  setCountryCode(d.countryCode || "+91");
 
   setTitle(d.title || "");
   setBedrooms(d.bedrooms || "");
@@ -225,8 +227,8 @@ useEffect(() => {
   const isFirstNameValid = firstName.trim().length >= 2;
   const isLastNameValid = lastName.trim().length >= 2;
   const isEmailValid = validateEmail(email);
-  const isMobileValid = mobile.length === 10;
-  const canContinueStep1 = isFirstNameValid && isLastNameValid && isEmailValid && (isEditMode ? true : (isMobileValid && isOtpVerified));
+  const isWhatsappValid = whatsappNumber.length === 10;
+  const canContinueStep1 = isFirstNameValid && isLastNameValid && isEmailValid && (isEditMode ? true : (isWhatsappValid && isOtpVerified));
 
   // Step 2 Validation
   const isTitleValid = title.trim().length >= 3;
@@ -266,7 +268,7 @@ useEffect(() => {
   const amenitySuggestions = ["Lift", "Security", "Garden", "Gym", "Swimming Pool", "Clubhouse", "Parking"];
   const propertySizeUnitOptions: Array<"sq ft" | "sq m" | "sq yd"> = ["sq ft", "sq m", "sq yd"];
 
- const handlePriceInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePriceInput = (e: React.ChangeEvent<HTMLInputElement>) => {
   const value = e.target.value.replace(/\D/g, ""); // Remove non-digits
   if (value === "") {
     setPrice("");
@@ -305,7 +307,7 @@ useEffect(() => {
     setSaving(true);
     const numericPrice = parseFloat(price.replace(/,/g, ''));
     const payload = {
-      firstName, middleName, lastName, email, mobile, alternateNumber,
+      firstName, middleName, lastName, email, whatsappNumber, mobileNumber, countryCode,
       title,
       bedrooms,
       propertyType,
@@ -336,7 +338,7 @@ useEffect(() => {
   const buildPayload = () => {
   const numericPrice = parseFloat(price.replace(/,/g, ""));
   return {
-    firstName, middleName, lastName, email, mobile, alternateNumber,
+    firstName, middleName, lastName, email, whatsappNumber, mobileNumber, countryCode,
     title, bedrooms, propertyType, bathrooms, balcony, parking,
     ageOfProperty, furnishing,
     price: numericPrice,
@@ -370,7 +372,7 @@ const handleEditMediaSubmit = () => {
   if (!canContinueStep1) {
     setStep(0);
     setTriedContinue(true);
-    alert("Please complete Basic Information and verify your mobile number.");
+    alert("Please complete Basic Information and verify your WhatsApp number.");
     return;
   }
   if (!canContinueStep2) {
@@ -397,8 +399,9 @@ const handleEditMediaSubmit = () => {
     formData.append('middleName', middleName);
     formData.append('lastName', lastName);
     formData.append('email', email);
-    formData.append('mobile', mobile);
-    formData.append('alternateNumber', alternateNumber);
+    formData.append('whatsappNumber', whatsappNumber);
+    formData.append('mobileNumber', mobileNumber);
+    formData.append('countryCode', countryCode);
     formData.append('title', title);
     formData.append('bedrooms', bedrooms);
     formData.append('propertyType', propertyType);
@@ -516,7 +519,7 @@ const handleEditMediaSubmit = () => {
     setTriedContinue(true);
     if (!canContinueStep1) {
       if (!isEditMode && !isOtpVerified) {
-        alert("Please verify your mobile number to continue.");
+        alert("Please verify your WhatsApp number to continue.");
       }
       return;
     }
@@ -567,15 +570,15 @@ const handleEditMediaSubmit = () => {
   // --- OTP Functions ---
   const handleSendOtp = async () => {
     setTriedContinue(true);
-    if (!isMobileValid) return;
+    if (!isWhatsappValid) return;
 
     setIsSendingOtp(true);
     await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log("Sending OTP to", mobile);
+    console.log("Sending OTP to WhatsApp", whatsappNumber);
 
     setIsSendingOtp(false);
     setOtpSent(true);
-    alert("OTP Sent to your mobile number (use 1234 to verify)");
+    alert("OTP Sent to your WhatsApp number (use 1234 to verify)");
   };
 
   const handleVerifyOtp = async () => {
@@ -586,7 +589,7 @@ const handleEditMediaSubmit = () => {
     if (otp === "1234") {
       setIsVerifying(false);
       setIsOtpVerified(true);
-      alert("Mobile number verified successfully!");
+      alert("WhatsApp number verified successfully!");
     } else {
       setIsVerifying(false);
       alert("Invalid OTP. Please try again.");
@@ -732,10 +735,10 @@ const handleEditMediaSubmit = () => {
                         {triedContinue && !isEmailValid && <div className="text-xs text-red-600 mt-2">Enter a valid email address.</div>}
                       </div>
                       <div>
-                        <label className={fieldLabel}>Whatsapp Number</label>
+                        <label className={fieldLabel}>Mobile Number</label>
                         <input
-                          value={alternateNumber}
-                          onChange={(e) => setAlternateNumber(e.target.value)}
+                          value={mobileNumber}
+                          onChange={(e) => setMobileNumber(e.target.value)}
                           placeholder="Optional"
                           className={inputNormal}
                         />
@@ -747,29 +750,29 @@ const handleEditMediaSubmit = () => {
                       <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <label className={fieldLabel}>Mobile Number <span className="text-[#0b6b53]">*</span></label>
+                            <label className={fieldLabel}>WhatsApp Number <span className="text-[#0b6b53]">*</span></label>
                             <div className="flex gap-2">
-                              <div className="flex items-center justify-center h-12 px-4 rounded-xl border border-gray-100 bg-gray-100 text-gray-700 font-semibold">+91</div>
+                              <div className="flex items-center justify-center h-12 px-4 rounded-xl border border-gray-100 bg-gray-100 text-gray-700 font-semibold">{countryCode}</div>
                               <input
-                                value={mobile}
+                                value={whatsappNumber}
                                 onChange={(e) => {
                                   const value = e.target.value.replace(/\D/g, '').slice(0, 10);
-                                  setMobile(value);
+                                  setWhatsappNumber(value);
                                 }}
                                 placeholder="9XXXXXXXXX"
-                                className={`${triedContinue && !isMobileValid ? inputError : inputNormal} flex-1`}
+                                className={`${triedContinue && !isWhatsappValid ? inputError : inputNormal} flex-1`}
                                 disabled={otpSent || isEditMode}
                                 maxLength={10}
                               />
                               <button
                                 onClick={handleSendOtp}
-                                disabled={!isMobileValid || otpSent || isSendingOtp}
-                                className={`h-12 px-4 rounded-lg font-semibold text-sm ${(!isMobileValid || otpSent) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-[#0b6b53] text-white hover:bg-[#0b6b53]'}`}
+                                disabled={!isWhatsappValid || otpSent || isSendingOtp}
+                                className={`h-12 px-4 rounded-lg font-semibold text-sm ${(!isWhatsappValid || otpSent) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-[#0b6b53] text-white hover:bg-[#0b6b53]'}`}
                               >
                                 {isSendingOtp ? "Sending..." : (otpSent ? "Sent" : "Send OTP")}
                               </button>
                             </div>
-                            {triedContinue && !isMobileValid && <div className="text-xs text-red-600 mt-2">Enter a valid 10-digit number.</div>}
+                            {triedContinue && !isWhatsappValid && <div className="text-xs text-red-600 mt-2">Enter a valid 10-digit number.</div>}
                           </div>
 
                           {otpSent && !isOtpVerified && (
@@ -795,7 +798,7 @@ const handleEditMediaSubmit = () => {
 
                           {isOtpVerified && (
                              <div className="flex items-center justify-center h-12 bg-green-100 text-green-700 font-semibold rounded-lg">
-                               ✓ Mobile Verified
+                               ✓ WhatsApp Verified
                              </div>
                           )}
                         </div>
@@ -1256,48 +1259,48 @@ const handleEditMediaSubmit = () => {
 
                   {/* Row 5: Amenities */}
                    <div className={cardWrapper + " grid grid-cols-1"}>
-                      <div>
-                        <label className={fieldLabel}>Amenities</label>
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {amenities.map((amenity, index) => (
-                            <div key={index} className="inline-flex items-center gap-2 bg-gray-100 text-gray-800 text-sm font-medium px-3 py-1.5 rounded-full">
-                              <span>{amenity}</span>
-                              <button
-                                type="button"
-                                onClick={() => removeAmenity(index)}
-                                className="bg-gray-300 text-gray-600 rounded-full w-4 h-4 flex items-center justify-center text-xs hover:bg-gray-400"
-                              >
-                                &times;
-                              </button>
-                            </div>
-                          ))}
-                        </div>
+                     <div>
+                       <label className={fieldLabel}>Amenities</label>
+                       <div className="flex flex-wrap gap-2 mb-4">
+                         {amenities.map((amenity, index) => (
+                           <div key={index} className="inline-flex items-center gap-2 bg-gray-100 text-gray-800 text-sm font-medium px-3 py-1.5 rounded-full">
+                             <span>{amenity}</span>
+                             <button
+                               type="button"
+                               onClick={() => removeAmenity(index)}
+                               className="bg-gray-300 text-gray-600 rounded-full w-4 h-4 flex items-center justify-center text-xs hover:bg-gray-400"
+                             >
+                               &times;
+                             </button>
+                           </div>
+                         ))}
+                       </div>
 
-                        <input
-                          value={currentAmenity}
-                          onChange={(e) => setCurrentAmenity(e.target.value)}
-                          onKeyDown={handleAmenityKeyDown}
-                          placeholder="Type an amenity and press Enter..."
-                          className={inputNormal}
-                        />
+                       <input
+                         value={currentAmenity}
+                         onChange={(e) => setCurrentAmenity(e.target.value)}
+                         onKeyDown={handleAmenityKeyDown}
+                         placeholder="Type an amenity and press Enter..."
+                         className={inputNormal}
+                       />
 
-                        <div className="mt-4">
-                          <p className="text-xs text-gray-600 mb-2">Suggestions:</p>
-                          <div className="flex flex-wrap gap-2">
-                            {amenitySuggestions.map((suggestion) => (
-                              <button
-                                type="button"
-                                key={suggestion}
-                                onClick={() => addAmenity(suggestion)}
-                                className="inline-flex bg-white border border-gray-200 text-gray-700 text-sm px-3 py-1.5 rounded-full cursor-pointer hover:bg-gray-50 disabled:opacity-50"
-                                disabled={amenities.includes(suggestion)}
-                              >
-                                + {suggestion}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
+                       <div className="mt-4">
+                         <p className="text-xs text-gray-600 mb-2">Suggestions:</p>
+                         <div className="flex flex-wrap gap-2">
+                           {amenitySuggestions.map((suggestion) => (
+                             <button
+                               type="button"
+                               key={suggestion}
+                               onClick={() => addAmenity(suggestion)}
+                               className="inline-flex bg-white border border-gray-200 text-gray-700 text-sm px-3 py-1.5 rounded-full cursor-pointer hover:bg-gray-50 disabled:opacity-50"
+                               disabled={amenities.includes(suggestion)}
+                             >
+                               + {suggestion}
+                             </button>
+                           ))}
+                         </div>
+                       </div>
+                     </div>
                    </div>
 
                   {/* Row 6: Footer */}
@@ -1603,7 +1606,7 @@ Can’t find your area? Select the nearest major locality.            </p>
                     <p className="text-sm text-gray-500 mb-4">
                       A video tour can also be added now or later.
                     </p>
-                    <div className="h-24 rounded-lg border-2 border-dashed border-gray-200 flex items-center gap-4 px-6">
+                    <div className="h-24 rounded-lg border-2 border-dashed border-gray-200 bg-white flex items-center gap-4 px-6">
                       {video ? (
                         <div className="flex items-center gap-4 w-full">
                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#0b6b53]"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
@@ -1640,7 +1643,7 @@ Can’t find your area? Select the nearest major locality.            </p>
                     <p className="text-sm text-gray-500 mb-4">
                       Uploading a sale deed or index copy helps buyers verify ownership and adds trust to your listing.
                     </p>
-                    <div className="h-24 rounded-lg border-2 border-dashed border-gray-200 flex items-center gap-4 px-6">
+                    <div className="h-24 rounded-lg border-2 border-dashed border-gray-200 bg-white flex items-center gap-4 px-6">
                       {saleDeed ? (
                         <div className="flex items-center gap-4 w-full">
                           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#0b6b53]">
@@ -1696,7 +1699,7 @@ Can’t find your area? Select the nearest major locality.            </p>
                     <p className="text-sm text-gray-500 mb-4">
                       Share your project or property brochure so buyers can see detailed plans, layouts and highlights.
                     </p>
-                    <div className="h-24 rounded-lg border-2 border-dashed border-gray-200 flex items-center gap-4 px-6">
+                    <div className="h-24 rounded-lg border-2 border-dashed border-gray-200 bg-white flex items-center gap-4 px-6">
                       {brochure ? (
                         <div className="flex items-center gap-4 w-full">
                           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#0b6b53]">
@@ -1796,4 +1799,3 @@ export default function SellFormPage() {
     </Suspense>
   );
 }
-

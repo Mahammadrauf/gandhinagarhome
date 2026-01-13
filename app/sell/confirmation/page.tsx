@@ -13,7 +13,7 @@ import {
   FileText,
   CreditCard,
   AlertCircle,
-  RotateCcw // Added an icon for Start Over
+  RotateCcw 
 } from "lucide-react";
 
 // Utility functions
@@ -55,7 +55,7 @@ export default function ConfirmationPage() {
     setSubmitting(true);
     setTimeout(() => {
       localStorage.removeItem("pendingListing");
-      router.replace("/sell/subscription"); 
+      router.push("/sell/subscription"); 
     }, 2000);
   };
 
@@ -169,12 +169,12 @@ export default function ConfirmationPage() {
                 <InfoBlock label="First Name" value={listing.firstName} />
                 <InfoBlock label="Middle Name" value={listing.middleName} />
                 <InfoBlock label="Last Name" value={listing.lastName} />
-                <InfoBlock label="Primary Mobile" value={listing.mobile ? `+91 ${listing.mobile}` : ""} />
+                <InfoBlock label="WhatsApp Number" value={listing.whatsappNumber ? `${listing.countryCode} ${listing.whatsappNumber}` : ""} />
                 
                 {/* Email spans 2 columns */}
                 <InfoBlock label="Email" value={listing.email} className="col-span-1 md:col-span-2" />
                 
-                <InfoBlock label="Whatsapp" value={listing.alternateNumber} />
+                <InfoBlock label="Mobile Number" value={listing.mobileNumber ? `${listing.countryCode} ${listing.mobileNumber}` : ""} />
                 
                 {/* Verification Badge - Compact */}
                 <div className="col-span-1 flex flex-col gap-1.5 w-full">
@@ -210,7 +210,7 @@ export default function ConfirmationPage() {
                 <InfoBlock label="Property Age" value={listing.ageOfProperty} />
                 <InfoBlock label="Furnishing" value={listing.furnishing} />
                 <InfoBlock 
-                    label="Asking Price" 
+                    label="Asking Price - All-inclusive(Excl.Stamp Duty)" 
                     value={listing.price ? formatPrice(listing.price.toString()) : ""} 
                     className="col-span-2" // Spanning 2 cols fills the row perfectly
                 />
@@ -277,7 +277,6 @@ export default function ConfirmationPage() {
             {/* MOVED & STYLED: Start Over Button */}
             <button
                 onClick={handleStartOver}
-                // w-fit makes it shorter, bg-[#0b6b53] is theme color, text-white
                 className="w-fit px-8 h-12 rounded-2xl bg-[#0b6b53] text-white font-bold hover:bg-[#085341] transition-all shadow-md shadow-[#0b6b53]/20 flex items-center justify-center gap-2"
             >
                 <RotateCcw size={16} /> Start Over
@@ -308,7 +307,7 @@ export default function ConfirmationPage() {
 
                 <div className="mt-6 pt-4 border-t border-[#0b6b53]/10 flex justify-between items-end relative z-10">
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-gray-400 uppercase">Total Valuation</span>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase">Total Valuation - All-inclusive(Excl.Stamp Duty)</span>
                     <span className="text-2xl font-black text-[#0b6b53]">
                         {formatPrice(listing.price?.toString() || "0")}
                     </span>
@@ -317,7 +316,6 @@ export default function ConfirmationPage() {
               </div>
 
               <div className="space-y-4">
-                {/* Start Over Button REMOVED from here */}
                 
                 {/* CTA BUTTON */}
                 <button
