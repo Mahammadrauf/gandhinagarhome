@@ -53,10 +53,7 @@ export default function ConfirmationPage() {
   const handleConfirmSubmit = async () => {
     if (!listing) return;
     setSubmitting(true);
-    setTimeout(() => {
-      localStorage.removeItem("pendingListing");
-      router.push("/sell/subscription"); 
-    }, 2000);
+    router.push("/sell/subscription"); 
   };
 
   const handleStartOver = () => {

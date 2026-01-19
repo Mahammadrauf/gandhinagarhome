@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState, useRef, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import MapComponent from "@/components/MapComponent";
@@ -9,6 +10,7 @@ import {
   MapPin, Clock, Car, Calendar, Map as MapIcon, 
   ShieldCheck, X, List, Plus, Minus, ArrowLeft, Filter 
 } from "lucide-react";
+import { fetchAndTransformBuyPageProperties, BuyPageProperty } from "@/lib/buyPageApi";
 
 // --- TYPES ---
 type Tier = "exclusive" | "featured" | "regular";
@@ -32,6 +34,7 @@ type SortOption =
 
 interface Listing {
   id: number;
+  propertyId?: string;
   tier: Tier;
   source: "owner" | "partner" | "builder";
   title: string;
@@ -83,6 +86,7 @@ const ALL_LISTINGS: Listing[] = [
   // === 6 EXCLUSIVE PROPERTIES ===
   {
     id: 101,
+    propertyId: "101",
     tier: "exclusive",
     source: "owner",
     title: "Raysan Luxury Villa • Corner Plot",
@@ -107,6 +111,7 @@ const ALL_LISTINGS: Listing[] = [
   },
   {
     id: 102,
+    propertyId: "102",
     tier: "exclusive",
     source: "owner",
     title: "Adalaj Green Farmhouse",
@@ -130,6 +135,7 @@ const ALL_LISTINGS: Listing[] = [
   },
   {
     id: 103,
+    propertyId: "103",
     tier: "exclusive",
     source: "partner",
     title: "Gift City Penthouse • Sky View",
@@ -153,6 +159,7 @@ const ALL_LISTINGS: Listing[] = [
   },
   {
     id: 104,
+    propertyId: "104",
     tier: "exclusive",
     source: "owner",
     title: "Sargasan Royal Bungalow",
@@ -176,6 +183,7 @@ const ALL_LISTINGS: Listing[] = [
   },
   {
     id: 105,
+    propertyId: "105",
     tier: "exclusive",
     source: "builder", 
     title: "Ambli-Bopal Luxury Apartment",
@@ -199,6 +207,7 @@ const ALL_LISTINGS: Listing[] = [
   },
   {
     id: 106,
+    propertyId: "106",
     tier: "exclusive",
     source: "owner",
     title: "Koba Circle Villa Estate",
@@ -224,6 +233,7 @@ const ALL_LISTINGS: Listing[] = [
   // === 12 FEATURED PROPERTIES ===
   {
     id: 201,
+    propertyId: "201",
     tier: "featured",
     source: "partner",
     title: "Kudasan High-Rise • Club Access",
@@ -247,6 +257,7 @@ const ALL_LISTINGS: Listing[] = [
   },
   {
     id: 202,
+    propertyId: "202",
     tier: "featured",
     source: "owner",
     title: "Motera Sports Enclave • 2BHK",
@@ -270,6 +281,7 @@ const ALL_LISTINGS: Listing[] = [
   },
   {
     id: 203,
+    propertyId: "203",
     tier: "featured",
     source: "owner",
     title: "Zundal Elegant Tenement",
@@ -293,6 +305,7 @@ const ALL_LISTINGS: Listing[] = [
   },
   {
     id: 204,
+    propertyId: "204",
     tier: "featured",
     source: "partner",
     title: "Sargasan Terrace Apartment",
@@ -316,6 +329,7 @@ const ALL_LISTINGS: Listing[] = [
   },
   {
     id: 205,
+    propertyId: "205",
     tier: "featured",
     source: "owner",
     title: "Randesan Garden Villa",
@@ -339,6 +353,7 @@ const ALL_LISTINGS: Listing[] = [
   },
   {
     id: 206,
+    propertyId: "206",
     tier: "featured",
     source: "partner",
     title: "Bhat Riverfront Home",
@@ -362,6 +377,7 @@ const ALL_LISTINGS: Listing[] = [
   },
   {
     id: 207,
+    propertyId: "207",
     tier: "featured",
     source: "partner",
     title: "Chandkheda Commercial Plot",
@@ -385,6 +401,7 @@ const ALL_LISTINGS: Listing[] = [
   },
   {
     id: 208,
+    propertyId: "208",
     tier: "featured",
     source: "owner",
     title: "Sector 6 Corner House",
@@ -408,6 +425,7 @@ const ALL_LISTINGS: Listing[] = [
   },
   {
     id: 209,
+    propertyId: "209",
     tier: "featured",
     source: "partner",
     title: "Koba IT Park Apartment",
@@ -431,6 +449,7 @@ const ALL_LISTINGS: Listing[] = [
   },
   {
     id: 210,
+    propertyId: "210",
     tier: "featured",
     source: "owner",
     title: "Adalaj Weekend Home",
@@ -454,6 +473,7 @@ const ALL_LISTINGS: Listing[] = [
   },
   {
     id: 211,
+    propertyId: "211",
     tier: "featured",
     source: "partner",
     title: "Raysan Smart Home 3BHK",
@@ -477,6 +497,7 @@ const ALL_LISTINGS: Listing[] = [
   },
   {
     id: 212,
+    propertyId: "212",
     tier: "featured",
     source: "builder",
     title: "Gift City Office Space",
@@ -502,6 +523,7 @@ const ALL_LISTINGS: Listing[] = [
   // === REGULAR PROPERTIES ===
   {
     id: 301,
+    propertyId: "301",
     tier: "regular",
     source: "owner",
     title: "Sector 21 Apartment • Park Facing",
@@ -525,6 +547,7 @@ const ALL_LISTINGS: Listing[] = [
   },
   {
     id: 302,
+    propertyId: "302",
     tier: "regular",
     source: "partner",
     title: "Kudasan Cozy 3BHK • Renovated",
@@ -548,6 +571,7 @@ const ALL_LISTINGS: Listing[] = [
   },
   {
     id: 303,
+    propertyId: "303",
     tier: "regular",
     source: "owner",
     title: "Randesan Premium 3BHK • Garden View",
@@ -571,6 +595,7 @@ const ALL_LISTINGS: Listing[] = [
   },
   {
     id: 304,
+    propertyId: "304",
     tier: "regular",
     source: "partner",
     title: "Chandkheda Modern 3BHK",
@@ -594,6 +619,7 @@ const ALL_LISTINGS: Listing[] = [
   },
   {
     id: 305,
+    propertyId: "305",
     tier: "regular",
     source: "partner",
     title: "Koba Prime Plot",
@@ -617,6 +643,7 @@ const ALL_LISTINGS: Listing[] = [
   },
   {
     id: 306,
+    propertyId: "306",
     tier: "regular",
     source: "partner",
     title: "Bhat Spacious 4BHK",
@@ -675,13 +702,59 @@ function shuffleArray<T>(array: T[]): T[] {
 
 // --- MAIN PAGE COMPONENT ---
 function BuyIntroPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [sortBy, setSortBy] = useState<SortOption>("Newest");
   const [rotatedListings, setRotatedListings] = useState<Listing[]>([]);
+  const [allProperties, setAllProperties] = useState<{
+    exclusive: BuyPageProperty[];
+    featured: BuyPageProperty[];
+    others: BuyPageProperty[];
+  }>({ exclusive: [], featured: [], others: [] });
+  const [loading, setLoading] = useState(true);
   
   // Toggle for Map View
   const [isMapView, setIsMapView] = useState(false);
+
+  // Fetch properties from API
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchAndTransformBuyPageProperties();
+        setAllProperties(data);
+        
+        // Convert to the format expected by existing code
+        const allListings: Listing[] = [
+          ...data.exclusive,
+          ...data.featured,
+          ...data.others
+        ];
+        
+        // Apply rotation logic
+        const exclusive = allListings.filter(l => l.tier === "exclusive");
+        const featured = allListings.filter(l => l.tier === "featured");
+        const regular = allListings.filter(l => l.tier === "regular");
+
+        const selectedExclusive = shuffleArray(exclusive).slice(0, 2);
+        const selectedFeatured = shuffleArray(featured).slice(0, 2);
+        const selectedRegular = shuffleArray(regular).slice(0, 4);
+
+        setRotatedListings([
+          ...selectedExclusive,
+          ...selectedFeatured,
+          ...selectedRegular
+        ]);
+      } catch (error) {
+        console.error('Error fetching properties:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProperties();
+  }, []);
 
   // Initialize filters from URL params
   useEffect(() => {
@@ -700,19 +773,6 @@ function BuyIntroPage() {
       }));
     }
   }, [searchParams]);
-
-  // --- ROTATION LOGIC ---
-  useEffect(() => {
-    const exclusive = ALL_LISTINGS.filter(l => l.tier === "exclusive");
-    const featured = ALL_LISTINGS.filter(l => l.tier === "featured");
-    const regular = ALL_LISTINGS.filter(l => l.tier === "regular");
-
-    const selectedExclusive = shuffleArray(exclusive).slice(0, 2);
-    const selectedFeatured = shuffleArray(featured).slice(0, 2);
-
-    const combined = [...selectedExclusive, ...selectedFeatured, ...regular];
-    setRotatedListings(combined);
-  }, []);
 
   // --- BACK BUTTON HANDLING ---
   useEffect(() => {
@@ -759,7 +819,27 @@ function BuyIntroPage() {
 
   const filteredListings = useMemo(() => {
     const hasFilters = filters.city !== "any" || filters.priceRange !== "any" || filters.propertyType !== "any" || filters.ageOfProperty !== "any";
-    const sourceData = hasFilters ? ALL_LISTINGS : (rotatedListings.length > 0 ? rotatedListings : []);
+    const useRotation = !hasFilters && !isMapView;
+    
+    // Use all properties when filters are applied, otherwise use rotated listings
+    let sourceData: Listing[];
+    if (hasFilters || !useRotation) {
+      // Use all properties when filters are applied
+      sourceData = [
+        ...allProperties.exclusive,
+        ...allProperties.featured,
+        ...allProperties.others
+      ];
+    } else {
+      // Use rotated listings when no filters
+      sourceData = rotatedListings.length > 0 ? rotatedListings : [
+        ...allProperties.exclusive,
+        ...allProperties.featured,
+        ...allProperties.others
+      ];
+    }
+
+    const normalize = (v: string) => v.toLowerCase().trim();
 
     let result = sourceData.filter((l) => {
       if (filters.location.trim()) {
@@ -767,9 +847,12 @@ function BuyIntroPage() {
         const locString = `${l.locality} ${l.city}`.toLowerCase();
         if (!locString.includes(q)) return false;
       }
-      if (filters.city !== "any" && l.city !== filters.city) return false;
-      if (filters.localities.length > 0 && !filters.localities.includes(l.locality)) return false;
-      if (filters.propertyType !== "any" && l.type !== filters.propertyType) return false;
+      if (filters.city !== "any" && normalize(l.city) !== normalize(filters.city)) return false;
+      if (
+        filters.localities.length > 0 &&
+        !filters.localities.some((selected) => normalize(selected) === normalize(l.locality))
+      ) return false;
+      if (filters.propertyType !== "any" && normalize(l.type) !== normalize(filters.propertyType)) return false;
       if (filters.priceRange !== "any") {
         const price = l.priceCr;
         if (filters.priceRange === "0-50L" && !(price > 0 && price <= 0.5)) return false;
@@ -809,7 +892,7 @@ function BuyIntroPage() {
     });
 
     return result;
-  }, [filters, sortBy, rotatedListings]);
+  }, [filters, sortBy, rotatedListings, allProperties, isMapView]);
 
   // --- COMPONENT CHUNKS ---
   
@@ -951,6 +1034,10 @@ function BuyIntroPage() {
     </div>
   );
 
+  const handleOpenDetails = (propertyId: string) => {
+    router.push(`/properties/${propertyId}`);
+  };
+
   return (
     <main className="min-h-screen bg-[#F5F7F9] overflow-hidden flex flex-col font-sans">
       <Header />
@@ -991,25 +1078,47 @@ function BuyIntroPage() {
                     </div>
 
                     <div className="space-y-3">
-                    {filteredListings.map((item) => (
-                        <ListingCard key={item.id} item={item} />
-                    ))}
-                    </div>
+                    {loading ? (
+                        <div className="space-y-3">
+                            {[1, 2, 3, 4, 5, 6].map((i) => (
+                                <div key={i} className="animate-pulse">
+                                    <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                                        <div className="flex gap-4">
+                                            <div className="w-32 h-32 bg-slate-200 rounded-xl"></div>
+                                            <div className="flex-1 space-y-2">
+                                                <div className="h-4 bg-slate-200 rounded w-3/4"></div>
+                                                <div className="h-3 bg-slate-200 rounded w-1/2"></div>
+                                                <div className="h-3 bg-slate-200 rounded w-1/4"></div>
+                                                <div className="h-3 bg-slate-200 rounded w-1/3"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <>
+                            {filteredListings.map((item) => (
+                                <ListingCard key={item.propertyId || String(item.id)} item={item} handleOpenDetails={handleOpenDetails} />
+                            ))}
+                        </>
+                    )}
 
-                    {filteredListings.length === 0 && (
+                    {!loading && filteredListings.length === 0 && (
                     <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
                         No properties match your filters yet.
                     </div>
-                    )}
-                </section>
+                  )}
+                </div>
+              </section>
             </div>
           </section>
-      ) : (
-          <MapComponent listings={filteredListings} onBack={() => setIsMapView(false)} FilterSidebar={<FilterSidebarContent />} />
-      )}
+        ) : (
+          <MapComponent listings={filteredListings} onBack={() => setIsMapView(false)} FilterSidebar={<FilterSidebarContent />} onSelectProperty={handleOpenDetails} />
+        )}
 
-      <Footer />
-    </main>
+        <Footer />
+      </main>
   );
 }
 
@@ -1160,7 +1269,7 @@ function tierLabel(tier: Tier) {
   return "";
 }
 
-function ListingCard({ item }: { item: Listing }) {
+function ListingCard({ item, handleOpenDetails }: { item: Listing; handleOpenDetails: (propertyId: string) => void }) {
   const isOwner = item.source === "owner";
   const theme = themeForTier(item.tier);
   const getSourceLabel = () => {
@@ -1172,7 +1281,7 @@ function ListingCard({ item }: { item: Listing }) {
 
   return (
     // ADDED md:items-center to the main article tag to align image and text content vertically
-    <article className={`relative overflow-hidden flex flex-col md:flex-row md:items-center gap-3 md:gap-5 p-3 border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 ${theme.cardAccent} ${theme.cardBg ? theme.cardBg : "bg-white"}`}>
+    <article onClick={() => handleOpenDetails(item.propertyId || String(item.id))} className={`relative overflow-hidden flex flex-col md:flex-row md:items-center gap-3 md:gap-5 p-3 border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer ${theme.cardAccent} ${theme.cardBg ? theme.cardBg : "bg-white"}`}>
       {item.tier === "featured" && ( 
           <div className="absolute left-0 top-0 bottom-0 w-2 rounded-l-2xl bg-gradient-to-b from-[#e0f2ff] to-[#f0f9ff] pointer-events-none" /> 
       )}
@@ -1196,7 +1305,7 @@ function ListingCard({ item }: { item: Listing }) {
       </div>
       <div className="w-full md:w-48 shrink-0 flex flex-col justify-between md:border-l md:border-slate-100 md:pl-4 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100">
         <div> <div className="text-xs font-medium text-slate-500">Price</div> <div className="text-xl font-bold text-slate-900 mt-0.5"> {item.priceLabel} </div> <div className="mt-2"> <div className="text-xs text-slate-500">Seller access</div> <div className="text-xs font-medium text-slate-700 mt-0.5">{item.phoneMasked}</div> <div className="text-[10px] text-slate-400 leading-tight">full number after subscription</div> </div> </div>
-        <div className="flex flex-col gap-2 mt-4"> <button className={`w-full py-2 rounded-full text-white text-sm font-bold shadow-sm transition-all active:scale-95 ${theme.viewBtn}`}> View details </button> <button className="w-full py-2 rounded-full border border-slate-300 bg-white hover:border-slate-400 text-slate-800 text-sm font-bold transition-all active:scale-95"> Unlock seller </button> </div>
+        <div className="flex flex-col gap-2 mt-4"> <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleOpenDetails(item.propertyId || String(item.id)); }} className={`w-full py-2 rounded-full text-white text-sm font-bold shadow-sm transition-all active:scale-95 ${theme.viewBtn}`}> View details </button> <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); }} className="w-full py-2 rounded-full border border-slate-300 bg-white hover:border-slate-400 text-slate-800 text-sm font-bold transition-all active:scale-95"> Unlock seller </button> </div>
       </div>
     </article>
   );

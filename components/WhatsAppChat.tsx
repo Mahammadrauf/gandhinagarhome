@@ -164,7 +164,7 @@ const WhatsAppChat: React.FC = () => {
           onClick={() => toggleOpen()}
           onMouseEnter={() => (lastInteraction.current = Date.now())}
           className={[
-            "relative bg-[#25D366] hover:bg-[#20BA5A] text-white rounded-full p-4 shadow-2xl transition-all transform w-16 h-16 md:w-20 md:h-20 flex items-center justify-center",
+            "relative bg-[#25D366] hover:bg-[#20BA5A] text-white rounded-full p-5 shadow-2xl transition-all transform w-20 h-20 md:w-24 md:h-24 flex items-center justify-center",
             motionSafe && showNudge ? "animate-[pulseSoft_0.7s_ease]" : "",
           ].join(" ")}
           aria-label="Chat on WhatsApp"
@@ -175,7 +175,7 @@ const WhatsAppChat: React.FC = () => {
 
           <svg
             viewBox="0 0 24 24"
-            className="w-8 h-8 md:w-10 md:h-10 fill-current"
+            className="w-10 h-10 md:w-12 md:h-12 fill-current"
             xmlns="http://www.w3.org/2000/svg"
             aria-hidden
           >

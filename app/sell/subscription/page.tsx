@@ -1,8 +1,11 @@
 // app/sell/subscription/page.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Header from "@/components/Header";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+import API_URL from "@/app/config/config";
 import { 
   CheckCircle2, 
   Star, 
@@ -124,7 +127,91 @@ const plans = [
 ];
 
 export default function SubscriptionPage() {
+  const router = useRouter();
   const [hoveredPlan, setHoveredPlan] = useState<string | null>(null);
+  const [submittingPlan, setSubmittingPlan] = useState<string | null>(null);
+  const [propertyId, setPropertyId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const raw = localStorage.getItem("pendingListing");
+    if (!raw) return;
+    try {
+      const parsed = JSON.parse(raw);
+      const id = parsed?.apiResponse?._id || parsed?.apiResponse?.data?._id;
+      if (id) setPropertyId(id);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const getAuthToken = () => {
+    return (
+      localStorage.getItem("token") ||
+      localStorage.getItem("gh_token") ||
+      localStorage.getItem("authToken") ||
+      ""
+    );
+  };
+
+  const parseAmount = (v: string) => {
+    const n = Number(String(v).replace(/,/g, ""));
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  const handlePlanPay = async (plan: { id: string; name: string; price: string }) => {
+    try {
+      setSubmittingPlan(plan.id);
+
+      const token = getAuthToken();
+      if (!token) {
+        alert("Login token not found. Please login first to continue payment.");
+        return;
+      }
+
+      const amount = parseAmount(plan.price);
+      if (!amount) {
+        alert("Invalid plan amount.");
+        return;
+      }
+
+      const response = await axios.post(
+        `${API_URL}/payment/create-order`,
+        {
+          paymentType: "subscription",
+          amount,
+          propertyId: propertyId || undefined,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.data?.success) {
+        localStorage.setItem(
+          "pendingPayment",
+          JSON.stringify({
+            planId: plan.id,
+            planName: plan.name,
+            propertyId: propertyId || null,
+            orderResponse: response.data.data,
+            createdAt: new Date().toISOString(),
+          })
+        );
+        alert("Payment order created successfully.");
+        router.push("/");
+        return;
+      }
+
+      alert(response.data?.message || "Failed to create payment order");
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || "Payment API error";
+      alert(msg);
+    } finally {
+      setSubmittingPlan(null);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-[#F8FAFC]">
@@ -219,8 +306,12 @@ export default function SubscriptionPage() {
                 </ul>
 
                 {/* CTA Button */}
-                <button className={`w-full py-4 rounded-2xl font-bold text-base transition-all duration-300 flex items-center justify-center gap-2 ${plan.styles.button} active:scale-95`}>
-                  Pay for {plan.name} Plan
+                <button
+                  onClick={() => handlePlanPay(plan)}
+                  disabled={submittingPlan !== null}
+                  className={`w-full py-4 rounded-2xl font-bold text-base transition-all duration-300 flex items-center justify-center gap-2 ${plan.styles.button} active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed`}
+                >
+                  {submittingPlan === plan.id ? "Processing..." : `Pay for ${plan.name} Plan`}
                   {plan.highlight ? <ArrowRight size={18} strokeWidth={2.5} /> : null}
                 </button>
                 

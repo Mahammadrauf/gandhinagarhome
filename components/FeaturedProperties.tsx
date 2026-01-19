@@ -8,23 +8,12 @@ import React, {
   useState,
 } from "react";
 import Link from "next/link";
+import { fetchFeaturedProperties, FrontendProperty } from '@/lib/api';
 
 // --- Types ---
 
-export type Property = {
-  id: string;
-  image: string;
-  price: string;
-  location: string;
-  beds: number;
-  baths: number;
-  sqft: string;
-  features: string[];
-  tag: { text: string; color: string };
-};
-
 interface FeaturedPropertyProps {
-  data?: Property[];
+  data?: FrontendProperty[];
   isLoading?: boolean;
 }
 
@@ -228,7 +217,25 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
     );
   }
 
-  if (!data || data.length === 0) return null;
+  if (!data || data.length === 0) {
+    return (
+      <section className="py-20 bg-gray-50 relative overflow-hidden">
+        <div className="container mx-auto">
+          <div className="text-center">
+            <h2 className="text-4xl font-bold text-stone-800 mb-3 font-serif">
+              Featured Properties
+            </h2>
+            <p className="text-gray-600 text-lg mb-8">
+              No featured properties available at the moment.
+            </p>
+            <div className="animate-pulse flex flex-col items-center">
+              <div className="h-64 w-[350px] bg-gray-200 rounded-3xl"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-20 bg-gradient-to-b from-[#c5e6ff]/10 via-[#9fd4ff]/40 to-[#f5fbff] relative overflow-hidden touch-pan-y">
@@ -423,7 +430,7 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
 
                         {/* UPDATED LINK: Opens in New Tab */}
                         <Link
-                          href={`/properties/f${property.id}`}
+                          href={`/properties/${property.id}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => {
@@ -468,165 +475,21 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
   );
 };
 
-// --- SIMULATION OF PARENT COMPONENT (12 Items Restored) ---
-
-const ALL_FEATURED_PROPERTIES: Property[] = [
-  {
-    id: "e1",
-    image:
-      "https://images.unsplash.com/photo-1505692952047-1a78307da8e8?auto=format&fit=crop&w=1200&q=80",
-    price: "₹3.40 Cr",
-    location: "Sector 5",
-    beds: 4,
-    baths: 4,
-    sqft: "3,200",
-    features: ["Penthouse", "Terrace Garden"],
-    tag: { text: "Premium", color: "bg-primary text-white" },
-  },
-  {
-    id: "e2",
-    image:
-      "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=80",
-    price: "₹1.90 Cr",
-    location: "Koba",
-    beds: 3,
-    baths: 3,
-    sqft: "2,050",
-    features: ["Club Access", "Corner Unit"],
-    tag: { text: "Exclusive", color: "bg-yellow-500 text-white" },
-  },
-  {
-    id: "e3",
-    image:
-      "https://images.unsplash.com/photo-1502005229762-cf1b2da7c52f?auto=format&fit=crop&w=1200&q=80",
-    price: "₹2.80 Cr",
-    location: "Torda",
-    beds: 4,
-    baths: 3,
-    sqft: "2,850",
-    features: ["Garden View", "Home Office"],
-    tag: { text: "New", color: "bg-primary text-white" },
-  },
-  {
-    id: "e4",
-    image:
-      "https://images.unsplash.com/photo-1501183638710-841dd1904471?auto=format&fit=crop&w=1200&q=80",
-    price: "₹3.60 Cr",
-    location: "Gift City",
-    beds: 4,
-    baths: 4,
-    sqft: "3,450",
-    features: ["Riverfront", "High Floor"],
-    tag: { text: "Private", color: "bg-purple-500 text-white" },
-  },
-  {
-    id: "e5",
-    image:
-      "https://images.unsplash.com/photo-1528909514045-2fa4ac7a08ba?auto=format&fit=crop&w=1200&q=80",
-    price: "₹2.10 Cr",
-    location: "Kh Road",
-    beds: 3,
-    baths: 3,
-    sqft: "2,200",
-    features: ["Ready to Move", "2 Car Parks"],
-    tag: { text: "Hot Deal", color: "bg-red-500 text-white" },
-  },
-  {
-    id: "e6",
-    image:
-      "https://images.unsplash.com/photo-1523217582562-09d0def993a6?auto=format&fit=crop&w=1200&q=80",
-    price: "₹2.95 Cr",
-    location: "Chiloda",
-    beds: 4,
-    baths: 3,
-    sqft: "2,900",
-    features: ["Corner Plot", "Smart Home"],
-    tag: { text: "Premium", color: "bg-primary text-white" },
-  },
-  {
-    id: "e7",
-    image:
-      "https://images.unsplash.com/photo-1536376072261-38c75010e6c9?auto=format&fit=crop&w=1200&q=80",
-    price: "₹2.25 Cr",
-    location: "Adalaj",
-    beds: 3,
-    baths: 3,
-    sqft: "2,300",
-    features: ["Club Access", "Park Facing"],
-    tag: { text: "Open House", color: "bg-gray-200 text-gray-800" },
-  },
-  {
-    id: "e8",
-    image:
-      "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1200&q=80",
-    price: "₹3.05 Cr",
-    location: "Sargasan Ext.",
-    beds: 4,
-    baths: 4,
-    sqft: "3,050",
-    features: ["Premium Finishes", "Servant Room"],
-    tag: { text: "Exclusive", color: "bg-yellow-500 text-white" },
-  },
-  {
-    id: "e9",
-    image:
-      "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80",
-    price: "₹1.99 Cr",
-    location: "Randesan",
-    beds: 3,
-    baths: 3,
-    sqft: "2,120",
-    features: ["Modular Kitchen", "City View"],
-    tag: { text: "New", color: "bg-primary text-white" },
-  },
-  {
-    id: "e10",
-    image:
-      "https://images.unsplash.com/photo-1565183997392-2f6f122e5912?auto=format&fit=crop&w=1200&q=80",
-    price: "₹2.70 Cr",
-    location: "Kudasan Ext.",
-    beds: 4,
-    baths: 3,
-    sqft: "2,780",
-    features: ["Corner Unit", "Premium Location"],
-    tag: { text: "Premium", color: "bg-primary text-white" },
-  },
-  {
-    id: "e11",
-    image:
-      "https://images.unsplash.com/photo-1489365091240-6a18fc761ec2?auto=format&fit=crop&w=1200&q=80",
-    price: "₹2.35 Cr",
-    location: "Sector 25",
-    beds: 3,
-    baths: 3,
-    sqft: "2,380",
-    features: ["Green Belt", "High Floor"],
-    tag: { text: "Open House", color: "bg-gray-200 text-gray-800" },
-  },
-  {
-    id: "e12",
-    image:
-      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
-    price: "₹3.25 Cr",
-    location: "Sector 10",
-    beds: 4,
-    baths: 4,
-    sqft: "3,120",
-    features: ["Terrace Deck", "2 Car Parks"],
-    tag: { text: "Private", color: "bg-purple-500 text-white" },
-  },
-];
-
 const FeaturedPropertiesPage = () => {
-  const [properties, setProperties] = useState<Property[]>([]);
+  const [properties, setProperties] = useState<FrontendProperty[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      // Simulate network delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setProperties(ALL_FEATURED_PROPERTIES);
-      setLoading(false);
+      try {
+        setLoading(true);
+        const data = await fetchFeaturedProperties();
+        setProperties(data);
+      } catch (error) {
+        console.error('Error fetching featured properties:', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchData();

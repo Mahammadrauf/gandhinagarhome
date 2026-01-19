@@ -8,25 +8,13 @@ import React, {
   useState,
 } from "react";
 import Link from "next/link";
-
-// --- Types ---
-
-export type Property = {
-  id: string;
-  image: string;
-  price: string;
-  location: string;
-  beds: number;
-  baths: number;
-  sqft: string;
-  features: string[];
-  tag: { text: string; color: string };
-};
+import { fetchExclusiveProperties, FrontendProperty } from '@/lib/api';
 
 interface ExclusivePropertyProps {
-  data?: Property[]; 
+  data?: FrontendProperty[]; 
   isLoading?: boolean;
 }
+
 
 // --- Configuration ---
 
@@ -203,7 +191,25 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
     );
   }
 
-  if (!data || data.length === 0) return null;
+  if (!data || data.length === 0) {
+    return (
+      <section className="py-20 bg-[#FAF9F6] relative overflow-hidden">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <h2 className="text-4xl font-bold text-stone-800 mb-3 font-serif">
+              Exclusive Properties
+            </h2>
+            <p className="text-stone-600 text-lg max-w-2xl mx-auto mb-8">
+              No exclusive properties available at the moment.
+            </p>
+            <div className="animate-pulse flex flex-col items-center">
+              <div className="h-64 w-[350px] bg-stone-200 rounded-3xl"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   const StatIcon: React.FC<{ children: React.ReactNode }> = ({ children }) => (
     <svg className="w-4 h-4 inline-block mr-1 text-[#B59E78] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -259,7 +265,7 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
             onPointerUp={handlePointerUp}
             onPointerLeave={handlePointerUp}
           >
-            {data.map((property, index) => {
+            {data.map((property: FrontendProperty, index: number) => {
               const isCenterCard = index === centerIndex;
               const style = getCardStyles(index);
 
@@ -310,14 +316,14 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
                         </div>
 
                         <div className="flex flex-wrap gap-2 mb-4">
-                          {property.features.slice(0, 2).map((feature, idx) => (
+                          {property.features.slice(0, 2).map((feature: string, idx: number) => (
                             <span key={idx} className="px-3 py-1 bg-[#F5F2EB] text-[#8C7A5B] text-xs rounded-full font-medium">{feature}</span>
                           ))}
                         </div>
 
                         {/* UPDATED LINK: Opens in New Tab */}
                         <Link
-                          href={`/properties/e${property.id}`}
+                          href={`/properties/${property.id}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => {
@@ -340,7 +346,7 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
 
           {/* Pagination */}
           <div className="mt-6 flex items-center justify-center gap-2">
-            {data.map((_, idx) => (
+            {data.map((_: FrontendProperty, idx: number) => (
               <button
                 key={idx}
                 onClick={() => goToSlide(idx)}
@@ -354,76 +360,23 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
   );
 };
 
-// --- SIMULATION OF PARENT COMPONENT (Backend Fetch) ---
-
-const MOCK_DB_DATA: Property[] = [
-  {
-    id: "1",
-    image: "https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=800&q=80",
-    price: "₹2.1 Cr",
-    location: "Sargasan",
-    beds: 4,
-    baths: 4,
-    sqft: "3,000",
-    features: ["Vaastu-friendly", "2 Car Parks"],
-    tag: { text: "New", color: "bg-[#B59E78] text-white" },
-  },
-  {
-    id: "2",
-    image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80",
-    price: "₹1.65 Cr",
-    location: "Kudasan",
-    beds: 3,
-    baths: 3,
-    sqft: "1,950",
-    features: ["Club Access", "High Floor"],
-    tag: { text: "Exclusive", color: "bg-[#D4C5A5] text-[#5C5042]" },
-  },
-  {
-    id: "3",
-    image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80",
-    price: "₹2.45 Cr",
-    location: "Randesan",
-    beds: 3,
-    baths: 3,
-    sqft: "2,250",
-    features: ["Garden View", "Modular Kitchen"],
-    tag: { text: "Open House", color: "bg-stone-200 text-stone-700" },
-  },
-  {
-    id: "4",
-    image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80",
-    price: "₹3.10 Cr",
-    location: "Sector 21",
-    beds: 4,
-    baths: 4,
-    sqft: "3,500",
-    features: ["Private Pool", "Premium Location"],
-    tag: { text: "Private", color: "bg-[#8C7A5B] text-white" },
-  },
-  {
-    id: "5",
-    image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80",
-    price: "₹1.85 Cr",
-    location: "Sector 16",
-    beds: 3,
-    baths: 2,
-    sqft: "2,100",
-    features: ["City View", "Ready to Move"],
-    tag: { text: "Hot Deal", color: "bg-[#A65D57] text-white" },
-  },
-];
 
 // Usage Example
 const PropertyPage = () => {
-  const [properties, setProperties] = useState<Property[]>([]);
+  const [properties, setProperties] = useState<FrontendProperty[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setProperties(MOCK_DB_DATA);
-      setLoading(false);
+      try {
+        setLoading(true);
+        const data = await fetchExclusiveProperties();
+        setProperties(data);
+      } catch (error) {
+        console.error('Error fetching exclusive properties:', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchData();

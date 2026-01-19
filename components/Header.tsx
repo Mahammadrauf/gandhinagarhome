@@ -11,6 +11,8 @@ const BRAND_BG = "bg-[#006A58]";
 const BRAND_HOVER_BG = "hover:bg-[#005445]";
 const BRAND_FOCUS_RING = "focus:ring-[#006A58]";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+
 // --- TYPES ---
 interface NavLinkProps {
   href: string;
@@ -53,7 +55,7 @@ const Header = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   // OTP States (Dual Verification)
-  const [whatsappOtp, setWhatsappOtp] = useState(['', '', '', '']); // 4 Digits
+  const [whatsappOtp, setWhatsappOtp] = useState(['', '', '', '', '', '']); // 6 Digits
   const [emailOtp, setEmailOtp] = useState(['', '', '', '', '', '']); // 6 Digits
   const whatsappRefs = useRef<(HTMLInputElement | null)[]>([]);
   const emailRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -93,7 +95,7 @@ const Header = () => {
             lastName: parsedUser.lastName || '',
             email: parsedUser.email || '',
             mobile: parsedUser.mobile || '',
-            role: parsedUser.role || ''
+            role: (parsedUser.role || '') as '' | 'buyer' | 'seller'
           });
         }
       } catch (e) {
@@ -101,7 +103,6 @@ const Header = () => {
       }
     }
   }, []);
-
 
   // --- PERSISTENT LOOP LOGIC (30s Timer) ---
   useEffect(() => {
@@ -141,7 +142,7 @@ const Header = () => {
       const newOtp = [...whatsappOtp];
       newOtp[index] = value.substring(value.length - 1);
       setWhatsappOtp(newOtp);
-      if (value && index < 3 && whatsappRefs.current[index + 1]) {
+      if (value && index < 5 && whatsappRefs.current[index + 1]) {
         whatsappRefs.current[index + 1]?.focus();
       }
     } else {
@@ -176,24 +177,46 @@ const Header = () => {
     }
 
     setIsLoading(true);
+    try {
+      const mobile = user.mobile;
+      const email = user.email;
 
-    // BACKEND-READY PAYLOAD PREPARATION
-    const fullPhoneNumber = `${countryCode}${user.mobile}`;
-    const payload = {
-      ...user,
-      fullPhone: fullPhoneNumber
-    };
+      const sendMobileOtpRes = await fetch(`${API_BASE_URL}/auth/send-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mobile })
+      });
 
-    // Backend simulation for Dual OTP (WhatsApp + Email)
-    setTimeout(() => {
-      setIsLoading(false);
+      const sendMobileOtpJson = await sendMobileOtpRes.json();
+      if (!sendMobileOtpRes.ok || !sendMobileOtpJson?.success) {
+        throw new Error(sendMobileOtpJson?.message || 'Failed to send OTP');
+      }
+
+      if (authMode === 'signup') {
+        const sendEmailOtpRes = await fetch(`${API_BASE_URL}/auth/send-email-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+
+        const sendEmailOtpJson = await sendEmailOtpRes.json();
+        if (!sendEmailOtpRes.ok || !sendEmailOtpJson?.success) {
+          throw new Error(sendEmailOtpJson?.message || 'Failed to send email OTP');
+        }
+      }
+
       setStep('otp');
       setTimeout(() => whatsappRefs.current[0]?.focus(), 100);
-    }, 1000);
+    } catch (err) {
+      console.error(err);
+      alert(err instanceof Error ? err.message : 'Failed to send OTP');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleVerifyOtp = async () => {
-    const isWaValid = whatsappOtp.join('').length === 4;
+    const isWaValid = whatsappOtp.join('').length === 6;
     const isEmailValid = emailOtp.join('').length === 6;
 
     // Login Flow only requires WhatsApp OTP
@@ -206,31 +229,105 @@ const Header = () => {
     
     setIsLoading(true);
 
-    // Backend simulation for Dual Verification
-    setTimeout(() => {
-      setIsLoading(false);
-      
-      const finalFirstName = (authMode === 'login' && !user.firstName) ? 'User' : user.firstName;
-      const updatedUser = { 
-        ...user, 
-        firstName: finalFirstName,
-        isLoggedIn: true 
-      };
+    try {
+      if (authMode === 'login') {
+        const mobile = user.mobile;
+        const otp = whatsappOtp.join('');
 
-      // Persist login state
-      localStorage.setItem('gh_user', JSON.stringify(updatedUser));
-      
-      setIsLoggedIn(true);
-      setUser(updatedUser);
-      setIsAuthOpen(false);
-      
-      // CRITICAL CHANGE: Redirect to agnostic /profile route
-      router.push('/profile');
-    }, 1000);
+        const res = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mobile, otp, rememberMe: false })
+        });
+
+        const json = await res.json();
+        if (!res.ok || !json?.success) {
+          throw new Error(json?.message || 'OTP verification failed');
+        }
+
+        const apiUser = json?.data?.user;
+        const token = json?.data?.token;
+
+        const name = apiUser?.name || 'User';
+        const firstName = name.split(' ')[0] || 'User';
+        const lastName = name.split(' ').slice(1).join(' ');
+
+        const updatedUser = {
+          firstName,
+          lastName,
+          email: apiUser?.email || '',
+          mobile: apiUser?.mobile || mobile,
+          role: (apiUser?.role as 'buyer' | 'seller' | '') || '',
+          token,
+          isLoggedIn: true
+        };
+
+        localStorage.setItem('gh_user', JSON.stringify(updatedUser));
+        if (token) localStorage.setItem('gh_token', token);
+
+        setIsLoggedIn(true);
+        setUser({ firstName, lastName, email: updatedUser.email, mobile: updatedUser.mobile, role: updatedUser.role as '' | 'buyer' | 'seller' });
+        setIsAuthOpen(false);
+        router.push('/profile');
+      } else {
+        const payload = {
+          mobile: user.mobile,
+          mobileOtp: whatsappOtp.join(''),
+          email: user.email,
+          emailOtp: emailOtp.join(''),
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+          rememberMe: false
+        };
+
+        const res = await fetch(`${API_BASE_URL}/auth/verify-signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const json = await res.json();
+        if (!res.ok || !json?.success) {
+          throw new Error(json?.message || 'Signup verification failed');
+        }
+
+        const apiUser = json?.data?.user;
+        const token = json?.data?.token;
+
+        const name = apiUser?.name || `${user.firstName} ${user.lastName}`.trim() || 'User';
+        const firstName = name.split(' ')[0] || user.firstName || 'User';
+        const lastName = name.split(' ').slice(1).join(' ') || user.lastName;
+
+        const updatedUser = {
+          firstName,
+          lastName,
+          email: apiUser?.email || user.email,
+          mobile: apiUser?.mobile || user.mobile,
+          role: (apiUser?.role as 'buyer' | 'seller' | '') || user.role,
+          token,
+          isLoggedIn: true
+        };
+
+        localStorage.setItem('gh_user', JSON.stringify(updatedUser));
+        if (token) localStorage.setItem('gh_token', token);
+
+        setIsLoggedIn(true);
+        setUser({ firstName, lastName, email: updatedUser.email, mobile: updatedUser.mobile, role: updatedUser.role as '' | 'buyer' | 'seller' });
+        setIsAuthOpen(false);
+        router.push('/profile');
+      }
+    } catch (err) {
+      console.error(err);
+      alert(err instanceof Error ? err.message : 'Verification failed');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleLogout = () => {
     localStorage.removeItem('gh_user');
+    localStorage.removeItem('gh_token');
     setIsLoggedIn(false);
     setUser({ firstName: '', lastName: '', email: '', mobile: '', role: '' });
   };
@@ -238,7 +335,7 @@ const Header = () => {
   const openAuth = (mode: 'login' | 'signup') => {
     setAuthMode(mode);
     setStep(mode === 'signup' ? 'role' : 'details');
-    setWhatsappOtp(['', '', '', '']);
+    setWhatsappOtp(['', '', '', '', '', '']);
     setEmailOtp(['', '', '', '', '', '']);
     setIsAuthOpen(true);
     setIsMobileMenuOpen(false);
@@ -398,7 +495,7 @@ const Header = () => {
                 <div className="flex flex-col items-center space-y-6 animate-in slide-in-from-right-8 duration-300 pb-2">
                   {/* WhatsApp OTP Row */}
                   <div className="w-full space-y-2">
-                      <label className="text-[10px] font-bold text-gray-400 uppercase text-center block tracking-widest">WhatsApp OTP (4 Digits)</label>
+                      <label className="text-[10px] font-bold text-gray-400 uppercase text-center block tracking-widest">WhatsApp OTP (6 Digits)</label>
                       <div className="flex gap-2 w-full justify-center">
                       {whatsappOtp.map((digit, i) => (
                           <input
@@ -436,7 +533,7 @@ const Header = () => {
                     </div>
                   )}
                   
-                  <button onClick={handleVerifyOtp} disabled={isLoading || whatsappOtp.join('').length < 4 || (authMode === 'signup' && emailOtp.join('').length < 6)} className={`w-full ${BRAND_BG} ${BRAND_HOVER_BG} text-white font-bold py-2.5 rounded-lg shadow-md shadow-[#006A58]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm`}>
+                  <button onClick={handleVerifyOtp} disabled={isLoading || whatsappOtp.join('').length < 6 || (authMode === 'signup' && emailOtp.join('').length < 6)} className={`w-full ${BRAND_BG} ${BRAND_HOVER_BG} text-white font-bold py-2.5 rounded-lg shadow-md shadow-[#006A58]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm`}>
                     {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (authMode === 'login' ? 'Verify WhatsApp OTP' : 'Verify Email & WhatsApp OTP')}
                   </button>
 

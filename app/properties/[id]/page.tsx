@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -40,6 +40,8 @@ import {
 } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { fetchPropertyDetail, getMockPropertyDetail, PropertyDetail } from '@/lib/propertyDetailApi';
+import { fetchSimilarProperties, FrontendProperty } from '@/lib/api';
 
 // --- WHATSAPP ICON COMPONENT (For Share Modal) ---
 const WhatsAppIcon = () => (
@@ -48,131 +50,8 @@ const WhatsAppIcon = () => (
     </svg>
 );
 
-// ---- MOCK DATA (Updated to match seller form data structure) ----
-const propertyType = 'exclusive';
-
-const property = {
-  id: 'GH-XL-1024',
-  type: propertyType,
-  title: 'Raysan Luxury Apartment • Corner Plot', // Will be populated from title field
-  subtitle: '₹3.10 Cr • 4 BHK • 3,400 sq ft • Apartment • Fully furnished', // Will be dynamically generated
-  price: '₹3.10 Cr', // Will be populated from priceLabel
-  priceNote: '+ Stamp Duty',
-  location: 'Raysan, Gandhinagar', // Will be populated from locality + city
-  // 1. CHANGED: Badges to build trust instead of "Exclusive Listing" etc.
-  badges: [
-    { text: 'Verified Property', icon: CheckCircle2 },
-    { text: 'Clear Title', icon: FileCheck },
-    { text: 'Premium Partner', icon: Shield },
-  ],
-  images: [
-    'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1600&q=80',
-    'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1616594031246-852a69137bc8?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1631679706909-1844bbd07221?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1560185127-6ed189bf02f4?auto=format&fit=crop&w=800&q=80',
-  ],
-  videoUrl: 'https://samplelib.com/lib/preview/mp4/sample-5s.mp4',
-  hasSaleDeed: true, // Will be populated from hasSaleDeed
-  hasBrochure: true, // Will be populated from hasBrochure
-  // 2. UPDATED: Overview to use dynamic data
-  overview: [
-    { label: 'Price', value: '₹3.10 Cr', icon: FileText }, // priceLabel
-    { label: 'Bedrooms', value: '4 BHK', icon: BedDouble }, // bedrooms
-    { label: 'Built-up Area', value: '3,400 sq ft', icon: Maximize2 }, // areaDisplay
-    { label: 'Furnishing', value: 'Fully furnished', icon: Home }, // furnishing
-    { label: 'Status', value: 'Ready to move', icon: CheckCircle2 }, // readyStatus
-    { label: 'Parking', value: '2 covered', icon: Car }, // parking
-    { label: 'Age', value: '5 Years', icon: Clock }, // ageLabel
-    { label: 'Bathrooms', value: '4 Baths', icon: Bath }, // bathrooms
-  ],
-  details: [
-    { label: 'Title', value: 'Raysan Luxury Apartment 4 BHK' }, // title
-    { label: 'Type', value: 'Apartment' }, // type (from propertyType)
-    { label: 'Price', value: '₹3.10 Cr' }, // priceLabel
-    { label: 'Built-up Area', value: '3,400 sq ft' }, // areaDisplay
-    { label: 'Bedrooms', value: '4' }, // bedrooms
-    { label: 'Bathrooms', value: '4' }, // bathrooms
-    { label: 'Balconies', value: '2' }, // balcony
-    { label: 'Parking', value: '2 covered' }, // parking
-    { label: 'Furnishing', value: 'Fully furnished' }, // furnishing
-    { label: 'Availability', value: 'Ready to move' }, // readyStatus
-    { label: 'Age of property', value: '5 Years' }, // ageLabel
-  ],
-  seller: {
-    name: 'Rajesh K. Patel', // Will be populated from firstName + lastName
-    phone: '+91 98XX-XXXXXX', // Will be populated from mobile
-    email: 'Hidden • Unlock to view', // Will be populated from email
-    whatsapp: 'Shared after connect',
-    verification: 'OTP verified',
-    isVerified: true,
-    isDirectOwner: true, 
-  },
-  amenities: [
-    'Gym', 'Lift', 'Garden', '24×7 Security', 'Vaastu friendly', 'Smart home', 'Clubhouse', 'Jogging Track', 'Children Play Area'
-  ], // Will be populated from amenities array
-};
-
-// ---- MOCK SIMILAR PROPERTIES ----
-const similarProperties = [
-    {
-        id: 1,
-        image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80',
-        price: '₹2.1 Cr',
-        badge: 'New',
-        title: 'Sargasan',
-        subtitle: 'Gandhinagar • Prime locality',
-        specs: { beds: 4, baths: 4, area: '3,000 sq ft' },
-        tags: ['Vaastu-friendly', '2 Car Parks']
-    },
-    {
-        id: 2,
-        image: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80',
-        price: '₹1.85 Cr',
-        badge: 'Hot Deal',
-        title: 'Kudasan',
-        subtitle: 'Gandhinagar • Near Metro',
-        specs: { beds: 3, baths: 3, area: '2,400 sq ft' },
-        tags: ['Gated Community', 'Gym']
-    },
-    {
-        id: 3,
-        image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80',
-        price: '₹4.5 Cr',
-        badge: null,
-        title: 'Raysan Premium',
-        subtitle: 'Gandhinagar • River View',
-        specs: { beds: 5, baths: 5, area: '4,200 sq ft' },
-        tags: ['Private Pool', 'Home Theater']
-    },
-     {
-        id: 4,
-        image: 'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=800&q=80',
-        price: '₹3.2 Cr',
-        badge: 'Exclusive',
-        title: 'Gift City',
-        subtitle: 'Gandhinagar • Smart City',
-        specs: { beds: 4, baths: 4, area: '3,500 sq ft' },
-        tags: ['High Rise', 'Smart Home']
-    },
-    {
-        id: 5,
-        image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=800&q=80',
-        price: '₹1.1 Cr',
-        badge: 'Sold Out',
-        title: 'Randheshan Villa',
-        subtitle: 'Gandhinagar • Green Belt',
-        specs: { beds: 3, baths: 3, area: '1,800 sq ft' },
-        tags: ['Garden', 'Security']
-  }
-];
-
 // ---- THEME ----
-const getTheme = (type: string, propertyId?: string) => {
-  const isFeatured = propertyId && (propertyId.startsWith('f') || propertyId.startsWith('F'));
-  const isExclusive = propertyId && (propertyId.startsWith('e') || propertyId.startsWith('E'));
-  const isNormal = propertyId && (propertyId.startsWith('n') || propertyId.startsWith('N'));
-  
+const getTheme = (type: string) => {
   const themes = {
     featured: {
       primary: '#0F7F9C',
@@ -209,9 +88,6 @@ const getTheme = (type: string, propertyId?: string) => {
     },
   };
   
-  if (isFeatured) return themes.featured;
-  if (isExclusive) return themes.exclusive;
-  if (isNormal) return themes.normal;
   return themes[type as keyof typeof themes] || themes.normal;
 };
 
@@ -227,6 +103,10 @@ const DirectOwnerBadge = () => (
 export default function PropertyDetailsPage({ params }: { params: { id: string } }) {
   const [mediaMode, setMediaMode] = useState('photos');
   const [galleryIndex, setGalleryIndex] = useState(0);
+  const [property, setProperty] = useState<PropertyDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [similarProperties, setSimilarProperties] = useState<FrontendProperty[]>([]);
   
   // -- HOVER STATES FOR DYNAMIC COLORING --
   const [hoveredOverview, setHoveredOverview] = useState<number | null>(null);
@@ -237,49 +117,120 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
   const [copied, setCopied] = useState(false);
   
   const propertyId = params.id;
-  const theme = getTheme(property.type, propertyId);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Fetch property data
+  useEffect(() => {
+    const loadProperty = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const propertyData = await fetchPropertyDetail(propertyId);
+        
+        if (propertyData) {
+          setProperty(propertyData);
+        } else {
+          // Use mock data as fallback
+          console.log('Using mock data as fallback');
+          setProperty(getMockPropertyDetail());
+        }
+      } catch (err) {
+        console.error('Error loading property:', err);
+        setError('Failed to load property details');
+        // Use mock data as fallback
+        setProperty(getMockPropertyDetail());
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (propertyId) {
+      loadProperty();
+    }
+  }, [propertyId]);
+
+  // Fetch similar properties
+  useEffect(() => {
+    const loadSimilarProperties = async () => {
+      try {
+        const similarData = await fetchSimilarProperties(propertyId);
+        setSimilarProperties(similarData);
+      } catch (err) {
+        console.error('Error loading similar properties:', err);
+        setSimilarProperties([]);
+      }
+    };
+
+    if (propertyId) {
+      loadSimilarProperties();
+    }
+  }, [propertyId]);
+
+  // Use theme from property data or fallback
+  const theme = property ? property.theme : getTheme('exclusive');
 
   // Mock URL for sharing
   const shareUrl = `https://gandhinagarhomes.com/properties/${propertyId || 'GH-1024'}`;
 
-  // --- FOOTER DATA ---
-  const bhkLinks = [
-    { label: '2 BHK', href: '/listings?beds=2' },
-    { label: '3 BHK', href: '/listings?beds=3' },
-    { label: '4 BHK', href: '/listings?beds=4' },
-    { label: '5 BHK', href: '/listings?beds=5' },
-    { label: '6 BHK', href: '/listings?beds=6' },
-  ];
+  // Show loading state
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
+            <div className="h-96 bg-gray-200 rounded mb-4"></div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="h-64 bg-gray-200 rounded"></div>
+              <div className="h-64 bg-gray-200 rounded"></div>
+              <div className="h-64 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </main>
+    );
+  }
 
-  const propertyTypeLinks = [
-    { label: 'Apartment', href: '/listings?type=apartment' },
-    { label: 'Tenement', href: '/listings?type=tenement' },
-    { label: 'Bungalow', href: '/listings?type=bungalow' },
-    { label: 'Penthouse', href: '/listings?type=penthouse' },
-    { label: 'Plot', href: '/listings?type=plot' },
-    { label: 'Shop', href: '/listings?type=shop' },
-    { label: 'Office', href: '/listings?type=office' },
-  ];
+  // Show error state
+  if (error && !property) {
+    return (
+      <main className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-red-600 mb-4">Error</h1>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <Link href="/buy" className="text-blue-600 hover:underline">
+              ← Back to Properties
+            </Link>
+          </div>
+        </div>
+        <Footer />
+      </main>
+    );
+  }
 
-  const gandhinagarLinks = [
-    { label: 'Raysan', href: '/listings?loc=raysan' },
-    { label: 'Randesan', href: '/listings?loc=randesan' },
-    { label: 'Sargasan', href: '/listings?loc=sargasan' },
-    { label: 'Kudasan', href: '/listings?loc=kudasan' },
-    { label: 'Koba', href: '/listings?loc=koba' },
-    { label: 'Sectors', href: '/listings?loc=sectors' },
-  ];
-
-  const ahmedabadLinks = [
-    { label: 'Motera', href: '/listings?loc=motera' },
-    { label: 'Chandkheda', href: '/listings?loc=chandkheda' },
-    { label: 'Zundal', href: '/listings?loc=zundal' },
-    { label: 'Adalaj', href: '/listings?loc=adalaj' },
-    { label: 'Bhat', href: '/listings?loc=bhat' },
-    { label: 'Tapovan', href: '/listings?loc=tapovan' },
-    { label: 'Vaishnodevi', href: '/listings?loc=vaishnodevi' },
-  ];
+  // If no property data, show not found
+  if (!property) {
+    return (
+      <main className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-600 mb-4">Property Not Found</h1>
+            <p className="text-gray-600 mb-4">The property you're looking for doesn't exist.</p>
+            <Link href="/buy" className="text-blue-600 hover:underline">
+              ← Back to Properties
+            </Link>
+          </div>
+        </div>
+        <Footer />
+      </main>
+    );
+  }
 
   const headingClass = "text-sm font-bold text-slate-900 border-l-[3px] border-[#006B5B] pl-3 mb-5 uppercase tracking-wide";
 
@@ -297,7 +248,22 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
   const handleGalleryClick = () => setMediaMode((prev) => (prev === 'gallery' ? 'photos' : 'gallery'));
   const handleNext = () => setGalleryIndex((prev) => (prev + 1) % property.images.length);
   const handlePrev = () => setGalleryIndex((prev) => prev === 0 ? property.images.length - 1 : prev - 1);
-  
+
+  const downloadFile = async (url?: string, fallbackName: string = 'document.pdf') => {
+    if (!url) return;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Download failed: ${response.status}`);
+    const blob = await response.blob();
+    const objectUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = objectUrl;
+    a.download = fallbackName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(objectUrl);
+  };
+
   const handleCopyLink = () => {
     navigator.clipboard.writeText(shareUrl);
     setCopied(true);
@@ -447,9 +413,10 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                    <div className="flex gap-3">
                       <button
                         onClick={handleVideoClick}
+                        disabled={!property.videoUrl}
                         className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all active:scale-95 shadow-sm border ${
                           isVideoActive ? 'bg-gray-900 text-white border-transparent' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
-                        }`}
+                        } ${!property.videoUrl ? 'opacity-50 cursor-not-allowed' : ''}`}
                       >
                         <PlayCircle className="w-4 h-4" /> Video
                       </button>
@@ -464,13 +431,13 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                    </div>
                    <span className="text-xs font-medium text-gray-500">9 photos • 1 video</span>
                 </div>
+              </div> 
 
                 {/* Documents Section */}
                 <div className="mt-6 pt-5 border-t border-gray-100">
                     <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Property Documents</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {property.hasSaleDeed && (
-                          <div className={`flex items-center justify-between p-4 rounded-xl border border-gray-200 bg-gray-50 hover:${theme.lightBg} hover:border-[${theme.borderColor}] transition-all group cursor-pointer relative overflow-hidden`}>
+                        <div className={`flex items-center justify-between p-4 rounded-xl border border-gray-200 bg-gray-50 hover:${theme.lightBg} hover:border-[${theme.borderColor}] transition-all group cursor-default relative overflow-hidden ${!property.saleDeedUrl ? 'opacity-60' : ''}`}>
                                <div className="absolute left-0 top-0 bottom-0 w-1 bg-[${theme.borderColor}] opacity-0 group-hover:opacity-100 transition-opacity" />
                                <div className="flex items-center gap-4">
                                   <div className="p-2.5 bg-white rounded-lg shadow-sm text-[${theme.borderColor}] border border-gray-100 group-hover:scale-105 transition-transform">
@@ -483,13 +450,12 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                                       </p>
                                   </div>
                                </div>
-                               <div className="bg-white p-2 rounded-lg border border-gray-200 text-gray-400 group-hover:text-[${theme.borderColor}] group-hover:border-[${theme.borderColor}]/30 shadow-sm transition-all">
+                               <button type="button" disabled={!property.saleDeedUrl} onClick={(e) => { e.preventDefault(); e.stopPropagation(); downloadFile(property.saleDeedUrl, 'sale-deed.pdf'); }} className={`bg-white p-2 rounded-lg border border-gray-200 text-gray-400 group-hover:text-[${theme.borderColor}] group-hover:border-[${theme.borderColor}]/30 shadow-sm transition-all ${!property.saleDeedUrl ? 'cursor-not-allowed' : ''}`}>
                                    <Download className="w-4 h-4" />
-                               </div>
+                               </button>
                           </div>
-                        )}
-                        {property.hasBrochure && (
-                          <div className={`flex items-center justify-between p-4 rounded-xl border border-gray-200 bg-gray-50 hover:${theme.lightBg} hover:border-[${theme.borderColor}] transition-all group cursor-pointer relative overflow-hidden`}>
+
+                        <div className={`flex items-center justify-between p-4 rounded-xl border border-gray-200 bg-gray-50 hover:${theme.lightBg} hover:border-[${theme.borderColor}] transition-all group cursor-default relative overflow-hidden ${!property.brochureUrl ? 'opacity-60' : ''}`}>
                                <div className="absolute left-0 top-0 bottom-0 w-1 bg-[${theme.borderColor}] opacity-0 group-hover:opacity-100 transition-opacity" />
                                <div className="flex items-center gap-4">
                                   <div className="p-2.5 bg-white rounded-lg shadow-sm text-[${theme.borderColor}] border border-gray-100 group-hover:scale-105 transition-transform">
@@ -500,61 +466,12 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                                       <p className="text-[11px] text-gray-500 font-medium mt-0.5">View layouts & plans</p>
                                   </div>
                                </div>
-                               <div className="bg-white p-2 rounded-lg border border-gray-200 text-gray-400 group-hover:text-[${theme.borderColor}] group-hover:border-[${theme.borderColor}]/30 shadow-sm transition-all">
+                               <button type="button" disabled={!property.brochureUrl} onClick={(e) => { e.preventDefault(); e.stopPropagation(); downloadFile(property.brochureUrl, 'brochure.pdf'); }} className={`bg-white p-2 rounded-lg border border-gray-200 text-gray-400 group-hover:text-[${theme.borderColor}] group-hover:border-[${theme.borderColor}]/30 shadow-sm transition-all ${!property.brochureUrl ? 'cursor-not-allowed' : ''}`}>
                                    <Download className="w-4 h-4" />
-                               </div>
+                               </button>
                           </div>
-                        )}
                     </div>
                 </div>
-              </div>
-
-              {/* 2. Overview Section (ENHANCED: Bento Grid Style with Dynamic Color) */}
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-md p-6">
-                <div className="flex items-center justify-between mb-5">
-                  <h2 className="text-lg font-bold text-gray-900">Overview</h2>
-                  <span className={`${theme.tagBg} text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm`}>
-                      Exclusive
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {property.overview.map((item, i) => (
-                    <div 
-                        key={i} 
-                        onMouseEnter={() => setHoveredOverview(i)}
-                        onMouseLeave={() => setHoveredOverview(null)}
-                        className="group relative overflow-hidden bg-white border border-gray-100 rounded-2xl p-4 flex items-center gap-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-default"
-                        style={{
-                            backgroundColor: hoveredOverview === i ? theme.lightBg : '#ffffff',
-                            borderColor: hoveredOverview === i ? `${theme.borderColor}80` : '#f3f4f6' 
-                        }}
-                    >
-                      {/* Icon Box */}
-                      <div className="shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-gray-50 text-gray-500 group-hover:bg-white group-hover:scale-110 transition-all duration-300 shadow-sm">
-                          <item.icon className="w-5 h-5" />
-                      </div>
-                      
-                      {/* Text */}
-                      <div className="flex flex-col">
-                          <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider leading-tight transition-colors"
-                                style={{ color: hoveredOverview === i ? theme.borderColor : '' }}
-                          >
-                              {item.label}
-                          </span>
-                          {/* 3. UPDATED: Price in Overview check for + Stamp Duty */}
-                          {item.label === 'Price' ? (
-                                <div className="leading-tight mt-0.5">
-                                    <span className="text-sm font-bold text-gray-900">{item.value}</span>
-                                    <span className="text-[10px] font-normal text-gray-500 ml-1 block sm:inline">+ Stamp Duty</span>
-                                </div>
-                          ) : (
-                                <span className="text-sm font-bold text-gray-900 leading-tight mt-0.5">{item.value}</span>
-                          )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
 
               {/* 3. Property Details (ENHANCED: Hover Slide + Color Effect) */}
               <div className="bg-white rounded-2xl border border-gray-100 shadow-md p-6">
@@ -686,165 +603,111 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
               </div>
             </div>
           </div>
-          <div className="mt-12 mb-10 pt-10 border-t border-gray-200 relative group">
-             <div className="flex items-center justify-between mb-6 px-1">
-                <h2 className="text-2xl font-bold text-gray-900">Similar homes you might like</h2>
-                <Link href="/properties" className="text-sm font-bold hover:underline flex items-center gap-1 text-[#1f5f5b]">
-                    See all <ArrowLeft className="w-4 h-4 rotate-180" />
-                </Link>
-             </div>
-             
-             {/* Carousel Buttons */}
-             <button 
-                onClick={() => scroll('left')} 
-                className="absolute left-0 top-[55%] -translate-y-1/2 z-20 bg-white text-gray-700 p-2.5 rounded-full shadow-lg border border-gray-100 hover:bg-gray-50 hover:scale-110 transition-all hidden md:flex items-center justify-center"
-                aria-label="Scroll left"
-             >
-                <ChevronLeft className="w-6 h-6" />
-             </button>
-             
-             <button 
-                onClick={() => scroll('right')} 
-                className="absolute right-0 top-[55%] -translate-y-1/2 z-20 bg-white text-gray-700 p-2.5 rounded-full shadow-lg border border-gray-100 hover:bg-gray-50 hover:scale-110 transition-all hidden md:flex items-center justify-center"
-                aria-label="Scroll right"
-             >
-                <ChevronRight className="w-6 h-6" />
-             </button>
-
-             {/* Carousel Container */}
-             <div 
-                ref={scrollContainerRef}
-                className="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 -mx-4 px-4 sm:mx-0 sm:px-1 no-scrollbar scroll-smooth"
-             >
-                 {similarProperties.map((sim) => (
-                     <div key={sim.id} className="min-w-[300px] sm:min-w-[340px] snap-center bg-[#fffbf2] rounded-3xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer flex flex-col">
-                         
-                         {/* Card Image Area */}
-                         <div className="relative h-60 w-full">
-                             <Image src={sim.image} alt={sim.title} fill className="object-cover" />
-                             
-                             {/* Floating Price Badge (Bottom Left) */}
-                             <div className="absolute bottom-4 left-4 bg-white px-4 py-2 rounded-xl shadow-md z-10">
-                                 <span className="text-lg font-extrabold text-[#1f5f5b]">{sim.price}</span>
-                             </div>
-
-                             {/* Floating Status Badge (Top Right) */}
-                             {sim.badge && (
-                                <div className="absolute top-4 right-4 bg-[#b08d55]/90 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wide shadow-sm">
-                                    {sim.badge}
-                                </div>
-                             )}
-                         </div>
-
-                         {/* Content Area */}
-                         <div className="p-5 flex-grow flex flex-col bg-[#fffbf2]">
-                             <div className="mb-4">
-                                <h3 className="text-xl font-bold text-gray-900 leading-tight mb-1">{sim.title}</h3>
-                                <p className="text-sm text-gray-500 font-normal">{sim.subtitle}</p>
-                             </div>
-                             
-                             {/* Icons Row */}
-                             <div className="flex items-center gap-5 mb-5 text-gray-600">
-                                 <div className="flex items-center gap-1.5">
-                                     <Home className="w-4 h-4 stroke-[2.5]" />
-                                     <span className="text-sm font-semibold">{sim.specs.beds} bd</span>
-                                 </div>
-                                 <div className="flex items-center gap-1.5">
-                                     <Bath className="w-4 h-4 stroke-[2.5]" />
-                                     <span className="text-sm font-semibold">{sim.specs.baths} ba</span>
-                                 </div>
-                                 <div className="flex items-center gap-1.5">
-                                     <Maximize2 className="w-4 h-4 stroke-[2.5]" />
-                                     <span className="text-sm font-semibold">{sim.specs.area}</span>
-                                 </div>
-                             </div>
-
-                             {/* Tags Row */}
-                             <div className="flex flex-wrap gap-2 mb-6 mt-auto">
-                                 {sim.tags.map((tag, i) => (
-                                     <span key={i} className="bg-[#f0ece1] text-gray-700 text-[11px] font-bold px-3 py-1.5 rounded-full">
-                                          {tag}
-                                     </span>
-                                 ))}
-                             </div>
-
-                             {/* Full Width Button */}
-                             <button className="w-full bg-[#1f5f5b] hover:bg-[#164542] text-white font-bold py-3 rounded-2xl transition-colors shadow-lg shadow-[#1f5f5b]/20">
-                                 View Details
-                             </button>
-                         </div>
-                     </div>
-                 ))}
-             </div>
-          </div>
         </div>
       </main>
 
-      {/* ---- 4. UPDATED: TRENDY SHARE POPUP MODAL ---- */}
-      {isShareOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md transition-all animate-in fade-in duration-200">
-          <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-md p-6 relative animate-in zoom-in-95 duration-200 border border-white/50 ring-1 ring-black/5">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-600">Share Property</h3>
-              <button 
-                onClick={() => setIsShareOpen(false)} 
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <X className="w-5 h-5 text-gray-500" />
-              </button>
-            </div>
-
-            {/* Trendy Icons Row */}
-            <div className="flex gap-6 overflow-x-auto pb-4 no-scrollbar justify-center px-2 mb-4">
-              {/* WHATSAPP (Original Icon) */}
-              <div className="flex flex-col items-center gap-3 group min-w-[64px] cursor-pointer">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-[#25D366] text-white shadow-lg shadow-[#25D366]/20 transition-all duration-300 group-hover:scale-110 group-hover:-translate-y-1">
-                  <WhatsAppIcon />
-                </div>
-                <span className="text-xs text-gray-600 font-bold">WhatsApp</span>
-              </div>
-
-              {/* Facebook */}
-              <div className="flex flex-col items-center gap-3 group min-w-[64px] cursor-pointer">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-[#1877F2] text-white shadow-lg shadow-[#1877F2]/20 transition-all duration-300 group-hover:scale-110 group-hover:-translate-y-1">
-                  <Facebook className="w-7 h-7 fill-current" />
-                </div>
-                <span className="text-xs text-gray-600 font-bold">Facebook</span>
-              </div>
-
-              {/* X / Twitter */}
-              <div className="flex flex-col items-center gap-3 group min-w-[64px] cursor-pointer">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-black text-white shadow-lg shadow-black/20 transition-all duration-300 group-hover:scale-110 group-hover:-translate-y-1">
-                  <Twitter className="w-6 h-6 fill-current" />
-                </div>
-                <span className="text-xs text-gray-600 font-bold">X</span>
-              </div>
-
-              {/* Copy Link */}
-              <div className="flex flex-col items-center gap-3 group min-w-[64px] cursor-pointer" onClick={handleCopyLink}>
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-gray-100 text-gray-700 shadow-lg border border-gray-200 transition-all duration-300 group-hover:scale-110 group-hover:-translate-y-1 group-hover:bg-gray-200">
-                   {copied ? <Check className="w-7 h-7 text-green-600" /> : <Share2 className="w-7 h-7" />}
-                </div>
-                <span className="text-xs text-gray-600 font-bold">Copy</span>
-              </div>
-            </div>
-
-            {/* Input Field */}
-            <div className="mt-6 flex items-center gap-2 bg-gray-50 rounded-2xl p-2 border border-gray-200 inner-shadow">
-              <div className="flex-1 px-3 text-sm text-gray-500 truncate font-mono">
-                {shareUrl}
-              </div>
-              <button 
-                onClick={handleCopyLink}
-                className="bg-gray-900 hover:bg-black text-white px-6 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95 shadow-md"
-              >
-                {copied ? 'Copied!' : 'Copy'}
-              </button>
-            </div>
+      {/* Similar Properties Section */}
+      <div className="mt-12 mb-10 pt-10 border-t border-gray-200 relative group">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between mb-6 px-1">
+            <h2 className="text-2xl font-bold text-gray-900">Similar homes you might like</h2>
+            <Link href="/properties" className="text-sm font-bold hover:underline flex items-center gap-1 text-[#1f5f5b]">
+                See all <ArrowLeft className="w-4 h-4 rotate-180" />
+            </Link>
           </div>
+
+          {/* Scroll Buttons */}
+          <button 
+            onClick={() => scroll('left')} 
+            className="absolute left-0 top-[55%] -translate-y-1/2 z-20 bg-white text-gray-700 p-2.5 rounded-full shadow-lg border border-gray-100 hover:bg-gray-50 hover:scale-110 transition-all hidden md:flex items-center justify-center"
+            aria-label="Scroll left"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+          
+          <button 
+            onClick={() => scroll('right')} 
+            className="absolute right-0 top-[55%] -translate-y-1/2 z-20 bg-white text-gray-700 p-2.5 rounded-full shadow-lg border border-gray-100 hover:bg-gray-50 hover:scale-110 transition-all hidden md:flex items-center justify-center"
+            aria-label="Scroll right"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+
+          {/* Carousel Container */}
+          <div 
+            ref={scrollContainerRef}
+            className="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 -mx-4 px-4 sm:mx-0 sm:px-1 no-scrollbar scroll-smooth"
+          >
+            {similarProperties.map((sim) => (
+              <div key={sim.id} className="min-w-[300px] sm:min-w-[340px] snap-center bg-[#fffbf2] rounded-3xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer flex flex-col">
+                
+                {/* Card Image Area */}
+                <div className="relative h-60 w-full">
+                  <Image src={sim.image} alt={sim.location} fill className="object-cover" />
+                  
+                  {/* Floating Price Badge (Bottom Left) */}
+                  <div className="absolute bottom-4 left-4 bg-white px-4 py-2 rounded-xl shadow-md z-10">
+                    <span className="text-lg font-extrabold text-[#1f5f5b]">{sim.price}</span>
+                  </div>
+
+                  {/* Floating Status Badge (Top Right) */}
+                  {sim.tag.text && (
+                    <div className="absolute top-4 right-4 bg-[#b08d55]/90 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wide shadow-sm" style={{ backgroundColor: sim.tag.color + 'e6' }}>
+                      {sim.tag.text}
+                    </div>
+                  )}
+                </div>
+
+                {/* Content Area */}
+                <div className="p-5 flex-grow flex flex-col bg-[#fffbf2]">
+                  <div className="mb-4">
+                    <h3 className="text-xl font-bold text-gray-900 leading-tight mb-1">{sim.location.split(',')[0]}</h3>
+                    <p className="text-sm text-gray-500 font-normal">{sim.location}</p>
+                  </div>
+                  
+                  {/* Icons Row */}
+                  <div className="flex items-center gap-5 mb-5 text-gray-600">
+                    <div className="flex items-center gap-1.5">
+                      <Home className="w-4 h-4 stroke-[2.5]" />
+                      <span className="text-sm font-semibold">{sim.beds} bd</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Bath className="w-4 h-4 stroke-[2.5]" />
+                      <span className="text-sm font-semibold">{sim.baths} ba</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Maximize2 className="w-4 h-4 stroke-[2.5]" />
+                      <span className="text-sm font-semibold">{sim.sqft} sq ft</span>
+                    </div>
+                  </div>
+
+                  {/* Tags */}
+                  <div className="flex flex-wrap gap-2 mb-5">
+                    {sim.features.map((tag, i) => (
+                      <span key={i} className="bg-[#f5f2e8] text-[#8b6f47] text-xs font-semibold px-3 py-1 rounded-full border border-[#e6d7c3]">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Enquire Button */}
+                  <div className="mt-auto">
+                    <button className="w-full bg-[#1f5f5b] hover:bg-[#164542] text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-md hover:shadow-lg active:scale-95">
+                      Enquire Now
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {similarProperties.length === 0 && (
+            <div className="py-10 text-center text-sm text-gray-500">
+              No similar properties found right now.
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       <Footer />
     </div>
