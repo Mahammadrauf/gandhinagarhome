@@ -141,7 +141,7 @@ const Hero = () => {
               Gandhinagar<span className="text-emerald-300">Homes</span>.com
             </h1>
             <p className="animate-rise delay-100 text-sm md:text-xl font-bold tracking-[0.15em] text-emerald-100 mb-6 uppercase drop-shadow-sm">
-              Where every property finds its next owner
+             Where every property will find its next owner.
             </p>
             <p className="animate-rise delay-200 text-base md:text-lg text-emerald-50 leading-relaxed max-w-xl hidden md:block font-medium opacity-90 mb-10">
               Your trusted platform dedicated exclusively to <span className="text-white font-bold border-b border-white/30 pb-0.5">Resale Properties</span> in Gandhinagar. 

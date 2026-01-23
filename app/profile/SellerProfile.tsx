@@ -13,7 +13,10 @@ import {
   Camera,
   Shield,
   BellRing,
-  Trash2
+  Trash2,
+  Crown,       // Added
+  Star,        // Added
+  CheckCircle2 // Added
 } from 'lucide-react';
 
 const BRAND_COLOR = "text-[#006A58]";
@@ -95,6 +98,11 @@ export default function SellerProfile() {
     }
   };
 
+  const handleUpgrade = () => {
+      // Redirect to your subscription page
+      router.push('/sell/subscription');
+  };
+
   if (!user) return null;
 
   const SidebarItem = ({ id, icon: Icon, label, count }: any) => (
@@ -150,6 +158,12 @@ export default function SellerProfile() {
                 </span>
               </h2>
               <p className="text-sm text-gray-500 mt-1">{formData.email}</p>
+              
+              {/* Current Plan Status Badge */}
+              <div className="mt-3 bg-gray-100 px-3 py-1 rounded-full text-xs font-semibold text-gray-600 border border-gray-200">
+                 Current: Standard Plan
+              </div>
+
               <div className="mt-4 w-full pt-4 border-t border-gray-100 flex justify-center">
                  <div className="text-center">
                     <span className="block font-bold text-gray-800 text-lg">1</span>
@@ -161,6 +175,10 @@ export default function SellerProfile() {
             <nav className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
               <SidebarItem id="profile" icon={User} label="My Profile" />
               <SidebarItem id="listings" icon={Home} label="My Listings" />
+              
+              {/* NEW MEMBERSHIP TAB */}
+              <SidebarItem id="membership" icon={Crown} label="Membership Plans" />
+              
               <SidebarItem id="notifications" icon={Bell} label="Notifications" count={MOCK_NOTIFICATIONS.length} />
               <div className="my-2 border-t border-gray-100" />
               <SidebarItem id="settings" icon={Settings} label="Settings" />
@@ -200,6 +218,69 @@ export default function SellerProfile() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* --- NEW MEMBERSHIP TAB CONTENT --- */}
+            {activeTab === 'membership' && (
+              <div className="space-y-6">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                   <h3 className="text-xl font-bold text-gray-800 mb-2">Upgrade Your Selling Power</h3>
+                   <p className="text-gray-500 text-sm mb-6">Switch to a higher tier plan to sell faster and get more visibility.</p>
+
+                   <div className="grid md:grid-cols-2 gap-6">
+                      
+                      {/* Featured Option */}
+                      <div className="border-2 border-blue-100 bg-blue-50/50 rounded-xl p-6 relative hover:shadow-lg transition-all">
+                         <div className="absolute top-4 right-4 bg-blue-100 text-blue-700 p-2 rounded-full">
+                            <Star size={20} className="fill-blue-700" />
+                         </div>
+                         <h4 className="text-lg font-bold text-blue-900">Featured</h4>
+                         <p className="text-2xl font-extrabold text-blue-700 mt-2">₹14,997</p>
+                         <p className="text-sm text-blue-600/80 mb-4">Valid for 1 Month</p>
+                         
+                         <ul className="space-y-3 mb-6">
+                            <li className="flex items-center gap-2 text-sm text-gray-700"><CheckCircle2 size={16} className="text-blue-600"/> Top 5 Search Ranking</li>
+                            <li className="flex items-center gap-2 text-sm text-gray-700"><CheckCircle2 size={16} className="text-blue-600"/> Visible on Home Page</li>
+                            <li className="flex items-center gap-2 text-sm text-gray-700"><CheckCircle2 size={16} className="text-blue-600"/> WhatsApp Chat Link</li>
+                         </ul>
+
+                         <button 
+                            onClick={handleUpgrade}
+                            className="w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-blue-200 shadow-lg"
+                         >
+                            Switch to Featured
+                         </button>
+                      </div>
+
+                      {/* Exclusive Option */}
+                      <div className="border-2 border-[#B59E78] bg-gradient-to-b from-[#FFFBEB] to-[#fff7ed] rounded-xl p-6 relative hover:shadow-xl transition-all transform hover:-translate-y-1">
+                         <div className="absolute top-0 left-0 w-full flex justify-center -mt-3">
+                            <span className="bg-[#B59E78] text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">Best Value</span>
+                         </div>
+                         <div className="absolute top-4 right-4 bg-[#F5F2EB] text-[#B59E78] p-2 rounded-full">
+                            <Crown size={20} className="fill-[#B59E78]" />
+                         </div>
+                         <h4 className="text-lg font-bold text-[#5C5042] mt-2">Exclusive</h4>
+                         <p className="text-2xl font-extrabold text-[#8C7A5B] mt-2">₹19,997</p>
+                         <p className="text-sm text-[#8C7A5B]/80 mb-4">Valid for 1 Month</p>
+                         
+                         <ul className="space-y-3 mb-6">
+                            <li className="flex items-center gap-2 text-sm text-gray-700"><CheckCircle2 size={16} className="text-[#B59E78]"/> #1 Position on Home Page</li>
+                            <li className="flex items-center gap-2 text-sm text-gray-700"><CheckCircle2 size={16} className="text-[#B59E78]"/> Top of Property Page</li>
+                            <li className="flex items-center gap-2 text-sm text-gray-700"><CheckCircle2 size={16} className="text-[#B59E78]"/> Relationship Manager</li>
+                         </ul>
+
+                         <button 
+                             onClick={handleUpgrade}
+                             className="w-full py-3 bg-gradient-to-r from-[#B59E78] to-[#8C7A5B] text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#B59E78]/40 transition-all"
+                         >
+                            Switch to Exclusive
+                         </button>
+                      </div>
+
+                   </div>
+                </div>
               </div>
             )}
 
@@ -326,12 +407,13 @@ export default function SellerProfile() {
                       </div>
                       <span className="text-xs font-medium text-gray-400 italic">Coming soon</span>
                     </button>
-                    <button className="w-full flex items-center justify-between text-left group opacity-50 cursor-not-allowed">
+                    {/* Updated Link to use the function */}
+                    <button onClick={() => setActiveTab('membership')} className="w-full flex items-center justify-between text-left group hover:bg-gray-50 p-2 -mx-2 rounded-lg transition-colors">
                       <div>
                         <p className="text-sm font-semibold text-gray-800">Upgrade Listing Visibility</p>
                         <p className="text-xs text-gray-500">Feature your property at the top of search results</p>
                       </div>
-                      <span className="text-xs font-medium text-gray-400 italic">Coming soon</span>
+                      <span className="text-xs font-medium text-[#006A58]">View Plans →</span>
                     </button>
                   </div>
                 </div>

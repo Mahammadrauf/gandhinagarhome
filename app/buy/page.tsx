@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import MapComponent from "@/components/MapComponent";
+import axios from "axios";
+import API_URL from "@/app/config/config";
 import { 
   MapPin, Clock, Car, Calendar, Map as MapIcon, 
   ShieldCheck, X, List, Plus, Minus, ArrowLeft, Filter 
@@ -1270,6 +1272,7 @@ function tierLabel(tier: Tier) {
 }
 
 function ListingCard({ item, handleOpenDetails }: { item: Listing; handleOpenDetails: (propertyId: string) => void }) {
+  const router = useRouter();
   const isOwner = item.source === "owner";
   const theme = themeForTier(item.tier);
   const getSourceLabel = () => {
@@ -1278,6 +1281,28 @@ function ListingCard({ item, handleOpenDetails }: { item: Listing; handleOpenDet
       return { text: "Agent Listed", colorClass: "text-blue-700" };
   };
   const sourceInfo = getSourceLabel();
+
+  const handleUnlockSeller = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    try {
+      // Check if user has active buyer subscription
+      const response = await axios.get(`${API_URL}/user/subscription/status`);
+      
+      if (response.data.success && response.data.data?.hasActiveSubscription) {
+        // User is subscribed - show contact details
+        alert(`Full contact details:\n${item.phoneMasked}\n\nPlease check your email for complete details.`);
+      } else {
+        // User is not subscribed - redirect to subscription page
+        router.push('/buy/subscription');
+      }
+    } catch (error) {
+      // Handle error - redirect to subscription page as fallback
+      console.error('Error checking subscription status:', error);
+      router.push('/buy/subscription');
+    }
+  };
 
   return (
     // ADDED md:items-center to the main article tag to align image and text content vertically
@@ -1305,7 +1330,7 @@ function ListingCard({ item, handleOpenDetails }: { item: Listing; handleOpenDet
       </div>
       <div className="w-full md:w-48 shrink-0 flex flex-col justify-between md:border-l md:border-slate-100 md:pl-4 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100">
         <div> <div className="text-xs font-medium text-slate-500">Price</div> <div className="text-xl font-bold text-slate-900 mt-0.5"> {item.priceLabel} </div> <div className="mt-2"> <div className="text-xs text-slate-500">Seller access</div> <div className="text-xs font-medium text-slate-700 mt-0.5">{item.phoneMasked}</div> <div className="text-[10px] text-slate-400 leading-tight">full number after subscription</div> </div> </div>
-        <div className="flex flex-col gap-2 mt-4"> <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleOpenDetails(item.propertyId || String(item.id)); }} className={`w-full py-2 rounded-full text-white text-sm font-bold shadow-sm transition-all active:scale-95 ${theme.viewBtn}`}> View details </button> <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); }} className="w-full py-2 rounded-full border border-slate-300 bg-white hover:border-slate-400 text-slate-800 text-sm font-bold transition-all active:scale-95"> Unlock seller </button> </div>
+        <div className="flex flex-col gap-2 mt-4"> <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleOpenDetails(item.propertyId || String(item.id)); }} className={`w-full py-2 rounded-full text-white text-sm font-bold shadow-sm transition-all active:scale-95 ${theme.viewBtn}`}> View details </button> <button onClick={handleUnlockSeller} className="w-full py-2 rounded-full border border-slate-300 bg-white hover:border-slate-400 text-slate-800 text-sm font-bold transition-all active:scale-95"> Unlock seller </button> </div>
       </div>
     </article>
   );

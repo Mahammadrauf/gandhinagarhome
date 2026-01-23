@@ -15,7 +15,8 @@ import {
   ArrowRight, 
   Lock, 
   Clock, 
-  Award 
+  Award,
+  Info
 } from "lucide-react";
 
 // --- Configuration ---
@@ -23,12 +24,12 @@ import {
 // Helper to bold numbers in features for readability
 const HighlightText = ({ text, colorClass }: { text: string; colorClass: string }) => {
   // Regex to find numbers or specific keywords
-  const parts = text.split(/(\d+ Days|Lifetime|\d+ Photos|Top 5|#1 Position)/g);
+  const parts = text.split(/(\d+ Days|Lifetime|\d+ Photos|Top 5|#1 Position|Home Page|Property Page)/g);
   return (
     <span>
       {parts.map((part, i) => 
         // If part matches regex, bold it
-        /(\d+ Days|Lifetime|\d+ Photos|Top 5|#1 Position)/.test(part) ? (
+        /(\d+ Days|Lifetime|\d+ Photos|Top 5|#1 Position|Home Page|Property Page)/.test(part) ? (
           <span key={i} className={`font-extrabold ${colorClass}`}>{part}</span>
         ) : (
           <span key={i}>{part}</span>
@@ -43,7 +44,7 @@ const plans = [
     id: "standard",
     name: "Standard",
     tagline: "Basic Visibility",
-    price: "10,000",
+    price: "9,997", // Updated Price
     fullPrice: "12,500",
     icon: Zap,
     styles: {
@@ -58,7 +59,7 @@ const plans = [
       featureText: "text-[#0b6b53]" // Darker green text for features
     },
     features: [
-      "Listed for 60 Days",
+      "Listed for 60 Days", // Updated Duration
       "Visible in search results",
       "Standard Inquiry Form",
       "Basic Photo Gallery (5 Photos)",
@@ -70,8 +71,8 @@ const plans = [
     id: "featured",
     name: "Featured",
     tagline: "High Velocity",
-    price: "13,000",
-    fullPrice: "16,000",
+    price: "14,997", // Updated Price
+    fullPrice: "18,000",
     icon: Star,
     styles: {
       // FEATURED: Teal/Blue Theme (#0F7F9C)
@@ -85,12 +86,12 @@ const plans = [
       featureText: "text-[#022F5A]"
     },
     features: [
-      "Listed for 90 Days",
+      "Listed for 30 Days", // Updated to 1 Month (30 Days)
+      "Visible on Home Page", // Added Home Page visibility
+      "Extra Reach & Visibility",
       "Top 5 Search Ranking",
-      "Highlighted 'Featured' Tag",
       "Expanded Gallery (15 Photos)",
-      "WhatsApp Direct Chat Link",
-      "Weekly Performance Report"
+      "WhatsApp Direct Chat Link"
     ],
     highlight: false
   },
@@ -98,8 +99,8 @@ const plans = [
     id: "exclusive",
     name: "Exclusive",
     tagline: "Maximum Exposure",
-    price: "15,000",
-    fullPrice: "25,000",
+    price: "19,997", // Updated Price
+    fullPrice: "28,000",
     icon: Crown,
     styles: {
       // EXCLUSIVE: Gold/Stone Theme (#B59E78)
@@ -114,12 +115,12 @@ const plans = [
       featureText: "text-[#5C5042]"
     },
     features: [
-      "Everything in Featured",
-      "Listed Until Sold (Lifetime)",
+      "Listed for 30 Days", // Updated to 1 Month (30 Days)
+      "Top of Property Page", // Added specific location
+      "Maximum Extra Reach",
       "#1 Position on Homepage",
       "Professional Photoshoot Included",
       "Dedicated Relationship Manager",
-      "Verified 'Exclusive' Gold Badge",
       "Social Media Promotion"
     ],
     highlight: true
@@ -331,6 +332,22 @@ export default function SubscriptionPage() {
               </div>
             );
           })}
+        </div>
+
+        {/* --- UPGRADE INFO NOTE (New Requirement) --- */}
+        <div className="max-w-3xl mx-auto mt-12 bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex items-start gap-4">
+            <div className="bg-blue-50 text-blue-600 p-2 rounded-lg shrink-0">
+                <Info size={24} />
+            </div>
+            <div>
+                <h4 className="font-bold text-slate-800 text-sm md:text-base mb-1">
+                    Flexible Upgrades Available
+                </h4>
+                <p className="text-xs md:text-sm text-slate-500 leading-relaxed">
+                    Not sure which plan to choose? You can start with the <strong>Standard Plan</strong> today. 
+                    If you need more reach later, you can easily switch to <strong>Featured</strong> or <strong>Exclusive</strong> directly from your profile dashboard after uploading your property.
+                </p>
+            </div>
         </div>
 
         {/* --- Trust & Security Footer --- */}
