@@ -481,7 +481,7 @@ const Header = () => {
                   </div>
 
                   <button type="submit" disabled={isLoading || user.mobile.length < 10} className={`w-full ${BRAND_BG} ${BRAND_HOVER_BG} text-white font-bold py-2.5 rounded-lg shadow-md shadow-[#006A58]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed mt-2 active:scale-[0.98] text-sm`}>
-                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (authMode === 'signup' ? 'Get Verification Codes' : 'Get Login OTP')} <ArrowRight className="w-4 h-4" />
+                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (authMode === 'signup' ? 'Get OTP on Email & WhatsApp' : 'Get Login OTP')} <ArrowRight className="w-4 h-4" />
                   </button>
 
                   <div className="text-center pt-1">
