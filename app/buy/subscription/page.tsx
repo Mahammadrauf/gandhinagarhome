@@ -60,7 +60,7 @@ const plans = [
       featureText: "text-[#1e40af]"
     },
     features: [
-      "Unlock 5 Contacts",
+      "Unlock 5 Properties Contacts",
       "Valid for 60 Days",
       "Direct Owner Phone Numbers",
       "Verified Seller ID",
@@ -86,7 +86,7 @@ const plans = [
       featureText: "text-[#115e59]"
     },
     features: [
-      "Unlock 15 Contacts",
+      "Unlock 15 Properties Contacts",
       "Valid for 60 Days",
       "Verified Properties Only",
       "Priority Email Support",
@@ -112,7 +112,7 @@ const plans = [
       featureText: "text-[#78350f]"
     },
     features: [
-      "Unlock 40 Contacts",
+      "Unlock 40 Properties Contacts",
       "Valid for 60 Days",
       "Access to Premium Listings",
       "Dedicated Relationship Manager",

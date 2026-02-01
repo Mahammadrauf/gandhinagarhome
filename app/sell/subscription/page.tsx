@@ -31,12 +31,12 @@ declare global {
 // Helper to bold numbers in features for readability
 const HighlightText = ({ text, colorClass }: { text: string; colorClass: string }) => {
   // Regex to find numbers or specific keywords
-  const parts = text.split(/(\d+ Days|Lifetime|\d+ Photos|Top 5|#1 Position|Home Page|Property Page)/g);
+  const parts = text.split(/(\d+ Days|Lifetime|\d+ Photos|Top 5|Top positioning|Home Page|Property Page)/g);
   return (
     <span>
       {parts.map((part, i) => 
         // If part matches regex, bold it
-        /(\d+ Days|Lifetime|\d+ Photos|Top 5|#1 Position|Home Page|Property Page)/.test(part) ? (
+        /(\d+ Days|Lifetime|\d+ Photos|Top 5|Top positioning|Home Page|Property Page)/.test(part) ? (
           <span key={i} className={`font-extrabold ${colorClass}`}>{part}</span>
         ) : (
           <span key={i}>{part}</span>
@@ -51,25 +51,23 @@ const plans = [
     id: "standard",
     name: "Standard",
     tagline: "Basic Visibility",
-    price: "9,997", // Updated Price
+    price: "9,997", 
     fullPrice: "12,500",
     icon: Zap,
     styles: {
-      // STANDARD: Filled with Light Green theme (bg-[#e7fcf7]) by default
       card: "bg-[#e7fcf7] border-2 border-[#0b6b53] shadow-xl shadow-[#0b6b53]/5 z-0 transform hover:-translate-y-1",
       title: "text-[#0b6b53]", 
-      tag: "bg-[#0b6b53] text-white", // Filled tag for contrast
+      tag: "bg-[#0b6b53] text-white", 
       price: "text-[#0b6b53]",
       button: "bg-[#0b6b53] text-white hover:bg-[#095c47] hover:shadow-lg hover:shadow-[#0b6b53]/20",
-      iconBox: "bg-white text-[#0b6b53] shadow-sm", // White box to pop against green bg
+      iconBox: "bg-white text-[#0b6b53] shadow-sm", 
       check: "text-[#0b6b53]",
-      featureText: "text-[#0b6b53]" // Darker green text for features
+      featureText: "text-[#0b6b53]" 
     },
     features: [
-      "Listed for 60 Days", // Updated Duration
+      "Listed for 60 Days", 
       "Visible in search results",
       "Standard Inquiry Form",
-      "Basic Photo Gallery (5 Photos)",
       "Email Support"
     ],
     highlight: false
@@ -78,11 +76,10 @@ const plans = [
     id: "featured",
     name: "Featured",
     tagline: "High Velocity",
-    price: "14,997", // Updated Price
+    price: "14,997", 
     fullPrice: "18,000",
     icon: Star,
     styles: {
-      // FEATURED: Teal/Blue Theme (#0F7F9C)
       card: "bg-[#f4fbff] border-2 border-[#0F7F9C]/30 hover:border-[#0F7F9C] shadow-xl shadow-[#0F7F9C]/10 z-10 transform hover:-translate-y-1",
       title: "text-[#022F5A]",
       tag: "bg-[#e0f2ff] text-[#0F7F9C]",
@@ -93,11 +90,10 @@ const plans = [
       featureText: "text-[#022F5A]"
     },
     features: [
-      "Listed for 30 Days", // Updated to 1 Month (30 Days)
-      "Visible on Home Page", // Added Home Page visibility
+      "30 Days Premium + 30 Days Standard (60 Days Total)", 
+      "Visible on Home Page", 
       "Extra Reach & Visibility",
       "Top 5 Search Ranking",
-      "Expanded Gallery (15 Photos)",
       "WhatsApp Direct Chat Link"
     ],
     highlight: false
@@ -106,12 +102,10 @@ const plans = [
     id: "exclusive",
     name: "Exclusive",
     tagline: "Maximum Exposure",
-    price: "19,997", // Updated Price
+    price: "19,997", 
     fullPrice: "28,000",
     icon: Crown,
     styles: {
-      // EXCLUSIVE: Gold/Stone Theme (#B59E78)
-      // Added a subtle gradient background to make it feel premium
       card: "bg-gradient-to-b from-[#FDFBF7] to-[#fcf8f0] border-2 border-[#B59E78] ring-4 ring-[#B59E78]/10 shadow-2xl shadow-[#B59E78]/25 scale-[1.03] z-20 transform hover:-translate-y-1",
       title: "text-[#5C5042]", 
       tag: "bg-[#F5F2EB] text-[#8C7A5B]",
@@ -122,13 +116,12 @@ const plans = [
       featureText: "text-[#5C5042]"
     },
     features: [
-      "Listed for 30 Days", // Updated to 1 Month (30 Days)
-      "Top of Property Page", // Added specific location
+      "Top positioning on the home page (first among all features)",
+      "30 Days Premium + 30 Days Standard (60 Days Total)",  
+      "Top of Property Page",
       "Maximum Extra Reach",
-      "#1 Position on Homepage",
       "Professional Photoshoot Included",
-      "Dedicated Relationship Manager",
-      "Social Media Promotion"
+      "Dedicated Relationship Manager"
     ],
     highlight: true
   }
@@ -139,8 +132,12 @@ export default function SubscriptionPage() {
   const [hoveredPlan, setHoveredPlan] = useState<string | null>(null);
   const [submittingPlan, setSubmittingPlan] = useState<string | null>(null);
   const [propertyId, setPropertyId] = useState<string | null>(null);
+  const [viewerCount, setViewerCount] = useState(12);
 
   useEffect(() => {
+    // Generate dynamic viewer count between 11 and 20
+    setViewerCount(Math.floor(Math.random() * (20 - 11 + 1)) + 11);
+
     const raw = localStorage.getItem("pendingListing");
     if (!raw) return;
     try {
@@ -307,7 +304,6 @@ export default function SubscriptionPage() {
     <main className="min-h-screen bg-[#F8FAFC]">
       <Header />
 
-      {/* UPDATED: Reduced top padding from py-12 to py-6 */}
       <div className="container mx-auto px-4 py-6 lg:py-10">
         
         {/* --- Header Section --- */}
@@ -414,7 +410,7 @@ export default function SubscriptionPage() {
                             <div className="w-4 h-4 rounded-full bg-slate-400 border border-white"></div>
                         </div>
                         <p className="text-[10px] text-[#8C7A5B] font-bold">
-                             12 people viewing this
+                             {viewerCount} people viewing this profile right now
                         </p>
                     </div>
                 )}
@@ -423,7 +419,7 @@ export default function SubscriptionPage() {
           })}
         </div>
 
-        {/* --- UPGRADE INFO NOTE (New Requirement) --- */}
+        {/* --- UPGRADE INFO NOTE --- */}
         <div className="max-w-3xl mx-auto mt-12 bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex items-start gap-4">
             <div className="bg-blue-50 text-blue-600 p-2 rounded-lg shrink-0">
                 <Info size={24} />
@@ -433,8 +429,7 @@ export default function SubscriptionPage() {
                     Flexible Upgrades Available
                 </h4>
                 <p className="text-xs md:text-sm text-slate-500 leading-relaxed">
-                    Not sure which plan to choose? You can start with the <strong>Standard Plan</strong> today. 
-                    If you need more reach later, you can easily switch to <strong>Featured</strong> or <strong>Exclusive</strong> directly from your profile dashboard after uploading your property.
+                    Not sure which plan to choose? Your property stays active for <strong>60 days</strong> across all plans. If you choose the <strong>Featured</strong> or <strong>Exclusive</strong> plan, your property will enjoy premium placement for the first <strong>30 days</strong>, and then continue as a normal standard property for the remaining <strong>30 days</strong>.
                 </p>
             </div>
         </div>
