@@ -743,8 +743,8 @@ function BuyIntroPage() {
         const regular = allListings.filter(l => l.tier === "regular");
 
         const selectedExclusive = shuffleArray(exclusive).slice(0, 2);
-        const selectedFeatured = shuffleArray(featured).slice(0, 2);
-        const selectedRegular = shuffleArray(regular).slice(0, 4);
+        const selectedFeatured = shuffleArray(featured).slice(0, 3);
+        const selectedRegular = shuffleArray(regular).slice(0, 5);
 
         setRotatedListings([
           ...selectedExclusive,

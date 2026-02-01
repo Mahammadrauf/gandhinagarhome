@@ -128,12 +128,20 @@ const Hero = () => {
       `}</style>
 
       {/* Main Content Area */}
-      <div className="container mx-auto px-4 md:px-8 mt-2 md:-mt-4 relative z-10">
+      <div className="container mx-auto px-4 md:px-8 mt-8 md:mt-6 relative z-10">
         <div className="relative h-[480px] md:h-[420px] overflow-hidden rounded-[2.5rem] border border-gray-100 shadow-2xl">
 
           {/* Background */}
-          <div className="absolute inset-0 bg-[#056F5E]" />
-          <div className="absolute inset-0 bg-gradient-to-tr from-black/40 via-transparent to-white/5 pointer-events-none" />
+          {/* Original green background - commented out */}
+          {/* <div className="absolute inset-0 bg-[#056F5E]" /> */}
+          {/* <div className="absolute inset-0 bg-gradient-to-tr from-black/40 via-transparent to-white/5 pointer-events-none" /> */}
+          
+          {/* New hero.png background */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: 'url("/images/hero.png")' }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-tr from-black/60 via-transparent to-black/20 pointer-events-none" />
 
           {/* TEXT BLOCK */}
           <div className="absolute top-0 bottom-0 left-0 right-0 flex flex-col justify-start pt-8 md:pt-10 px-6 md:px-24 z-10 text-white max-w-4xl">
