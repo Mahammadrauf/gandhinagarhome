@@ -1,7 +1,7 @@
 // app/buy/subscription/page.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -17,6 +17,12 @@ import {
   Award,
   Phone
 } from "lucide-react";
+
+declare global {
+  interface Window {
+    Razorpay?: any;
+  }
+}
 
 // --- Configuration ---
 
@@ -137,6 +143,26 @@ export default function BuyerSubscriptionPage() {
     return Number.isFinite(n) ? n : 0;
   };
 
+  const loadRazorpayScript = () => {
+    return new Promise<boolean>((resolve) => {
+      if (window.Razorpay) return resolve(true);
+
+      const existing = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]');
+      if (existing) {
+        existing.addEventListener('load', () => resolve(true));
+        existing.addEventListener('error', () => resolve(false));
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
   const handlePlanPay = async (plan: { id: string; name: string; price: string }) => {
     try {
       setSubmittingPlan(plan.id);
@@ -149,11 +175,21 @@ export default function BuyerSubscriptionPage() {
       }
 
       const amount = parseAmount(plan.price);
-      
+      if (!amount) {
+        alert("Invalid plan amount.");
+        return;
+      }
+
+      const scriptOk = await loadRazorpayScript();
+      if (!scriptOk) {
+        alert("Failed to load Razorpay checkout. Please check your internet and try again.");
+        return;
+      }
+
       const response = await axios.post(
-        `${API_URL}/payment/create-order`,
+        `${API_URL}/payments/create-order`,
         {
-          paymentType: "buyer_subscription", 
+          paymentType: "buyer_subscription",
           amount,
           planId: plan.id
         },
@@ -163,6 +199,12 @@ export default function BuyerSubscriptionPage() {
       );
 
       if (response.data?.success) {
+        const { order, keyId } = response.data.data || {};
+        if (!order?.id || !keyId) {
+          alert("Payment order response is invalid.");
+          return;
+        }
+
         localStorage.setItem(
           "pendingBuyerPayment",
           JSON.stringify({
@@ -172,8 +214,53 @@ export default function BuyerSubscriptionPage() {
             createdAt: new Date().toISOString(),
           })
         );
-        alert("Payment order created successfully.");
-        router.back(); 
+
+        const rzp = new window.Razorpay({
+          key: keyId,
+          amount: order.amount,
+          currency: order.currency,
+          name: "Gandhinagar Homes",
+          description: `${plan.name} Plan`,
+          order_id: order.id,
+          handler: async (rzpResponse: any) => {
+            try {
+              const verifyRes = await axios.post(
+                `${API_URL}/payments/verify`,
+                {
+                  razorpayPaymentId: rzpResponse.razorpay_payment_id,
+                  razorpayOrderId: rzpResponse.razorpay_order_id,
+                  razorpaySignature: rzpResponse.razorpay_signature,
+                  paymentType: "buyer_subscription",
+                },
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              );
+
+              if (verifyRes.data?.success) {
+                alert("Payment successful. Your plan is activated.");
+                router.push("/buy");
+                return;
+              }
+
+              alert(verifyRes.data?.message || "Payment verification failed");
+            } catch (e: any) {
+              const msg = e?.response?.data?.message || e?.message || "Payment verification API error";
+              alert(msg);
+            }
+          },
+          modal: {
+            ondismiss: () => {
+              alert("Payment cancelled.");
+            },
+          },
+          prefill: {},
+          theme: { color: "#1e40af" },
+        });
+
+        rzp.open();
         return;
       }
 

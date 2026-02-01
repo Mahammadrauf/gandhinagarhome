@@ -9,14 +9,15 @@ import React, { Fragment, useRef, useState, KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import axios from 'axios';
 import API_URL from '@/app/config/config';
+import LocationPicker from "@/components/LocationPicker";
 
 type Step = 0 | 1 | 2 | 3;
 const stepTitles = ["Basic Information", "Specifications", "Location", "Media Upload"];
 
+// Utility functions for data formatting
 const validateEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
 const onlyDigitsOrSymbols = (v: string) => /^[0-9+\-\s()]*$/.test(v);
 
-// Utility functions for data formatting
 const formatPrice = (price: string): string => {
   const numPrice = parseFloat(price.replace(/,/g, ''));
   if (isNaN(numPrice)) return price;
@@ -144,6 +145,9 @@ function SellFormPageContent() {
   const [address, setAddress] = useState(""); // NEW Address field
   const [unitNo, setUnitNo] = useState("");
   const [pincode, setPincode] = useState("");
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
+  const [pickedDisplayAddress, setPickedDisplayAddress] = useState("");
 
   // Media
   const [photos, setPhotos] = useState<File[]>([]);
@@ -682,7 +686,7 @@ const handleEditMediaSubmit = () => {
                     <h3 className="text-lg font-semibold">Step 1: Basic Information</h3>
                     <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2l7 3v5c0 5-3 9-7 11-4-2-7-6-7-11V5l7-3z" stroke="#6b7280" strokeWidth="1.5" fill="none" />
+                        <path d="M10 3L8 8l-5 2 5 2 2 5 2-5 5-2-5-2zM14 14l-2 5-2-5-5-2 5-2 2-5 2 5 5 2z"></path>
                       </svg>
                       <span>Privacy protected</span>
                     </div>
@@ -1462,13 +1466,17 @@ Can’t find your area? Select the nearest major locality.            </p>
       <p className="text-sm text-gray-600 mb-3 px-1">
         Click on the map to open the location picker, search your address and drop a pin so buyers can see your exact location.
       </p>
-      <div className="h-60 rounded-lg bg-gray-200 grid place-items-center text-sm text-gray-500 overflow-hidden cursor-pointer">
-        <img
-          src="https://placehold.co/800x400/e2e8f0/64748b?text=Map+Integration+Placeholder"
-          alt="Map placeholder"
-          className="w-full h-full object-cover"
-        />
-      </div>
+      <LocationPicker
+        value={{ lat: latitude, lng: longitude, displayAddress: pickedDisplayAddress }}
+        onChange={(next) => {
+          setLatitude(next.lat);
+          setLongitude(next.lng);
+          setPickedDisplayAddress(next.displayAddress || "");
+          if (next.displayAddress && address.trim().length < 6) {
+            setAddress(next.displayAddress);
+          }
+        }}
+      />
     </div>
 
     <div className="flex items-center justify-between mt-4">
