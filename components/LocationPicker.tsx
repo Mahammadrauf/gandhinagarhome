@@ -294,7 +294,7 @@ export default function LocationPicker({
         </div>
       </div>
 
-      <div className="mt-3 h-60 rounded-lg bg-gray-200 overflow-hidden">
+      <div className="mt-3 h-96 rounded-lg bg-gray-200 overflow-hidden">
         <div id={containerId} className="w-full h-full" />
       </div>
 

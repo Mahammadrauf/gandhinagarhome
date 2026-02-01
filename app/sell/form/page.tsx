@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import axios from 'axios';
 import API_URL from '@/app/config/config';
 import LocationPicker from "@/components/LocationPicker";
+import { fetchUserProfile } from '@/lib/api';
 
 type Step = 0 | 1 | 2 | 3;
 const stepTitles = ["Basic Information", "Specifications", "Location", "Media Upload"];
@@ -212,19 +213,76 @@ useEffect(() => {
   setPropertySize(d.propertySize || "");
   setPropertySizeUnit(d.propertySizeUnit || "sq ft");
 
-  setCity(d.city || "");
-  setLocality(d.locality || "");
-  setAddress(d.address || "");
-  setUnitNo(d.unitNo || "");
-  setPincode(d.pincode || "");
-  
-  // Load media metadata in edit mode
-  setExistingPhotosCount(d.photosCount || 0);
-  setExistingHasVideo(d.hasVideo || false);
-  setExistingHasSaleDeed(d.hasSaleDeed || false);
-  setExistingHasBrochure(d.hasBrochure || false);
-}, [isEditMode]);
+    setCity(d.city || "");
+    setLocality(d.locality || "");
+    setAddress(d.address || "");
+    setUnitNo(d.unitNo || "");
+    setPincode(d.pincode || "");
 
+    // Load media metadata in edit mode
+    setExistingPhotosCount(d.photosCount || 0);
+    setExistingHasVideo(d.hasVideo || false);
+    setExistingHasSaleDeed(d.hasSaleDeed || false);
+    setExistingHasBrochure(d.hasBrochure || false);
+  }, [isEditMode]);
+
+  // Auto-fetch user profile on component mount
+  useEffect(() => {
+    const savedUser = localStorage.getItem('gh_user');
+    console.log('Auto-fetch: User data from localStorage:', savedUser);
+    
+    if (!savedUser) {
+      console.log('Auto-fetch: No user data found in localStorage, skipping profile fetch');
+      return;
+    }
+
+    try {
+      const parsedUser = JSON.parse(savedUser);
+      console.log('Auto-fetch: Parsed user data:', parsedUser);
+      
+      if (parsedUser.isLoggedIn === true && (parsedUser.role === 'buyer' || parsedUser.role === 'seller')) {
+        // Split user name into parts
+        const nameParts = parsedUser.name ? parsedUser.name.trim().split(' ') : [];
+        const firstName = nameParts[0] || parsedUser.firstName || '';
+        const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : parsedUser.lastName || '';
+        const middleName = nameParts.length > 2 ? nameParts.slice(1, -1).join(' ') : '';
+
+        console.log('Auto-fetch: Name parts:', { firstName, middleName, lastName, originalName: parsedUser.name });
+
+        // Only populate if fields are empty (don't override existing data)
+        setFirstName(prev => {
+          console.log('Auto-fetch: Setting firstName - current:', prev, 'new:', firstName);
+          return prev || firstName;
+        });
+        setMiddleName(prev => {
+          console.log('Auto-fetch: Setting middleName - current:', prev, 'new:', middleName);
+          return prev || middleName;
+        });
+        setLastName(prev => {
+          console.log('Auto-fetch: Setting lastName - current:', prev, 'new:', lastName);
+          return prev || lastName;
+        });
+        setEmail(prev => {
+          console.log('Auto-fetch: Setting email - current:', prev, 'new:', parsedUser.email);
+          return prev || parsedUser.email || '';
+        });
+        setWhatsappNumber(prev => {
+          console.log('Auto-fetch: Setting whatsappNumber - current:', prev, 'new:', parsedUser.mobile);
+          return prev || parsedUser.mobile || '';
+        });
+        setMobileNumber(prev => {
+          console.log('Auto-fetch: Setting mobileNumber - current:', prev, 'new:', parsedUser.mobile);
+          return prev || parsedUser.mobile || '';
+        });
+        
+        console.log('User profile loaded and form populated:', parsedUser);
+      } else {
+        console.log('Auto-fetch: User not logged in or invalid role');
+      }
+    } catch (error) {
+      console.error('Auto-fetch: Error parsing user data:', error);
+    }
+  }, []);
 
   // validation
   // Step 1 Validation
@@ -250,7 +308,6 @@ useEffect(() => {
   const isAddressValid = address.trim().length > 5;
   const canContinueStep3 = isCityValid && isLocalityValid && isPincodeValid && isSocietyValid && isUnitNoValid && isAddressValid;
 
-
   // --- Helper arrays for ALL dropdowns ---
   const propertyTypeOptions = ["Apartment", "Tenement", "Bungalow", "Penthouse", "Plot", "Shop", "Office"];
   const bedroomOptions = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10+"];
@@ -273,17 +330,17 @@ useEffect(() => {
   const propertySizeUnitOptions: Array<"sq ft" | "sq m" | "sq yd"> = ["sq ft", "sq m", "sq yd"];
 
   const handlePriceInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const value = e.target.value.replace(/\D/g, ""); // Remove non-digits
-  if (value === "") {
-    setPrice("");
-  } else {
-    const numValue = parseInt(value, 10);
-    // Limit price to 99,99,99,999 (one less than 100 Crore)
-    if (numValue <= 999999999) {
-      setPrice(numValue.toLocaleString('en-IN'));
+    const value = e.target.value.replace(/\D/g, ""); // Remove non-digits
+    if (value === "") {
+      setPrice("");
+    } else {
+      const numValue = parseInt(value, 10);
+      // Limit price to 99,99,99,999 (one less than 100 Crore)
+      if (numValue <= 999999999) {
+        setPrice(numValue.toLocaleString('en-IN'));
+      }
     }
-  }
-};
+  };
 
   const canNavigateTo = (target: number) => {
     if (target === 0) return true;
@@ -820,13 +877,6 @@ const handleEditMediaSubmit = () => {
                     >
                       {isEditMode ? "Save Changes" : "Continue to Specifications"}
                     </button>
-
-                    <div className="flex items-center gap-2 text-sm text-gray-700 font-medium">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M10 3L8 8l-5 2 5 2 2 5 2-5 5-2-5-2zM14 14l-2 5-2-5-5-2 5-2 2-5 2 5 5 2z"></path>
-                        </svg>
-                      Well-detailed listings rank higher
-                    </div>
                   </div>
                 </div>
               )}

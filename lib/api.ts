@@ -505,6 +505,38 @@ const getMockOtherProperties = (): FrontendProperty[] => [
   }
 ];
 
+// API function to fetch user's listed properties
+export const fetchMyProperties = async (token: string): Promise<BackendProperty[]> => {
+  try {
+    const url = `${API_BASE_URL}/properties/user/my-properties`;
+    console.log('Fetching my properties from:', url);
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    console.log('Response status:', response.status);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const result: ApiResponse<BackendProperty[]> = await response.json();
+    console.log('My properties API response:', result);
+    
+    if (result.success && result.data) {
+      return result.data;
+    }
+    
+    return [];
+  } catch (error) {
+    console.error('Error fetching my properties:', error);
+    return [];
+  }
+};
+
 // Mock data for testing
 const getMockFeaturedProperties = (): FrontendProperty[] => [
   {
@@ -577,3 +609,48 @@ const getMockExclusiveProperties = (): FrontendProperty[] => [
     tag: { text: "Exclusive", color: "bg-yellow-500 text-white" }
   }
 ];
+
+// User profile types
+export interface UserProfile {
+  _id: string;
+  mobile: string;
+  name: string;
+  email: string;
+  whatsappNumber: string;
+  profilePhoto?: string;
+  role: string;
+  subscriptionStatus: string;
+  propertiesCount?: number;
+}
+
+// API function to fetch user profile
+export const fetchUserProfile = async (token: string): Promise<UserProfile | null> => {
+  try {
+    const url = `${API_BASE_URL}/users/profile`;
+    console.log('Fetching user profile from:', url);
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    console.log('User profile response status:', response.status);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const result: ApiResponse<UserProfile> = await response.json();
+    console.log('User profile API response:', result);
+    
+    if (result.success && result.data) {
+      return result.data;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    return null;
+  }
+};

@@ -1287,6 +1287,16 @@ function ListingCard({ item, handleOpenDetails }: { item: Listing; handleOpenDet
     e.stopPropagation();
     
     try {
+      // Check if user is logged in and get their role
+      const savedUser = localStorage.getItem('gh_user');
+      if (savedUser) {
+        const parsedUser = JSON.parse(savedUser);
+        if (parsedUser.isLoggedIn && parsedUser.role === 'seller') {
+          alert('You are not eligible to unlock seller as you are logged in as seller.');
+          return;
+        }
+      }
+      
       // Check if user has active buyer subscription
       const response = await axios.get(`${API_URL}/user/subscription/status`);
       

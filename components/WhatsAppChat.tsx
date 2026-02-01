@@ -146,7 +146,7 @@ const WhatsAppChat: React.FC = () => {
 
   return (
     <>
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+      <div className="fixed bottom-6 right-6 z-[60] flex flex-col items-end">
         {showNudge && (
           <div
             className={[
@@ -187,14 +187,14 @@ const WhatsAppChat: React.FC = () => {
       {isOpen && (
         <>
           <div
-            className="fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/50 z-[55] backdrop-blur-sm"
             onClick={() => toggleOpen(false)}
           />
           <div
             ref={popupRef}
             tabIndex={-1}
             className={[
-              "fixed bottom-24 right-6 z-50 w-80 md:w-96 bg-white rounded-2xl shadow-2xl overflow-hidden outline-none",
+              "fixed bottom-24 right-6 z-[60] w-80 md:w-96 bg-white rounded-2xl shadow-2xl overflow-hidden outline-none",
               motionSafe ? "animate-[slideUp_.18s_ease]" : "",
             ].join(" ")}
             role="dialog"
