@@ -1,11 +1,34 @@
 ﻿// app/sell/page.tsx
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 
 export default function SellIntroPage() {
+  const [userRole, setUserRole] = useState<'buyer' | 'seller' | ''>('');
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem('gh_user');
+    if (savedUser) {
+      try {
+        const parsedUser = JSON.parse(savedUser);
+        if (parsedUser.isLoggedIn) {
+          setUserRole(parsedUser.role || '');
+        }
+      } catch (e) {
+        console.error("Failed to parse user data", e);
+      }
+    }
+  }, []);
+
+  const handleStartListing = (e: React.MouseEvent) => {
+    if (userRole === 'buyer' || userRole === '') {
+      e.preventDefault();
+      alert("You can't sell properties as you are logged in as buyer/user");
+    }
+  };
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-white via-slate-50 to-slate-100">
       <Header />
@@ -32,6 +55,7 @@ export default function SellIntroPage() {
             <div className="flex-shrink-0 w-full sm:w-auto text-center lg:text-right">
               <Link
                 href="/sell/form"
+                onClick={handleStartListing}
                 className="inline-flex items-center justify-center px-8 py-4 text-lg rounded-full bg-gradient-to-r from-[#0b6b53] to-[#085341] text-white font-bold shadow-xl hover:scale-[1.03] hover:shadow-2xl transition-all duration-300 ease-in-out animate-cta-in relative group overflow-hidden"
               >
                 <span className="relative z-10">Start Listing Now</span>
