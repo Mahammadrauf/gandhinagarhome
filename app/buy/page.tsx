@@ -719,6 +719,9 @@ function BuyIntroPage() {
   // Toggle for Map View
   const [isMapView, setIsMapView] = useState(false);
 
+  // State for tracking unlocked properties
+  const [unlockedProperties, setUnlockedProperties] = useState<Set<string>>(new Set());
+
   // Fetch properties from API
   useEffect(() => {
     const fetchProperties = async () => {
@@ -1040,6 +1043,74 @@ function BuyIntroPage() {
     router.push(`/properties/${propertyId}`);
   };
 
+  const handleUnlockSeller = async (e: React.MouseEvent, propertyId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    try {
+      // Check if user is logged in and get their role
+      const savedUser = localStorage.getItem('gh_user');
+      if (savedUser) {
+        const parsedUser = JSON.parse(savedUser);
+        if (parsedUser.isLoggedIn && parsedUser.role === 'seller') {
+          alert('You are not eligible to unlock seller as you are logged in as seller.');
+          return;
+        }
+      }
+      
+      // Get auth token
+      const token = localStorage.getItem("token") ||
+                   localStorage.getItem("gh_token") ||
+                   localStorage.getItem("authToken") ||
+                   "";
+      
+      if (!token) {
+        alert('Please login first to unlock seller details.');
+        router.push('/login?redirect=/buy');
+        return;
+      }
+      
+      // Call unlock API
+      const response = await axios.post(
+        `${API_URL}/properties/${propertyId}/unlock`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      
+      if (response.data.success) {
+        const { contact, unlockStats } = response.data.data;
+        
+        // Add to unlocked properties set
+        setUnlockedProperties(prev => new Set(prev).add(propertyId));
+        
+        alert(`Contact Details Unlocked!\n\nName: ${contact.name}\nPhone: ${contact.phone}\nEmail: ${contact.email}\nWhatsApp: ${contact.whatsapp || 'Not available'}\n\nRemaining unlocks: ${unlockStats.remainingUnlocks}/${unlockStats.totalLimit}`);
+      } else {
+        if (response.data.data?.unlockStats) {
+          const stats = response.data.data.unlockStats;
+          alert(response.data.message + `\n\nCurrent Status: ${stats.usedUnlocks}/${stats.totalLimit} unlocks used.`);
+        } else {
+          alert(response.data.message || 'Failed to unlock property. Please try again.');
+        }
+      }
+    } catch (error: any) {
+      console.error('Error unlocking seller:', error);
+      if (error.response?.status === 403) {
+        const errorData = error.response.data;
+        if (errorData.data?.unlockStats) {
+          const stats = errorData.data.unlockStats;
+          alert(errorData.message + `\n\nCurrent Status: ${stats.usedUnlocks}/${stats.totalLimit} unlocks used.\n\nPlease upgrade your plan to unlock more properties.`);
+        } else {
+          alert(errorData.message || 'Access denied. Please purchase a subscription.');
+          router.push('/buy/subscription');
+        }
+      } else {
+        alert('Failed to unlock seller details. Please try again.');
+      }
+    }
+  };
+
   return (
     <main className="min-h-screen bg-[#F5F7F9] overflow-hidden flex flex-col font-sans">
       <Header />
@@ -1101,7 +1172,13 @@ function BuyIntroPage() {
                     ) : (
                         <>
                             {filteredListings.map((item) => (
-                                <ListingCard key={item.propertyId || String(item.id)} item={item} handleOpenDetails={handleOpenDetails} />
+                                <ListingCard 
+                                    key={item.propertyId || String(item.id)} 
+                                    item={item} 
+                                    handleOpenDetails={handleOpenDetails}
+                                    handleUnlockSeller={handleUnlockSeller}
+                                    isPropertyUnlocked={(propertyId) => unlockedProperties.has(propertyId)}
+                                />
                             ))}
                         </>
                     )}
@@ -1271,7 +1348,12 @@ function tierLabel(tier: Tier) {
   return "";
 }
 
-function ListingCard({ item, handleOpenDetails }: { item: Listing; handleOpenDetails: (propertyId: string) => void }) {
+function ListingCard({ item, handleOpenDetails, handleUnlockSeller, isPropertyUnlocked }: { 
+  item: Listing; 
+  handleOpenDetails: (propertyId: string) => void; 
+  handleUnlockSeller: (e: React.MouseEvent, propertyId: string) => void;
+  isPropertyUnlocked: (propertyId: string) => boolean;
+}) {
   const router = useRouter();
   const isOwner = item.source === "owner";
   const theme = themeForTier(item.tier);
@@ -1281,70 +1363,7 @@ function ListingCard({ item, handleOpenDetails }: { item: Listing; handleOpenDet
       return { text: "Agent Listed", colorClass: "text-blue-700" };
   };
   const sourceInfo = getSourceLabel();
-
-  const handleUnlockSeller = async (e: React.MouseEvent, propertyId: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    try {
-      // Check if user is logged in and get their role
-      const savedUser = localStorage.getItem('gh_user');
-      if (savedUser) {
-        const parsedUser = JSON.parse(savedUser);
-        if (parsedUser.isLoggedIn && parsedUser.role === 'seller') {
-          alert('You are not eligible to unlock seller as you are logged in as seller.');
-          return;
-        }
-      }
-      
-      // Get auth token
-      const token = localStorage.getItem("token") ||
-                   localStorage.getItem("gh_token") ||
-                   localStorage.getItem("authToken") ||
-                   "";
-      
-      if (!token) {
-        alert('Please login first to unlock seller details.');
-        router.push('/login?redirect=/buy');
-        return;
-      }
-      
-      // Call unlock API
-      const response = await axios.post(
-        `${API_URL}/properties/${propertyId}/unlock`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      
-      if (response.data.success) {
-        const { contact, unlockStats } = response.data.data;
-        alert(`Contact Details Unlocked!\n\nName: ${contact.name}\nPhone: ${contact.phone}\nWhatsApp: ${contact.whatsapp || 'Not available'}\n\nRemaining unlocks: ${unlockStats.remainingUnlocks}/${unlockStats.totalLimit}`);
-      } else {
-        if (response.data.data?.unlockStats) {
-          const stats = response.data.data.unlockStats;
-          alert(response.data.message + `\n\nCurrent Status: ${stats.usedUnlocks}/${stats.totalLimit} unlocks used.`);
-        } else {
-          alert(response.data.message || 'Failed to unlock property. Please try again.');
-        }
-      }
-    } catch (error: any) {
-      console.error('Error unlocking seller:', error);
-      if (error.response?.status === 403) {
-        const errorData = error.response.data;
-        if (errorData.data?.unlockStats) {
-          const stats = errorData.data.unlockStats;
-          alert(errorData.message + `\n\nCurrent Status: ${stats.usedUnlocks}/${stats.totalLimit} unlocks used.\n\nPlease upgrade your plan to unlock more properties.`);
-        } else {
-          alert(errorData.message || 'Access denied. Please purchase a subscription.');
-          router.push('/buy/subscription');
-        }
-      } else {
-        alert('Failed to unlock seller details. Please try again.');
-      }
-    }
-  };
+  const isUnlocked = isPropertyUnlocked(item.propertyId || String(item.id));
 
   return (
     // ADDED md:items-center to the main article tag to align image and text content vertically
@@ -1367,13 +1386,39 @@ function ListingCard({ item, handleOpenDetails }: { item: Listing; handleOpenDet
         <div className="flex flex-wrap gap-2"> <span className="px-3 py-1.5 bg-slate-50 rounded-lg text-sm font-semibold text-slate-700 border border-slate-100"> {item.bedrooms > 0 ? `${item.bedrooms} BHK` : item.type} • {item.bathrooms > 0 ? `${item.bathrooms} Bath` : ""} </span> <span className="px-3 py-1.5 bg-slate-50 rounded-lg text-sm font-semibold text-slate-700 border border-slate-100"> {item.areaDisplay || `${item.areaSqft.toLocaleString()} sq ft`} </span> </div>
         <div className="flex flex-wrap gap-2"> <span className="px-3 py-1.5 bg-white rounded-full text-xs font-medium text-slate-600 border border-slate-200"> {item.type} • {item.furnishing} </span> <span className="px-3 py-1.5 bg-white rounded-full text-xs font-medium text-slate-600 border border-slate-200"> {item.locality}, {item.city} </span> </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-1 text-sm text-slate-500"> <div className="flex items-center gap-1.5"> <Clock className="w-4 h-4 text-slate-400" /> <span>{item.readyStatus}</span> </div> <div className="flex items-center gap-1.5"> <Car className="w-4 h-4 text-slate-400" /> <span>{item.parking} Parking</span> </div> <div className="flex items-center gap-1.5"> <Calendar className="w-4 h-4 text-slate-400" /> <span>Property Age: {item.ageLabel}</span> </div> </div>
-        <div className="flex flex-wrap gap-2 mt-auto"> {item.tags.map((tag) => ( <span key={tag} className={`px-2.5 py-1 rounded-md text-[11px] font-medium ${theme.tagBg}`}> {tag} </span> ))} </div>
+        <div className="flex flex-wrap gap-2 mt-auto"> {item.tags.map((tag: string) => ( <span key={tag} className={`px-2.5 py-1 rounded-md text-[11px] font-medium ${theme.tagBg}`}> {tag} </span> ))} </div>
         <div className="text-[11px] text-slate-400 pt-1"> Media & docs • {item.media} </div>
       </div>
       <div className="w-full md:w-48 shrink-0 flex flex-col justify-between md:border-l md:border-slate-100 md:pl-4 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100">
-        <div> <div className="text-xs font-medium text-slate-500">Price</div> <div className="text-xl font-bold text-slate-900 mt-0.5"> {item.priceLabel} </div> <div className="mt-2"> <div className="text-xs text-slate-500">Seller access</div> <div className="text-xs font-medium text-slate-700 mt-0.5">{item.phoneMasked}</div> <div className="text-[10px] text-slate-400 leading-tight">full number after subscription</div> </div> </div>
-        <div className="flex flex-col gap-2 mt-4"> <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleOpenDetails(item.propertyId || String(item.id)); }} className={`w-full py-2 rounded-full text-white text-sm font-bold shadow-sm transition-all active:scale-95 ${theme.viewBtn}`}> View details </button> <button onClick={(e) => handleUnlockSeller(e, item.propertyId || String(item.id))} className="w-full py-2 rounded-full border border-slate-300 bg-white hover:border-slate-400 text-slate-800 text-sm font-bold transition-all active:scale-95"> Unlock seller </button> </div>
+        <div> <div className="text-xs font-medium text-slate-500">Price</div> <div className="text-xl font-bold text-slate-900 mt-0.5"> {item.priceLabel} </div> <div className="mt-2"> <div className="text-xs text-slate-500">Seller access</div> <div className="text-xs font-medium text-slate-700 mt-0.5">
+          {isUnlocked ? (
+            <div>
+              <div className="text-green-600 font-semibold">Seller access visible</div>
+              <div className="text-[10px] text-green-500 leading-tight">Contact details unlocked</div>
+            </div>
+          ) : (
+            <div>
+              <div>{item.phoneMasked}</div>
+              <div className="text-[10px] text-slate-400 leading-tight">full number after subscription</div>
+            </div>
+          )}
+        </div> </div> </div>
+        <div className="flex flex-col gap-2 mt-4"> 
+          <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleOpenDetails(item.propertyId || String(item.id)); }} className={`w-full py-2 rounded-full text-white text-sm font-bold shadow-sm transition-all active:scale-95 ${theme.viewBtn}`}> View details </button> 
+          <button 
+            onClick={(e) => handleUnlockSeller(e, item.propertyId || String(item.id))} 
+            className={`w-full py-2 rounded-full text-sm font-bold transition-all active:scale-95 ${
+              isUnlocked 
+                ? 'bg-green-100 text-green-700 border border-green-200' 
+                : 'border border-slate-300 bg-white hover:border-slate-400 text-slate-800'
+            }`}
+          > 
+            {isUnlocked ? 'Seller Unlocked' : 'Unlock seller'} 
+          </button> 
+        </div>
       </div>
     </article>
   );
 }
+
+// ... (rest of the code remains the same)

@@ -589,19 +589,47 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
 
               {/* 5. Map Preview */}
               <div className="bg-white rounded-2xl border border-gray-100 shadow-md p-2">
-                  <div className="relative h-64 md:h-72 bg-[#f0f2f5] rounded-xl overflow-hidden flex flex-col items-center justify-center group cursor-pointer">
-                     <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:16px_16px]"></div>
-                     <div className="relative z-10 flex flex-col items-center p-6 bg-white/80 backdrop-blur-md rounded-2xl border border-white shadow-lg transition-transform duration-300 group-hover:scale-105">
-                         <div className="p-3 rounded-full mb-3 text-white shadow-md animate-bounce" style={{ backgroundColor: theme.primary }}>
-                             <MapPin className="w-6 h-6" />
-                         </div>
-                         <span className="text-sm font-bold text-gray-900">Map View Hidden</span>
-                         <span className="text-xs text-gray-500 mt-1">Unlock property to see exact pin</span>
-                     </div>
-                  </div>
+                  {isUnlocked ? (
+                    // Show actual map when unlocked
+                    <div className="relative h-64 md:h-72 rounded-xl overflow-hidden">
+                      <iframe
+                        src={`https://maps.google.com/maps?q=${encodeURIComponent(property.location)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0 }}
+                        allowFullScreen
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        className="w-full h-full"
+                      />
+                    </div>
+                  ) : (
+                    // Show placeholder when locked
+                    <div className="relative h-64 md:h-72 bg-[#f0f2f5] rounded-xl overflow-hidden flex flex-col items-center justify-center group cursor-pointer">
+                       <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                       <div className="relative z-10 flex flex-col items-center p-6 bg-white/80 backdrop-blur-md rounded-2xl border border-white shadow-lg transition-transform duration-300 group-hover:scale-105">
+                           <div className="p-3 rounded-full mb-3 text-white shadow-md animate-bounce" style={{ backgroundColor: theme.primary }}>
+                               <MapPin className="w-6 h-6" />
+                           </div>
+                           <span className="text-sm font-bold text-gray-900">Map View Hidden</span>
+                           <span className="text-xs text-gray-500 mt-1">Unlock property to see exact pin</span>
+                       </div>
+                    </div>
+                  )}
                   <div className="flex justify-between items-center px-4 py-3 bg-white rounded-b-xl">
-                     <p className="text-xs text-gray-500 font-medium">Approx: Raysan, Gandhinagar – 382421</p>
-                     <button className="text-xs font-bold hover:underline flex items-center gap-1" style={{ color: theme.primary }}>
+                     <p className="text-xs text-gray-500 font-medium">
+                       {isUnlocked ? property.location : 'Approx: Raysan, Gandhinagar – 382421'}
+                     </p>
+                     <button 
+                       className="text-xs font-bold hover:underline flex items-center gap-1" 
+                       style={{ color: theme.primary }}
+                       onClick={() => {
+                         const mapUrl = isUnlocked 
+                           ? `https://maps.google.com/?q=${encodeURIComponent(property.location)}`
+                           : `https://maps.google.com/?q=Raysan,+Gandhinagar,+Gujarat,+India`;
+                         window.open(mapUrl, '_blank');
+                       }}
+                     >
                          Open in Google Maps <ArrowLeft className="w-3 h-3 rotate-180" />
                      </button>
                   </div>
@@ -641,15 +669,21 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                     <div className="space-y-4">
                         <div className="flex justify-between items-center">
                             <span className="text-sm text-gray-500">Mobile</span>
-                            <span className="text-sm font-mono font-bold text-gray-900">{property.seller.phone}</span>
+                            <span className="text-sm font-mono font-bold text-gray-900">
+                                {isUnlocked ? contactInfo?.phone || property.seller.phone : property.seller.phone}
+                            </span>
                         </div>
                         <div className="flex justify-between items-center">
                             <span className="text-sm text-gray-500">Email</span>
-                            <span className="text-sm text-gray-400 italic bg-gray-100 px-2 py-0.5 rounded select-none cursor-pointer hover:bg-gray-200 transition-colors" title="Unlock to view">{property.seller.email}</span>
+                            <span className={`text-sm ${isUnlocked ? 'text-gray-900' : 'text-gray-400 italic bg-gray-100 px-2 py-0.5 rounded select-none cursor-pointer hover:bg-gray-200'} transition-colors`} title={isUnlocked ? '' : 'Unlock to view'}>
+                                {isUnlocked ? contactInfo?.email || property.seller.email : property.seller.email}
+                            </span>
                         </div>
                         <div className="flex justify-between items-center">
                             <span className="text-sm text-gray-500">WhatsApp</span>
-                            <span className="text-sm font-bold text-gray-900">{property.seller.whatsapp}</span>
+                            <span className="text-sm font-bold text-gray-900">
+                                {isUnlocked ? contactInfo?.whatsapp || property.seller.whatsapp : property.seller.whatsapp}
+                            </span>
                         </div>
                     </div>
                   </div>
