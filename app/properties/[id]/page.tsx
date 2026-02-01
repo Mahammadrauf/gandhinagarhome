@@ -3,6 +3,9 @@
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import axios from 'axios';
+import API_URL from '@/app/config/config';
 import {
   ArrowLeft,
   ArrowRight,
@@ -116,6 +119,12 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   
+  // -- UNLOCK STATE --
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [unlockStats, setUnlockStats] = useState<any>(null);
+  const [contactInfo, setContactInfo] = useState<any>(null);
+  
+  const router = useRouter();
   const propertyId = params.id;
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -268,6 +277,69 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
     navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleUnlockContact = async () => {
+    try {
+      // Check if user is logged in and get their role
+      const savedUser = localStorage.getItem('gh_user');
+      if (savedUser) {
+        const parsedUser = JSON.parse(savedUser);
+        if (parsedUser.isLoggedIn && parsedUser.role === 'seller') {
+          alert('You are not eligible to unlock seller as you are logged in as seller.');
+          return;
+        }
+      }
+      
+      // Get auth token
+      const token = localStorage.getItem("token") ||
+                   localStorage.getItem("gh_token") ||
+                   localStorage.getItem("authToken") ||
+                   "";
+      
+      if (!token) {
+        alert('Please login first to unlock seller details.');
+        router.push('/login?redirect=/properties/' + propertyId);
+        return;
+      }
+      
+      // Call unlock API
+      const response = await axios.post(
+        `${API_URL}/properties/${propertyId}/unlock`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      
+      if (response.data.success) {
+        const { contact, unlockStats } = response.data.data;
+        setIsUnlocked(true);
+        setContactInfo(contact);
+        setUnlockStats(unlockStats);
+      } else {
+        if (response.data.data?.unlockStats) {
+          const stats = response.data.data.unlockStats;
+          alert(response.data.message + `\n\nCurrent Status: ${stats.usedUnlocks}/${stats.totalLimit} unlocks used.`);
+        } else {
+          alert(response.data.message || 'Failed to unlock property. Please try again.');
+        }
+      }
+    } catch (error: any) {
+      console.error('Error unlocking contact:', error);
+      if (error.response?.status === 403) {
+        const errorData = error.response.data;
+        if (errorData.data?.unlockStats) {
+          const stats = errorData.data.unlockStats;
+          alert(errorData.message + `\n\nCurrent Status: ${stats.usedUnlocks}/${stats.totalLimit} unlocks used.\n\nPlease upgrade your plan to unlock more properties.`);
+        } else {
+          alert(errorData.message || 'Access denied. Please purchase a subscription.');
+          router.push('/buy/subscription');
+        }
+      } else {
+        alert('Failed to unlock contact details. Please try again.');
+      }
+    }
   };
 
   const isVideoActive = mediaMode === 'video';
@@ -571,7 +643,6 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                             <span className="text-sm text-gray-500">Mobile</span>
                             <span className="text-sm font-mono font-bold text-gray-900">{property.seller.phone}</span>
                         </div>
-                        {/* Hidden Email Row */}
                         <div className="flex justify-between items-center">
                             <span className="text-sm text-gray-500">Email</span>
                             <span className="text-sm text-gray-400 italic bg-gray-100 px-2 py-0.5 rounded select-none cursor-pointer hover:bg-gray-200 transition-colors" title="Unlock to view">{property.seller.email}</span>
@@ -583,9 +654,9 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                     </div>
                   </div>
 
-                  <button className={`w-full text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] mb-3 flex items-center justify-center gap-2 shadow-lg text-base ${theme.buttonBg} ${theme.buttonHover} hover:shadow-xl`} style={{ boxShadow: `0 10px 25px -5px ${theme.primary}40` }}>
+                  <button onClick={handleUnlockContact} className={`w-full text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] mb-3 flex items-center justify-center gap-2 shadow-lg text-base ${theme.buttonBg} ${theme.buttonHover} hover:shadow-xl`} style={{ boxShadow: `0 10px 25px -5px ${theme.primary}40` }}>
                       <ShieldCheck className="w-5 h-5" />
-                      Contact Seller
+                      {isUnlocked ? 'Contact Details Unlocked' : 'Unlock Seller'}
                   </button>
 
                   <p className="text-[10px] text-gray-400 text-center leading-relaxed">

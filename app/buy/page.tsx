@@ -1282,7 +1282,7 @@ function ListingCard({ item, handleOpenDetails }: { item: Listing; handleOpenDet
   };
   const sourceInfo = getSourceLabel();
 
-  const handleUnlockSeller = async (e: React.MouseEvent) => {
+  const handleUnlockSeller = async (e: React.MouseEvent, propertyId: string) => {
     e.preventDefault();
     e.stopPropagation();
     
@@ -1297,20 +1297,52 @@ function ListingCard({ item, handleOpenDetails }: { item: Listing; handleOpenDet
         }
       }
       
-      // Check if user has active buyer subscription
-      const response = await axios.get(`${API_URL}/user/subscription/status`);
+      // Get auth token
+      const token = localStorage.getItem("token") ||
+                   localStorage.getItem("gh_token") ||
+                   localStorage.getItem("authToken") ||
+                   "";
       
-      if (response.data.success && response.data.data?.hasActiveSubscription) {
-        // User is subscribed - show contact details
-        alert(`Full contact details:\n${item.phoneMasked}\n\nPlease check your email for complete details.`);
-      } else {
-        // User is not subscribed - redirect to subscription page
-        router.push('/buy/subscription');
+      if (!token) {
+        alert('Please login first to unlock seller details.');
+        router.push('/login?redirect=/buy');
+        return;
       }
-    } catch (error) {
-      // Handle error - redirect to subscription page as fallback
-      console.error('Error checking subscription status:', error);
-      router.push('/buy/subscription');
+      
+      // Call unlock API
+      const response = await axios.post(
+        `${API_URL}/properties/${propertyId}/unlock`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      
+      if (response.data.success) {
+        const { contact, unlockStats } = response.data.data;
+        alert(`Contact Details Unlocked!\n\nName: ${contact.name}\nPhone: ${contact.phone}\nWhatsApp: ${contact.whatsapp || 'Not available'}\n\nRemaining unlocks: ${unlockStats.remainingUnlocks}/${unlockStats.totalLimit}`);
+      } else {
+        if (response.data.data?.unlockStats) {
+          const stats = response.data.data.unlockStats;
+          alert(response.data.message + `\n\nCurrent Status: ${stats.usedUnlocks}/${stats.totalLimit} unlocks used.`);
+        } else {
+          alert(response.data.message || 'Failed to unlock property. Please try again.');
+        }
+      }
+    } catch (error: any) {
+      console.error('Error unlocking seller:', error);
+      if (error.response?.status === 403) {
+        const errorData = error.response.data;
+        if (errorData.data?.unlockStats) {
+          const stats = errorData.data.unlockStats;
+          alert(errorData.message + `\n\nCurrent Status: ${stats.usedUnlocks}/${stats.totalLimit} unlocks used.\n\nPlease upgrade your plan to unlock more properties.`);
+        } else {
+          alert(errorData.message || 'Access denied. Please purchase a subscription.');
+          router.push('/buy/subscription');
+        }
+      } else {
+        alert('Failed to unlock seller details. Please try again.');
+      }
     }
   };
 
@@ -1340,7 +1372,7 @@ function ListingCard({ item, handleOpenDetails }: { item: Listing; handleOpenDet
       </div>
       <div className="w-full md:w-48 shrink-0 flex flex-col justify-between md:border-l md:border-slate-100 md:pl-4 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100">
         <div> <div className="text-xs font-medium text-slate-500">Price</div> <div className="text-xl font-bold text-slate-900 mt-0.5"> {item.priceLabel} </div> <div className="mt-2"> <div className="text-xs text-slate-500">Seller access</div> <div className="text-xs font-medium text-slate-700 mt-0.5">{item.phoneMasked}</div> <div className="text-[10px] text-slate-400 leading-tight">full number after subscription</div> </div> </div>
-        <div className="flex flex-col gap-2 mt-4"> <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleOpenDetails(item.propertyId || String(item.id)); }} className={`w-full py-2 rounded-full text-white text-sm font-bold shadow-sm transition-all active:scale-95 ${theme.viewBtn}`}> View details </button> <button onClick={handleUnlockSeller} className="w-full py-2 rounded-full border border-slate-300 bg-white hover:border-slate-400 text-slate-800 text-sm font-bold transition-all active:scale-95"> Unlock seller </button> </div>
+        <div className="flex flex-col gap-2 mt-4"> <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleOpenDetails(item.propertyId || String(item.id)); }} className={`w-full py-2 rounded-full text-white text-sm font-bold shadow-sm transition-all active:scale-95 ${theme.viewBtn}`}> View details </button> <button onClick={(e) => handleUnlockSeller(e, item.propertyId || String(item.id))} className="w-full py-2 rounded-full border border-slate-300 bg-white hover:border-slate-400 text-slate-800 text-sm font-bold transition-all active:scale-95"> Unlock seller </button> </div>
       </div>
     </article>
   );
