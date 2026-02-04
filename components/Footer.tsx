@@ -180,7 +180,7 @@ const Footer = () => {
               <div>
                 <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-0.5">Visit Us</h4>
                 <p className="text-sm font-bold text-black group-hover:text-black">
-                  Premium Plaza, Gandhinagar
+                  414 , Pramukh Square, Sargasan , Gandhinagar.
                 </p>
               </div>
             </div>
@@ -192,7 +192,7 @@ const Footer = () => {
               <div>
                 <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-0.5">Email Us</h4>
                 <p className="text-sm font-bold text-black group-hover:text-[#006B5B] transition-colors">
-                  hello@gandhinagarhomes.in
+                  gandhinagar.homes@gmail.com
                 </p>
               </div>
             </a>
@@ -204,7 +204,7 @@ const Footer = () => {
               <div>
                 <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-0.5">Call Us</h4>
                 <p className="text-sm font-bold text-black group-hover:text-[#006B5B] transition-colors">
-                  +91 98765 43210
+                  +91 99982 74454
                 </p>
               </div>
             </a>

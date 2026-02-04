@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { X, MessageSquare, Clock, ShieldCheck } from "lucide-react";
 
 /** ============ Config ============ */
-const WHATSAPP_NUMBER = "919876543210";
+const WHATSAPP_NUMBER = "919998274454";
 const FIRST_NUDGE_DELAY_MS = 3000;
 const NUDGE_INTERVAL_MS = 30000; 
 const NUDGE_AUTOHIDE_MS = 2600;
