@@ -15,7 +15,8 @@ import {
   Lock, 
   Clock, 
   Award,
-  Phone
+  Phone,
+  RotateCcw
 } from "lucide-react";
 
 declare global {
@@ -50,47 +51,48 @@ const plans = [
     fullPrice: "2,500",
     icon: Key,
     styles: {
-      card: "bg-[#eaf4fc] border-2 border-[#1e40af] shadow-xl shadow-[#1e40af]/5 z-0 transform hover:-translate-y-1",
-      title: "text-[#1e40af]", 
-      tag: "bg-[#1e40af] text-white", 
-      price: "text-[#1e40af]",
-      button: "bg-[#1e40af] text-white hover:bg-[#172554] hover:shadow-lg hover:shadow-[#1e40af]/20",
-      iconBox: "bg-white text-[#1e40af] shadow-sm",
-      check: "text-[#1e40af]",
-      featureText: "text-[#1e40af]"
+      card: "bg-[#e7fcf7] border-2 border-[#0b6b53] shadow-xl shadow-[#0b6b53]/5 z-0 transform hover:-translate-y-1",
+      title: "text-[#0b6b53]", 
+      tag: "bg-[#0b6b53] text-white", 
+      price: "text-[#0b6b53]",
+      button: "bg-[#0b6b53] text-white hover:bg-[#095c47] hover:shadow-lg hover:shadow-[#0b6b53]/20",
+      iconBox: "bg-white text-[#0b6b53] shadow-sm",
+      check: "text-[#0b6b53]",
+      featureText: "text-[#0b6b53]"
     },
     features: [
-      "Unlock 5 Properties Contacts",
+      "Unlock 5 Properties",
       "Valid for 60 Days",
-      "Direct Owner Phone Numbers",
-      "Verified Seller ID",
+      "Connect with Direct Owners",
+      "Verified Listing",
       "Basic Email Support"
     ],
     highlight: false
   },
   {
     id: "smart_buyer",
-    name: "Smart Search",
+    name: "Smart Pack",
     tagline: "Best Value",
     price: "4,997",
     fullPrice: "6,500",
     icon: ShieldCheck,
     styles: {
-      card: "bg-[#f0fdfa] border-2 border-[#0d9488]/30 hover:border-[#0d9488] shadow-xl shadow-[#0d9488]/10 z-10 transform hover:-translate-y-1",
-      title: "text-[#115e59]",
-      tag: "bg-[#ccfbf1] text-[#0d9488]",
-      price: "text-[#0d9488]",
-      button: "bg-gradient-to-r from-[#0d9488] to-[#115e59] text-white hover:shadow-lg hover:shadow-[#0d9488]/25",
-      iconBox: "bg-[#ccfbf1] text-[#0d9488]",
-      check: "text-[#0d9488]",
-      featureText: "text-[#115e59]"
+      card: "bg-[#f4fbff] border-2 border-[#0F7F9C]/30 hover:border-[#0F7F9C] shadow-xl shadow-[#0F7F9C]/10 z-10 transform hover:-translate-y-1",
+      title: "text-[#022F5A]",
+      tag: "bg-[#e0f2ff] text-[#0F7F9C]",
+      price: "text-[#0F7F9C]",
+      button: "bg-gradient-to-r from-[#0F7F9C] to-[#022F5A] text-white hover:shadow-lg hover:shadow-[#0F7F9C]/25",
+      iconBox: "bg-[#e0f2ff] text-[#0F7F9C]",
+      check: "text-[#0F7F9C]",
+      featureText: "text-[#022F5A]"
     },
     features: [
-      "Unlock 15 Properties Contacts",
+      "Unlock 15 Properties",
       "Valid for 60 Days",
-      "Verified Properties Only",
-      "Priority Email Support",
-      "Save ₹10,000 in Brokerage"
+      "Verified Listing",
+      "Priority Whatsapp Support",
+      "Connect with Direct Owners",
+      
     ],
     highlight: true
   },
@@ -102,23 +104,23 @@ const plans = [
     fullPrice: "12,000",
     icon: Crown,
     styles: {
-      card: "bg-gradient-to-b from-[#FFFBEB] to-[#fff7ed] border-2 border-[#d97706] ring-4 ring-[#d97706]/10 shadow-2xl shadow-[#d97706]/25 scale-[1.03] z-20 transform hover:-translate-y-1",
-      title: "text-[#78350f]", 
-      tag: "bg-[#FEF3C7] text-[#d97706]",
-      price: "text-[#d97706]",
-      button: "bg-gradient-to-r from-[#d97706] to-[#b45309] text-white hover:shadow-xl hover:shadow-[#d97706]/40",
-      iconBox: "bg-[#FEF3C7] text-[#d97706]",
-      check: "text-[#d97706]",
-      featureText: "text-[#78350f]"
+      card: "bg-gradient-to-b from-[#FDFBF7] to-[#fcf8f0] border-2 border-[#B59E78] ring-4 ring-[#B59E78]/10 shadow-2xl shadow-[#B59E78]/25 scale-[1.03] z-20 transform hover:-translate-y-1",
+      title: "text-[#5C5042]", 
+      tag: "bg-[#F5F2EB] text-[#8C7A5B]",
+      price: "text-[#8C7A5B]",
+      button: "bg-gradient-to-r from-[#B59E78] to-[#8C7A5B] text-white hover:shadow-xl hover:shadow-[#B59E78]/40",
+      iconBox: "bg-[#F5F2EB] text-[#B59E78]",
+      check: "text-[#B59E78]",
+      featureText: "text-[#5C5042]"
     },
     features: [
-      "Unlock 40 Properties Contacts",
+      "Unlock 40 Properties",
       "Valid for 60 Days",
       "Access to Premium Listings",
       "Dedicated Relationship Manager",
       "Legal Agreement Assistance",
       "Loan Support Assistance",
-      "Verified 'Premium Buyer' Badge"
+      "16x7 on call support"
     ],
     highlight: false
   }
@@ -277,13 +279,17 @@ export default function BuyerSubscriptionPage() {
     <main className="min-h-screen bg-[#F8FAFC]">
       <Header />
 
-      <div className="container mx-auto px-4 py-6 lg:py-10">
+      <div className="container mx-auto px-4 py-4 lg:py-6">
         
         {/* --- Header Section --- */}
-        <div className="text-center mb-14 space-y-4">
-          <div className="inline-flex items-center gap-2 bg-white border border-slate-200 text-slate-600 px-4 py-1.5 rounded-full text-xs font-bold tracking-wide shadow-sm">
-            <Phone size={14} className="text-[#1e40af]" />
-            <span className="text-[#1e40af] font-bold">Direct Connect</span> & Zero Brokerage
+        <div className="text-center mb-8 space-y-4">
+          <div className="flex flex-col items-center gap-3">
+            <div className="inline-flex items-center gap-2 bg-white border border-slate-200 text-slate-600 px-4 py-1.5 rounded-full text-xs font-bold tracking-wide shadow-sm">
+              <Phone size={14} className="text-[#0b6b53]" />
+              <span className="text-[#0b6b53] font-bold">Direct Connect</span> & Peer-to-Peer Access
+            </div>
+
+           
           </div>
           
           <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">
@@ -291,8 +297,8 @@ export default function BuyerSubscriptionPage() {
           </h1>
           
           <p className="text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed">
-            Stop paying huge brokerage fees. 
-            <span className="text-[#d97706] font-bold bg-[#d97706]/10 px-2 rounded mx-1">Unlock Direct Access</span> 
+          Maximize your savings on every deal.
+            <span className="text-[#B59E78] font-bold bg-[#B59E78]/10 px-2 rounded mx-1">Unlock Direct Access</span> 
             to property owners and close deals faster.
           </p>
         </div>
@@ -312,7 +318,7 @@ export default function BuyerSubscriptionPage() {
                 {/* Best Value Badge */}
                 {plan.highlight && (
                   <div className="absolute -top-5 left-0 right-0 flex justify-center z-30">
-                    <span className="bg-gradient-to-r from-[#0d9488] to-[#115e59] text-white px-5 py-2 rounded-full text-xs font-black tracking-widest shadow-lg shadow-[#0d9488]/30 uppercase flex items-center gap-2 border-2 border-white">
+                    <span className="bg-gradient-to-r from-[#0F7F9C] to-[#022F5A] text-white px-5 py-2 rounded-full text-xs font-black tracking-widest shadow-lg shadow-[#0F7F9C]/30 uppercase flex items-center gap-2 border-2 border-white">
                       <Crown size={14} fill="currentColor" />
                       Best Value
                     </span>
@@ -360,7 +366,6 @@ export default function BuyerSubscriptionPage() {
                   ))}
                 </ul>
 
-                {/* --- BUTTON TEXT UPDATED HERE --- */}
                 <button
                   onClick={() => handlePlanPay(plan)}
                   disabled={submittingPlan !== null}

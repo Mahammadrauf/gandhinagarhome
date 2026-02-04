@@ -17,7 +17,8 @@ import {
   Lock, 
   Clock, 
   Award,
-  Info
+  Info,
+  RotateCcw
 } from "lucide-react";
 
 declare global {
@@ -36,6 +37,7 @@ const HighlightText = ({ text, colorClass }: { text: string; colorClass: string 
     <span>
       {parts.map((part, i) => 
         // If part matches regex, bold it
+        // eslint-disable-next-line
         /(\d+ Days|Lifetime|\d+ Photos|Top 5|Top positioning|Home Page|Property Page)/.test(part) ? (
           <span key={i} className={`font-extrabold ${colorClass}`}>{part}</span>
         ) : (
@@ -65,8 +67,8 @@ const plans = [
       featureText: "text-[#0b6b53]" 
     },
     features: [
-      "Listed for 60 Days", 
-      "Visible in search results",
+      "Listing for 180 Days", 
+      "Visible",
       "Standard Inquiry Form",
       "Email Support"
     ],
@@ -90,11 +92,11 @@ const plans = [
       featureText: "text-[#022F5A]"
     },
     features: [
-      "30 Days Premium + 30 Days Standard (60 Days Total)", 
+      "30 Days Featured + 150 Days Standard (180 Days Total)", 
       "Visible on Home Page", 
       "Extra Reach & Visibility",
       "Top 5 Search Ranking",
-      "WhatsApp Direct Chat Link"
+      "Dedicated Whatsapp Support"
     ],
     highlight: false
   },
@@ -117,11 +119,11 @@ const plans = [
     },
     features: [
       "Top positioning on the home page (first among all features)",
-      "30 Days Premium + 30 Days Standard (60 Days Total)",  
+      "30 Days Exclusive + 150 Days Standard (180 Days Total)",  
       "Top of Property Page",
       "Maximum Extra Reach",
-      "Professional Photoshoot Included",
-      "Dedicated Relationship Manager"
+      "Professional Photoshoot & Video shoot Included",
+      "16x7 on call support"
     ],
     highlight: true
   }
@@ -304,13 +306,19 @@ export default function SubscriptionPage() {
     <main className="min-h-screen bg-[#F8FAFC]">
       <Header />
 
-      <div className="container mx-auto px-4 py-6 lg:py-10">
+      <div className="container mx-auto px-4 py-4 lg:py-6">
         
         {/* --- Header Section --- */}
-        <div className="text-center mb-14 space-y-4">
-          <div className="inline-flex items-center gap-2 bg-white border border-slate-200 text-slate-600 px-4 py-1.5 rounded-full text-xs font-bold tracking-wide shadow-sm">
-            <ShieldCheck size={14} className="text-[#0b6b53]" />
-            <span className="text-[#0b6b53] font-bold">Verified</span> & Secure Payment Gateway
+        <div className="text-center mb-8 space-y-4">
+          <div className="flex flex-col items-center gap-3">
+            <div className="inline-flex items-center gap-2 bg-white border border-slate-200 text-slate-600 px-4 py-1.5 rounded-full text-xs font-bold tracking-wide shadow-sm">
+              <ShieldCheck size={14} className="text-[#0b6b53]" />
+              <span className="text-[#0b6b53] font-bold">Verified</span> & Secure Payment Gateway
+            </div>
+
+            <div className="inline-flex items-center gap-1.5 bg-red-50 border border-red-100 text-red-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm">
+              <RotateCcw size={12} className="text-red-500" /> Money Back Guarantee
+            </div>
           </div>
           
           <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">
@@ -401,19 +409,7 @@ export default function SubscriptionPage() {
                   {plan.highlight ? <ArrowRight size={18} strokeWidth={2.5} /> : null}
                 </button>
                 
-                {/* Social Proof Text for Exclusive */}
-                {plan.highlight && (
-                    <div className="mt-4 flex items-center justify-center gap-1.5 animate-pulse">
-                        <div className="flex -space-x-1.5">
-                            <div className="w-4 h-4 rounded-full bg-slate-200 border border-white"></div>
-                            <div className="w-4 h-4 rounded-full bg-slate-300 border border-white"></div>
-                            <div className="w-4 h-4 rounded-full bg-slate-400 border border-white"></div>
-                        </div>
-                        <p className="text-[10px] text-[#8C7A5B] font-bold">
-                             {viewerCount} people viewing this profile right now
-                        </p>
-                    </div>
-                )}
+                
               </div>
             );
           })}
