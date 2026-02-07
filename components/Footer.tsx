@@ -20,6 +20,7 @@ interface LinkItemProps {
 interface SocialIconProps {
   Icon: React.ElementType;
   label: string;
+  href?: string;
 }
 
 // --- HELPER COMPONENTS ---
@@ -41,18 +42,24 @@ LinkItem.propTypes = {
   label: PropTypes.string.isRequired,
 };
 
-const SocialIcon: React.FC<SocialIconProps> = ({ Icon, label }) => (
-  <a 
-    href="#" 
-    aria-label={label}
-    className="w-9 h-9 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:bg-[#006B5B] hover:border-[#006B5B] hover:text-white hover:-translate-y-1 transition-all duration-300 shadow-sm"
-  >
-    <Icon size={18} />
-  </a>
-);
+const SocialIcon: React.FC<SocialIconProps> = ({ Icon, label, href }) => {
+  const isExternal = href && /^https?:\/\//i.test(href);
+  return (
+    <a
+      href={href ?? '#'}
+      aria-label={label}
+      className="w-9 h-9 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:bg-[#006B5B] hover:border-[#006B5B] hover:text-white hover:-translate-y-1 transition-all duration-300 shadow-sm"
+      target={isExternal ? '_blank' : undefined}
+      rel={isExternal ? 'noopener noreferrer' : undefined}
+    >
+      <Icon size={18} />
+    </a>
+  );
+};
 
 SocialIcon.propTypes = {
   label: PropTypes.string.isRequired,
+  href: PropTypes.string,
 };
 
 // --- MAIN COMPONENT ---
@@ -119,7 +126,7 @@ const Footer = () => {
             </p>
             
             <div className="flex gap-2">
-              <SocialIcon Icon={Instagram} label="Instagram" />
+              <SocialIcon Icon={Instagram} label="Instagram" href="https://www.instagram.com/buymyghar?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" />
               <SocialIcon Icon={Facebook} label="Facebook" />
               <SocialIcon Icon={Twitter} label="Twitter" />
               <SocialIcon Icon={Youtube} label="YouTube" />

@@ -128,8 +128,8 @@ const Hero = () => {
       `}</style>
 
       {/* Main Content Area */}
-      <div className="container mx-auto px-4 md:px-8 mt-8 md:mt-6 relative z-10">
-        <div className="relative h-[480px] md:h-[420px] overflow-hidden rounded-[2.5rem] border border-gray-100 shadow-2xl">
+      <div className="container mx-auto px-4 md:px-8 mt-6 md:mt-6 relative z-10">
+        <div className="relative h-[500px] sm:h-[480px] md:h-[420px] overflow-hidden rounded-[2.5rem] border border-gray-100 shadow-2xl">
 
           {/* Background */}
           {/* Original green background - commented out */}
@@ -144,8 +144,8 @@ const Hero = () => {
           <div className="absolute inset-0 bg-gradient-to-tr from-black/60 via-transparent to-black/20 pointer-events-none" />
 
           {/* TEXT BLOCK */}
-          <div className="absolute top-0 bottom-0 left-0 right-0 flex flex-col justify-start pt-8 md:pt-10 px-6 md:px-24 z-10 text-white max-w-4xl">
-            <h1 className="animate-rise text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-3 drop-shadow-sm leading-[1.1]">
+          <div className="absolute top-0 bottom-0 left-0 right-0 flex flex-col justify-start pt-6 sm:pt-8 md:pt-10 px-4 sm:px-6 md:px-24 z-10 text-white max-w-4xl">
+            <h1 className="animate-rise text-2xl sm:text-3xl md:text-5xl lg:text-7xl font-extrabold tracking-tighter sm:tracking-tight md:tracking-tight mb-3 drop-shadow-sm leading-[1.1]">
               Gandhinagar<span className="text-emerald-300">Homes</span>.com
             </h1>
             <p className="animate-rise delay-100 text-sm md:text-xl font-bold tracking-[0.15em] text-emerald-100 mb-6 uppercase drop-shadow-sm">
@@ -158,8 +158,8 @@ const Hero = () => {
           </div>
 
           {/* SEARCH BAR */}
-          <div className="absolute bottom-0 left-0 right-0 z-20 px-4 pb-6 animate-rise delay-300">
-            <div className="max-w-5xl mx-auto bg-white/95 backdrop-blur-md rounded-[2rem] md:rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-2.5 border border-gray-100">
+          <div className="absolute bottom-0 left-0 right-0 z-20 px-3 sm:px-4 pb-4 sm:pb-6 animate-rise delay-300">
+            <div className="max-w-5xl mx-auto bg-white/95 backdrop-blur-md rounded-[2rem] md:rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-3 sm:p-3 md:p-2.5 border border-gray-100">
               
               <div className="flex flex-col md:flex-row gap-2">
                 
