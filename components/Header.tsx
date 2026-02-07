@@ -106,7 +106,6 @@ const Header = () => {
 
   // --- PERSISTENT LOOP LOGIC (30s Timer) ---
   useEffect(() => {
-    // If logged in, ensure any existing timer is cleared and do not start a new one
     if (isLoggedIn) {
       if (signupTimerRef.current) {
         clearTimeout(signupTimerRef.current);
@@ -115,7 +114,6 @@ const Header = () => {
       return;
     }
 
-    // Only start timer if not logged in and modal is closed
     if (!isAuthOpen) {
       signupTimerRef.current = setTimeout(() => {
         openAuth('signup');
@@ -167,7 +165,6 @@ const Header = () => {
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // LOGIC-LEVEL MANDATORY VALIDATION
     if (authMode === 'signup') {
       if (!user.firstName.trim() || !user.lastName.trim() || !user.email.trim() || !user.mobile.trim()) {
         return; 
@@ -219,11 +216,9 @@ const Header = () => {
     const isWaValid = whatsappOtp.join('').length === 6;
     const isEmailValid = emailOtp.join('').length === 6;
 
-    // Login Flow only requires WhatsApp OTP
     if (authMode === 'login') {
       if (!isWaValid) return;
     } else {
-      // Signup requires both
       if (!isWaValid || !isEmailValid) return;
     }
     
@@ -346,7 +341,6 @@ const Header = () => {
       <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${isScrolled || isMobileMenuOpen ? 'bg-white/95 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-5 border-b border-transparent'}`}>
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between">
-            {/* Logo */}
             <Link href="/" className="group flex items-center gap-2 flex-shrink-0 z-50">
               <div className={`${BRAND_BG} p-1.5 rounded-lg text-white transition-transform group-hover:scale-110 duration-300`}>
                 <Home className="w-5 h-5" strokeWidth={2.5} />
@@ -354,7 +348,6 @@ const Header = () => {
               <span className={`text-lg font-bold text-gray-800 tracking-tight group-hover:text-[#006A58] transition-colors`}>Gandhinagar<span className="text-[#006A58]">Homes</span></span>
             </Link>
 
-            {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-8">
               <nav className="flex items-center gap-8">
                 <NavLink href="/">Home</NavLink>
@@ -365,8 +358,8 @@ const Header = () => {
               </nav>
 
               {!isLoggedIn ? (
-                <div className="flex items-center gap-4">
-                  <button onClick={() => openAuth('login')} className="text-gray-600 font-semibold text-sm hover:text-[#006A58] transition-colors">Log In</button>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => openAuth('login')} className="border-2 border-[#006A58] text-[#006A58] px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-300 hover:bg-[#006A58]/5 active:scale-95">Log In</button>
                   <button onClick={() => openAuth('signup')} className={`${BRAND_BG} ${BRAND_HOVER_BG} text-white px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-300 shadow-lg shadow-[#006A58]/20 hover:shadow-[#006A58]/40 active:scale-95 transform`}>Sign Up</button>
                 </div>
               ) : (
@@ -388,14 +381,12 @@ const Header = () => {
               )}
             </div>
 
-            {/* Mobile Menu Toggle */}
             <button className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors z-50" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
               {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Menu */}
         <div className={`absolute top-full left-0 w-full bg-white border-t border-gray-100 shadow-lg md:hidden transition-all duration-300 ease-in-out overflow-hidden ${isMobileMenuOpen ? 'max-h-[30rem] opacity-100' : 'max-h-0 opacity-0'}`}>
           <div className="flex flex-col p-4 space-y-1">
             <NavLink mobile href="/" onClick={() => setIsMobileMenuOpen(false)}>Home</NavLink>
@@ -409,9 +400,6 @@ const Header = () => {
       
       <div className="h-20" /> 
 
-      {/* ======================= */}
-      {/* COMPACT AUTH MODAL      */}
-      {/* ======================= */}
       {isAuthOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           
@@ -423,15 +411,14 @@ const Header = () => {
               <button onClick={handleCloseLoop} className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors bg-white/10 p-1 rounded-full"><X className="w-4 h-4" /></button>
               
               <h2 className="text-xl font-bold text-white tracking-tight">
-                  {authMode === 'signup' && step === 'role' ? 'Sign Up' : step === 'otp' ? (authMode === 'login' ? 'Verify WhatsApp OTP' : 'Dual Verification') : (authMode === 'signup' ? 'Create Account' : 'Welcome Back')}
+                  {authMode === 'signup' && step === 'role' ? 'Sign Up' : step === 'otp' ? (authMode === 'login' ? 'Verify WhatsApp OTP' : 'Dual Verification') : (authMode === 'signup' ? `Create Account as ${user.role.charAt(0).toUpperCase() + user.role.slice(1)}` : 'Welcome Back')}
               </h2>
               <p className="text-[#a3e0d5] text-xs mt-1 font-medium">
-                  {step === 'otp' ? (authMode === 'login' ? 'Enter the code sent to your WhatsApp' : 'Enter WhatsApp and Email codes') : (authMode === 'signup' ? 'Join GandhinagarHomes' : 'Login to your account')}
+                  {step === 'otp' ? (authMode === 'login' ? 'Enter the code sent to your WhatsApp' : 'Enter WhatsApp and Email codes') : (authMode === 'signup' && step === 'role' ? 'Join GandhinagarHomes' : (authMode === 'signup' ? `Join GandhinagarHomes as ${user.role.charAt(0).toUpperCase() + user.role.slice(1)}` : 'Login to your account'))}
               </p>
             </div>
 
             <div className="p-5">
-              {/* ROLE SELECTION STEP */}
               {authMode === 'signup' && step === 'role' && (
                   <div className="flex flex-col gap-3 py-4 animate-in slide-in-from-bottom-2 duration-300">
                       <button 
@@ -447,12 +434,11 @@ const Header = () => {
                           Sign up as Seller <ArrowRight className="w-4 h-4" />
                       </button>
                       <div className="text-center pt-2">
-                          <p className="text-xs text-gray-500 font-medium">Joined already? <button type="button" onClick={() => openAuth('login')} className={`font-bold ${BRAND_COLOR} hover:underline`}>Log In</button></p>
+                          <p className="text-xs text-gray-500 font-medium">Joined already? <button type="button" onClick={() => openAuth('login')} className={`font-bold ${BRAND_COLOR} `}>Log In</button></p>
                       </div>
                   </div>
               )}
 
-              {/* DETAILS STEP */}
               {step === 'details' && (
                 <form onSubmit={handleSendOtp} className="space-y-3">
                   {authMode === 'signup' && (
@@ -485,15 +471,22 @@ const Header = () => {
                   </button>
 
                   <div className="text-center pt-1">
-                    <p className="text-xs text-gray-500">{authMode === 'login' ? "New here? " : "Joined already? "} <button type="button" onClick={() => openAuth(authMode === 'login' ? 'signup' : 'login')} className={`font-bold ${BRAND_COLOR} hover:underline`}>{authMode === 'login' ? 'Create Account' : 'Log In'}</button></p>
+                    <p className="text-xs text-gray-500">
+                      {authMode === 'login' ? "New here? " : `Already have a ${user.role.charAt(0).toUpperCase() + user.role.slice(1)} account? `} 
+                      <button 
+                        type="button" 
+                        onClick={() => openAuth(authMode === 'login' ? 'signup' : 'login')} 
+                        className={`font-bold ${BRAND_COLOR} hover:no-underline text-sm`}
+                      >
+                        {authMode === 'login' ? 'Sign Up' : 'Log In'}
+                      </button>
+                    </p>
                   </div>
                 </form>
               )}
 
-              {/* OTP STEP */}
               {step === 'otp' && (
                 <div className="flex flex-col items-center space-y-6 animate-in slide-in-from-right-8 duration-300 pb-2">
-                  {/* WhatsApp OTP Row */}
                   <div className="w-full space-y-2">
                       <label className="text-[10px] font-bold text-gray-400 uppercase text-center block tracking-widest">WhatsApp OTP (6 Digits)</label>
                       <div className="flex gap-2 w-full justify-center">
@@ -512,7 +505,6 @@ const Header = () => {
                       </div>
                   </div>
 
-                  {/* Email OTP Row - Only show if not Login */}
                   {authMode === 'signup' && (
                     <div className="w-full space-y-2">
                         <label className="text-[10px] font-bold text-gray-400 uppercase text-center block tracking-widest">Email OTP (6 Digits)</label>

@@ -123,7 +123,8 @@ const plans = [
       "Top of Property Page",
       "Maximum Extra Reach",
       "Professional Photoshoot & Video shoot Included",
-      "16x7 on call support"
+      "16x7 on call support",
+      "Dedicated Support Manager"
     ],
     highlight: true
   }

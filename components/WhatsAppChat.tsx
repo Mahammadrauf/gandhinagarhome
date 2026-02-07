@@ -164,18 +164,18 @@ const WhatsAppChat: React.FC = () => {
           onClick={() => toggleOpen()}
           onMouseEnter={() => (lastInteraction.current = Date.now())}
           className={[
-            "relative bg-[#25D366] hover:bg-[#20BA5A] text-white rounded-full p-5 shadow-2xl transition-all transform w-20 h-20 md:w-24 md:h-24 flex items-center justify-center",
+            "relative bg-[#25D366] hover:bg-[#20BA5A] text-white rounded-full p-3 shadow-xl transition-all transform w-14 h-14 md:w-16 md:h-16 flex items-center justify-center",
             motionSafe && showNudge ? "animate-[pulseSoft_0.7s_ease]" : "",
           ].join(" ")}
           aria-label="Chat on WhatsApp"
         >
           {unread && (
-            <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-red-500 ring-2 ring-white z-10" aria-hidden />
+            <span className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-red-500 ring-2 ring-white z-10" aria-hidden />
           )}
 
           <svg
             viewBox="0 0 24 24"
-            className="w-10 h-10 md:w-12 md:h-12 fill-current"
+            className="w-8 h-8 md:w-9 md:h-9 fill-current"
             xmlns="http://www.w3.org/2000/svg"
             aria-hidden
           >

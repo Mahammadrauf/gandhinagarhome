@@ -217,12 +217,12 @@ const Footer = () => {
           </p>
 
           <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2">
-            {['Privacy Policy', 'Terms of Use', 'Sitemap', 'Disclaimer'].map((item) => (
+            {['Privacy Policy', 'Terms & Conditions', 'Sitemap', 'Disclaimer'].map((item) => (
               <li key={item}>
-                <a href={`/${item.toLowerCase().replace(/ /g, '-')}`} className="text-xs font-bold text-black hover:text-[#006B5B] transition-colors relative group">
+                <Link href={`/${item.toLowerCase().replace(/ /g, '-')}`} className="text-xs font-bold text-black hover:text-[#006B5B] transition-colors relative group">
                   {item}
                   <span className="absolute -bottom-1 left-0 w-0 h-px bg-[#006B5B] group-hover:w-full transition-all duration-300"></span>
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
