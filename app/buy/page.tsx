@@ -767,15 +767,34 @@ function BuyIntroPage() {
     const propertyType = searchParams.get("propertyType");
     const priceRange = searchParams.get("priceRange");
     const ageOfProperty = searchParams.get("ageOfProperty");
+    const beds = searchParams.get("beds");
+    const locality = searchParams.get("locality");
 
-    if (city || propertyType || priceRange || ageOfProperty) {
-      setFilters(prev => ({
-        ...prev,
-        city: city || prev.city,
-        propertyType: propertyType as PropertyType || prev.propertyType,
-        priceRange: priceRange as PriceRangeValue || prev.priceRange,
-        ageOfProperty: ageOfProperty as PropertyAge || prev.ageOfProperty,
-      }));
+    if (city || propertyType || priceRange || ageOfProperty || beds || locality) {
+      setFilters(prev => {
+        const newFilters = {
+          ...prev,
+          city: city || prev.city,
+          propertyType: propertyType as PropertyType || prev.propertyType,
+          priceRange: priceRange as PriceRangeValue || prev.priceRange,
+          ageOfProperty: ageOfProperty as PropertyAge || prev.ageOfProperty,
+        };
+        
+        // Handle beds parameter
+        if (beds) {
+          const bedsNum = parseInt(beds, 10);
+          if (!isNaN(bedsNum) && bedsNum > 0) {
+            newFilters.minBedrooms = bedsNum;
+          }
+        }
+        
+        // Handle locality parameter
+        if (locality) {
+          newFilters.localities = [locality];
+        }
+        
+        return newFilters;
+      });
     }
   }, [searchParams]);
 

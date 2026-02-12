@@ -67,41 +67,41 @@ SocialIcon.propTypes = {
 const Footer = () => {
   // --- DATA ---
   const bhkLinks = [
-    { label: '1 BHK', href: '/listings?beds=1' }, // Added 1 BHK here
-    { label: '2 BHK', href: '/listings?beds=2' },
-    { label: '3 BHK', href: '/listings?beds=3' },
-    { label: '4 BHK', href: '/listings?beds=4' },
-    { label: '5 BHK', href: '/listings?beds=5' },
-    { label: '6 BHK', href: '/listings?beds=6' },
+    { label: '1 BHK', href: '/buy?beds=1' },
+    { label: '2 BHK', href: '/buy?beds=2' },
+    { label: '3 BHK', href: '/buy?beds=3' },
+    { label: '4 BHK', href: '/buy?beds=4' },
+    { label: '5 BHK', href: '/buy?beds=5' },
+    { label: '6 BHK', href: '/buy?beds=6' },
   ];
 
   const propertyTypeLinks = [
-    { label: 'Apartment', href: '/listings?type=apartment' },
-    { label: 'Tenement', href: '/listings?type=tenement' },
-    { label: 'Bungalow', href: '/listings?type=bungalow' },
-    { label: 'Penthouse', href: '/listings?type=penthouse' },
-    { label: 'Plot', href: '/listings?type=plot' },
-    { label: 'Shop', href: '/listings?type=shop' },
-    { label: 'Office', href: '/listings?type=office' },
+    { label: 'Apartment', href: '/buy?propertyType=apartment' },
+    { label: 'Tenement', href: '/buy?propertyType=tenement' },
+    { label: 'Bungalow', href: '/buy?propertyType=bungalow' },
+    { label: 'Penthouse', href: '/buy?propertyType=penthouse' },
+    { label: 'Plot', href: '/buy?propertyType=plot' },
+    { label: 'Shop', href: '/buy?propertyType=shop' },
+    { label: 'Office', href: '/buy?propertyType=office' },
   ];
 
   const gandhinagarLinks = [
-    { label: 'Raysan', href: '/listings?loc=raysan' },
-    { label: 'Randesan', href: '/listings?loc=randesan' },
-    { label: 'Sargasan', href: '/listings?loc=sargasan' },
-    { label: 'Kudasan', href: '/listings?loc=kudasan' },
-    { label: 'Koba', href: '/listings?loc=koba' },
-    { label: 'Sectors', href: '/listings?loc=sectors' },
+    { label: 'Raysan', href: '/buy?city=gandhinagar&locality=raysan' },
+    { label: 'Randesan', href: '/buy?city=gandhinagar&locality=randesan' },
+    { label: 'Sargasan', href: '/buy?city=gandhinagar&locality=sargasan' },
+    { label: 'Kudasan', href: '/buy?city=gandhinagar&locality=kudasan' },
+    { label: 'Koba', href: '/buy?city=gandhinagar&locality=koba' },
+    { label: 'Sectors', href: '/buy?city=gandhinagar&locality=sectors' },
   ];
 
   const ahmedabadLinks = [
-    { label: 'Motera', href: '/listings?loc=motera' },
-    { label: 'Chandkheda', href: '/listings?loc=chandkheda' },
-    { label: 'Zundal', href: '/listings?loc=zundal' },
-    { label: 'Adalaj', href: '/listings?loc=adalaj' },
-    { label: 'Bhat', href: '/listings?loc=bhat' },
-    { label: 'Tapovan', href: '/listings?loc=tapovan' },
-    { label: 'Vaishnodevi', href: '/listings?loc=vaishnodevi' },
+    { label: 'Motera', href: '/buy?city=ahmedabad&locality=motera' },
+    { label: 'Chandkheda', href: '/buy?city=ahmedabad&locality=chandkheda' },
+    { label: 'Zundal', href: '/buy?city=ahmedabad&locality=zundal' },
+    { label: 'Adalaj', href: '/buy?city=ahmedabad&locality=adalaj' },
+    { label: 'Bhat', href: '/buy?city=ahmedabad&locality=bhat' },
+    { label: 'Tapovan', href: '/buy?city=ahmedabad&locality=tapovan' },
+    { label: 'Vaishnodevi', href: '/buy?city=ahmedabad&locality=vaishnodevi' },
   ];
 
   // --- STYLES ---
