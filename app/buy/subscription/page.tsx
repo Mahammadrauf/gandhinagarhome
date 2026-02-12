@@ -172,7 +172,7 @@ export default function BuyerSubscriptionPage() {
       const token = getAuthToken();
       if (!token) {
         alert("Please login first to purchase a plan.");
-        router.push("/login?redirect=/buy/subscription");
+        
         return;
       }
 

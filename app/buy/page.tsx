@@ -1085,7 +1085,6 @@ function BuyIntroPage() {
       
       if (!token) {
         alert('Please login first to unlock seller details.');
-        router.push('/login?redirect=/buy');
         return;
       }
       
