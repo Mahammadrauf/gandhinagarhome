@@ -299,7 +299,6 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
       
       if (!token) {
         alert('Please login first to unlock seller details.');
-        router.push('/login?redirect=/properties/' + propertyId);
         return;
       }
       
