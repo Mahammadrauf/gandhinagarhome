@@ -1,4 +1,6 @@
-import React from 'react';
+"use client";
+
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import Link from 'next/link';
 import {
@@ -8,7 +10,8 @@ import {
   Youtube,
   MapPin,
   Mail,
-  Phone
+  Phone,
+  ChevronDown
 } from 'lucide-react';
 
 // --- INTERFACES ---
@@ -65,6 +68,16 @@ SocialIcon.propTypes = {
 // --- MAIN COMPONENT ---
 
 const Footer = () => {
+  // Accordion State for Mobile
+  const [openSection, setOpenSection] = useState<string | null>(null);
+
+  const toggleSection = (section: string) => {
+    // Check if window exists to prevent SSR issues, then check width
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setOpenSection(openSection === section ? null : section);
+    }
+  };
+
   // --- DATA ---
   const bhkLinks = [
     { label: '1 BHK', href: '/buy?beds=1' },
@@ -105,7 +118,7 @@ const Footer = () => {
   ];
 
   // --- STYLES ---
-  const headingClass = "text-sm font-bold text-black border-l-[3px] border-[#006B5B] pl-3 mb-5 uppercase tracking-wide";
+  const headingClass = "text-sm font-bold text-black border-l-[3px] border-[#006B5B] pl-3 uppercase tracking-wide";
     
   return (
     <footer className="bg-white pt-16 pb-6 relative font-sans text-black border-t border-slate-100">
@@ -114,10 +127,10 @@ const Footer = () => {
 
       <div className="container mx-auto px-4 lg:px-8">
         
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-8 gap-y-12 mb-14">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-x-8 gap-y-4 md:gap-y-12 mb-14">
           
           {/* 1. BRAND & SOCIAL */}
-          <div className="col-span-2 md:col-span-1 xl:col-span-2 pr-4">
+          <div className="col-span-2 md:col-span-1 xl:col-span-2 pr-4 mb-6 md:mb-0">
             <h3 className="text-2xl font-extrabold text-black mb-4 tracking-tight flex items-center gap-1">
               Gandhinagar<span className="text-[#006B5B]">Homes</span>
             </h3>
@@ -134,51 +147,96 @@ const Footer = () => {
           </div>
 
           {/* 2. QUICK LINKS */}
-          <div>
-            <h3 className={headingClass}>Quick Links</h3>
-            <ul className="space-y-1">
-              <LinkItem href="/buy" label="Buy Properties" />
-              <LinkItem href="/sell" label="List Your Property" />
-              <LinkItem href="/about" label="About Us" />
-              <LinkItem href="/blog" label="Real Estate News" />
-              <LinkItem href="/contact" label="Contact Support" />
-            </ul>
+          <div className="col-span-2 md:col-span-1 border-b border-slate-100 md:border-none">
+            <button 
+              type="button"
+              onClick={() => toggleSection('quick')}
+              className="w-full flex items-center justify-between py-3 md:py-0 md:mb-5 md:cursor-default"
+            >
+              <h3 className={headingClass}>Quick Links</h3>
+              <ChevronDown size={18} className={`md:hidden transition-transform duration-300 text-slate-400 ${openSection === 'quick' ? 'rotate-180' : ''}`} />
+            </button>
+            <div className={`transition-all duration-300 overflow-hidden ${openSection === 'quick' ? 'max-h-96 opacity-100 mb-4' : 'max-h-0 opacity-0 md:max-h-none md:opacity-100'}`}>
+              <ul className="space-y-1">
+                <LinkItem href="/buy" label="Buy Properties" />
+                <LinkItem href="/sell" label="List Your Property" />
+                <LinkItem href="/about" label="About Us" />
+                <LinkItem href="/blog" label="Real Estate News" />
+                <LinkItem href="/contact" label="Contact Support" />
+              </ul>
+            </div>
           </div>
 
           {/* 3. BUY BY BHK */}
-          <div>
-            <h3 className={headingClass}>Buy by BHK</h3>
-            <ul className="space-y-1">
-              {bhkLinks.map((l) => <LinkItem key={l.href} {...l} />)}
-            </ul>
+          <div className="col-span-2 md:col-span-1 border-b border-slate-100 md:border-none">
+            <button 
+              type="button"
+              onClick={() => toggleSection('bhk')}
+              className="w-full flex items-center justify-between py-3 md:py-0 md:mb-5 md:cursor-default"
+            >
+              <h3 className={headingClass}>Buy by BHK</h3>
+              <ChevronDown size={18} className={`md:hidden transition-transform duration-300 text-slate-400 ${openSection === 'bhk' ? 'rotate-180' : ''}`} />
+            </button>
+            <div className={`transition-all duration-300 overflow-hidden ${openSection === 'bhk' ? 'max-h-96 opacity-100 mb-4' : 'max-h-0 opacity-0 md:max-h-none md:opacity-100'}`}>
+              <ul className="space-y-1">
+                {bhkLinks.map((l) => <LinkItem key={l.href} {...l} />)}
+              </ul>
+            </div>
           </div>
 
           {/* 4. PROPERTY TYPE */}
-          <div>
-            <h3 className={headingClass}>Property Type</h3>
-            <ul className="space-y-1">
-              {propertyTypeLinks.map((l) => <LinkItem key={l.href} {...l} />)}
-            </ul>
+          <div className="col-span-2 md:col-span-1 border-b border-slate-100 md:border-none">
+            <button 
+              type="button"
+              onClick={() => toggleSection('type')}
+              className="w-full flex items-center justify-between py-3 md:py-0 md:mb-5 md:cursor-default"
+            >
+              <h3 className={headingClass}>Property Type</h3>
+              <ChevronDown size={18} className={`md:hidden transition-transform duration-300 text-slate-400 ${openSection === 'type' ? 'rotate-180' : ''}`} />
+            </button>
+            <div className={`transition-all duration-300 overflow-hidden ${openSection === 'type' ? 'max-h-96 opacity-100 mb-4' : 'max-h-0 opacity-0 md:max-h-none md:opacity-100'}`}>
+              <ul className="space-y-1">
+                {propertyTypeLinks.map((l) => <LinkItem key={l.href} {...l} />)}
+              </ul>
+            </div>
           </div>
 
           {/* 5. GANDHINAGAR */}
-          <div>
-            <h3 className={headingClass}>Gandhinagar</h3>
-            <ul className="space-y-1">
-              {gandhinagarLinks.map((l) => <LinkItem key={l.href} href={l.href} label={l.label} />)}
-            </ul>
+          <div className="col-span-2 md:col-span-1 border-b border-slate-100 md:border-none">
+            <button 
+              type="button"
+              onClick={() => toggleSection('gandhi')}
+              className="w-full flex items-center justify-between py-3 md:py-0 md:mb-5 md:cursor-default"
+            >
+              <h3 className={headingClass}>Gandhinagar</h3>
+              <ChevronDown size={18} className={`md:hidden transition-transform duration-300 text-slate-400 ${openSection === 'gandhi' ? 'rotate-180' : ''}`} />
+            </button>
+            <div className={`transition-all duration-300 overflow-hidden ${openSection === 'gandhi' ? 'max-h-96 opacity-100 mb-4' : 'max-h-0 opacity-0 md:max-h-none md:opacity-100'}`}>
+              <ul className="space-y-1">
+                {gandhinagarLinks.map((l) => <LinkItem key={l.href} href={l.href} label={l.label} />)}
+              </ul>
+            </div>
           </div>
 
           {/* 6. AHMEDABAD */}
-          <div>
-            <h3 className={headingClass}>Ahmedabad</h3>
-            <ul className="space-y-1">
-              {ahmedabadLinks.map((l) => <LinkItem key={l.href} href={l.href} label={l.label} />)}
-            </ul>
+          <div className="col-span-2 md:col-span-1 border-b border-slate-100 md:border-none">
+            <button 
+              type="button"
+              onClick={() => toggleSection('ahmed')}
+              className="w-full flex items-center justify-between py-3 md:py-0 md:mb-5 md:cursor-default"
+            >
+              <h3 className={headingClass}>Ahmedabad</h3>
+              <ChevronDown size={18} className={`md:hidden transition-transform duration-300 text-slate-400 ${openSection === 'ahmed' ? 'rotate-180' : ''}`} />
+            </button>
+            <div className={`transition-all duration-300 overflow-hidden ${openSection === 'ahmed' ? 'max-h-96 opacity-100 mb-4' : 'max-h-0 opacity-0 md:max-h-none md:opacity-100'}`}>
+              <ul className="space-y-1">
+                {ahmedabadLinks.map((l) => <LinkItem key={l.href} href={l.href} label={l.label} />)}
+              </ul>
+            </div>
           </div>
         </div>
 
-        {/* --- CONTACT STRIP --- */}
+        {/* --- CONTACT STRIP (UNTOUCHED) --- */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-8 mb-10">
             <div className="group flex items-center gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-[#006B5B]/30 hover:shadow-md transition-all duration-300 cursor-pointer">
               <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 text-[#006B5B] group-hover:bg-[#006B5B] group-hover:text-white transition-colors duration-300">
@@ -217,7 +275,7 @@ const Footer = () => {
             </a>
         </div>
 
-        {/* --- BOTTOM BAR --- */}
+        {/* --- BOTTOM BAR (UNTOUCHED) --- */}
         <div className="border-t border-slate-200 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-xs text-black font-semibold text-center md:text-left">
             &copy; {new Date().getFullYear()} <span className="text-black font-bold">GandhinagarHomes</span>. All rights reserved.

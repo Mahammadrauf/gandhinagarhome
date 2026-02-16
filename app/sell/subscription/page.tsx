@@ -38,6 +38,7 @@ const HighlightText = ({ text, colorClass }: { text: string; colorClass: string 
       {parts.map((part, i) => 
         // If part matches regex, bold it
         // eslint-disable-next-line
+        // @ts-ignore
         /(\d+ Days|Lifetime|\d+ Photos|Top 5|Top positioning|Home Page|Property Page)/.test(part) ? (
           <span key={i} className={`font-extrabold ${colorClass}`}>{part}</span>
         ) : (
@@ -316,10 +317,6 @@ export default function SubscriptionPage() {
               <ShieldCheck size={14} className="text-[#0b6b53]" />
               <span className="text-[#0b6b53] font-bold">Verified</span> & Secure Payment Gateway
             </div>
-
-            <div className="inline-flex items-center gap-1.5 bg-red-50 border border-red-100 text-red-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm">
-              <RotateCcw size={12} className="text-red-500" /> Money Back Guarantee
-            </div>
           </div>
           
           <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">
@@ -334,7 +331,7 @@ export default function SubscriptionPage() {
         </div>
 
         {/* --- Pricing Grid --- */}
-        <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto items-end">
+        <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto items-end pt-10">
           {plans.map((plan) => {
             const Icon = plan.icon;
             
@@ -366,9 +363,15 @@ export default function SubscriptionPage() {
                         </span>
                     </div>
 
-                    <h3 className={`text-2xl font-black tracking-tight mb-2 ${plan.styles.title}`}>
+                    <h3 className={`text-2xl font-black tracking-tight mb-1 ${plan.styles.title}`}>
                         {plan.name}
                     </h3>
+
+                    {/* Money Back Guarantee Badge (Directly below h3) */}
+                    <div className="inline-flex items-center gap-1.5 bg-red-50 text-red-600 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide mb-3 border border-red-100">
+                      <RotateCcw size={10} strokeWidth={3} />
+                      Money Back Guarantee
+                    </div>
 
                     {/* Price */}
                     <div className="flex items-baseline gap-2">
