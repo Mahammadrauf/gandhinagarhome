@@ -501,7 +501,7 @@ const ALL_LISTINGS: Listing[] = [
     id: 212,
     propertyId: "212",
     tier: "featured",
-    source: "builder",
+    source: "builder", 
     title: "Gift City Office Space",
     locality: "Gift City",
     city: "Gift City",
@@ -718,6 +718,7 @@ function BuyIntroPage() {
   
   // Toggle for Map View
   const [isMapView, setIsMapView] = useState(false);
+  const [showMobileMap, setShowMobileMap] = useState(false);
 
   // State for tracking unlocked properties
   const [unlockedProperties, setUnlockedProperties] = useState<Set<string>>(new Set());
@@ -932,16 +933,18 @@ function BuyIntroPage() {
         </button>
         </div>
 
-        <div className="mt-4 space-y-5 overflow-y-auto custom-scrollbar flex-1 pr-1">
+        <div className="mt-4 flex overflow-x-auto gap-4 md:block md:space-y-5 md:overflow-y-auto custom-scrollbar flex-1 pr-1 pb-2 md:pb-0 scroll-smooth no-scrollbar">
         
-        <FilterBlock title="City">
-            <PillButton active={filters.city === "Gandhinagar"} onClick={() => handleCityToggle("Gandhinagar")}>Gandhinagar</PillButton>
-            <PillButton active={filters.city === "Ahmedabad"} onClick={() => handleCityToggle("Ahmedabad")}>Ahmedabad</PillButton>
-            <PillButton active={filters.city === "Gift City"} onClick={() => handleCityToggle("Gift City")}>Gift City</PillButton>
-        </FilterBlock>
+        <div className="shrink-0 md:shrink">
+          <FilterBlock title="City">
+              <PillButton active={filters.city === "Gandhinagar"} onClick={() => handleCityToggle("Gandhinagar")}>Gandhinagar</PillButton>
+              <PillButton active={filters.city === "Ahmedabad"} onClick={() => handleCityToggle("Ahmedabad")}>Ahmedabad</PillButton>
+              <PillButton active={filters.city === "Gift City"} onClick={() => handleCityToggle("Gift City")}>Gift City</PillButton>
+          </FilterBlock>
+        </div>
 
         {(filters.city === "Gandhinagar" || filters.city === "Ahmedabad") && (
-            <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="shrink-0 md:shrink animate-in fade-in slide-in-from-top-2 duration-300">
                 <FilterBlock title={`Locality (${filters.city})`}>
                     {CITY_AREAS[filters.city].map(area => (
                         <PillButton key={area} active={filters.localities.includes(area)} onClick={() => handleLocalityToggle(area)}>
@@ -952,44 +955,56 @@ function BuyIntroPage() {
             </div>
         )}
 
-        <FilterBlock title="Budget">
-            <PillButton active={filters.priceRange === "0-50L"} onClick={() => setFilters(f => ({...f, priceRange: f.priceRange === "0-50L" ? "any" : "0-50L"}))}>₹0 - 50L</PillButton>
-            <PillButton active={filters.priceRange === "50L-1Cr"} onClick={() => setFilters(f => ({...f, priceRange: f.priceRange === "50L-1Cr" ? "any" : "50L-1Cr"}))}>₹50L - 1Cr</PillButton>
-            <PillButton active={filters.priceRange === "1Cr-1.5Cr"} onClick={() => setFilters(f => ({...f, priceRange: f.priceRange === "1Cr-1.5Cr" ? "any" : "1Cr-1.5Cr"}))}>₹1Cr - 1.5Cr</PillButton>
-            <PillButton active={filters.priceRange === "1.5Cr+"} onClick={() => setFilters(f => ({...f, priceRange: f.priceRange === "1.5Cr+" ? "any" : "1.5Cr+"}))}>Above 1.5Cr</PillButton>
-        </FilterBlock>
+        <div className="shrink-0 md:shrink">
+          <FilterBlock title="Budget">
+              <PillButton active={filters.priceRange === "0-50L"} onClick={() => setFilters(f => ({...f, priceRange: f.priceRange === "0-50L" ? "any" : "0-50L"}))}>₹0-50L</PillButton>
+              <PillButton active={filters.priceRange === "50L-1Cr"} onClick={() => setFilters(f => ({...f, priceRange: f.priceRange === "50L-1Cr" ? "any" : "50L-1Cr"}))}>₹50L-1Cr</PillButton>
+              <PillButton active={filters.priceRange === "1Cr-1.5Cr"} onClick={() => setFilters(f => ({...f, priceRange: f.priceRange === "1Cr-1.5Cr" ? "any" : "1Cr-1.5Cr"}))}>₹1Cr-1.5Cr</PillButton>
+              <PillButton active={filters.priceRange === "1.5Cr+"} onClick={() => setFilters(f => ({...f, priceRange: f.priceRange === "1.5Cr+" ? "any" : "1.5Cr+"}))}>Above 1.5Cr</PillButton>
+          </FilterBlock>
+        </div>
 
-        <FilterBlock title="Property Age">
-            {["New Property", "1–3 Years Old", "3–6 Years Old", "6–9 Years Old", "9+ Years Old"].map((label) => (
-              <PillButton key={label} active={filters.ageOfProperty === label} onClick={() => setFilters(f => ({...f, ageOfProperty: f.ageOfProperty === label ? "any" : (label as PropertyAge)}))}>
-                {label}
-              </PillButton>
-            ))}
-        </FilterBlock>
+        <div className="shrink-0 md:shrink">
+          <FilterBlock title="Property Age">
+              {["New Property", "1–3 Years Old", "3–6 Years Old", "6–9 Years Old", "9+ Years Old"].map((label) => (
+                <PillButton key={label} active={filters.ageOfProperty === label} onClick={() => setFilters(f => ({...f, ageOfProperty: f.ageOfProperty === label ? "any" : (label as PropertyAge)}))}>
+                  {label}
+                </PillButton>
+              ))}
+          </FilterBlock>
+        </div>
 
-        <FilterBlock title="Listed by">
-            <PillButton active={filters.listedBy === "owner"} onClick={() => setFilters(f => ({...f, listedBy: f.listedBy === "owner" ? "any" : "owner"}))}>Direct Owner</PillButton>
-            <PillButton active={filters.listedBy === "partner"} onClick={() => setFilters(f => ({...f, listedBy: f.listedBy === "partner" ? "any" : "partner"}))}>Agent</PillButton>
-            <PillButton active={filters.listedBy === "builder"} onClick={() => setFilters(f => ({...f, listedBy: f.listedBy === "builder" ? "any" : "builder"}))}>Builder</PillButton>
-        </FilterBlock>
+        <div className="shrink-0 md:shrink">
+          <FilterBlock title="Listed by">
+              <PillButton active={filters.listedBy === "owner"} onClick={() => setFilters(f => ({...f, listedBy: f.listedBy === "owner" ? "any" : "owner"}))}>Direct Owner</PillButton>
+              <PillButton active={filters.listedBy === "partner"} onClick={() => setFilters(f => ({...f, listedBy: f.listedBy === "partner" ? "any" : "partner"}))}>Agent</PillButton>
+              <PillButton active={filters.listedBy === "builder"} onClick={() => setFilters(f => ({...f, listedBy: f.listedBy === "builder" ? "any" : "builder"}))}>Builder</PillButton>
+          </FilterBlock>
+        </div>
         
-        <FilterBlock title="Property type">
-            {["Apartment", "Tenement", "Bungalow", "Penthouse", "Plot", "Shop", "Office"].map((type) => (
-                <PillButton key={type} active={filters.propertyType === type} onClick={() => setFilters((f) => ({...f, propertyType: f.propertyType === type ? "any" : (type as PropertyType)}))}>{type}</PillButton>
-            ))}
-        </FilterBlock>
+        <div className="shrink-0 md:shrink">
+          <FilterBlock title="Property type">
+              {["Apartment", "Tenement", "Bungalow", "Penthouse", "Plot", "Shop", "Office"].map((type) => (
+                  <PillButton key={type} active={filters.propertyType === type} onClick={() => setFilters((f) => ({...f, propertyType: f.propertyType === type ? "any" : (type as PropertyType)}))}>{type}</PillButton>
+              ))}
+          </FilterBlock>
+        </div>
 
-        <FilterBlock title="Bedrooms">
-            {["1", "2", "3", "4", "5", "6"].map((label, idx) => (
-                <PillButton key={label} active={filters.minBedrooms === idx + 1} onClick={() => setFilters((f) => ({...f, minBedrooms: f.minBedrooms === idx + 1 ? 0 : idx + 1}))}>{label}</PillButton>
-            ))}
-        </FilterBlock>
+        <div className="shrink-0 md:shrink">
+          <FilterBlock title="Bedrooms">
+              {["1", "2", "3", "4", "5", "6"].map((label, idx) => (
+                  <PillButton key={label} active={filters.minBedrooms === idx + 1} onClick={() => setFilters((f) => ({...f, minBedrooms: f.minBedrooms === idx + 1 ? 0 : idx + 1}))}>{label}</PillButton>
+              ))}
+          </FilterBlock>
+        </div>
 
-        <FilterBlock title="Furnishing">
-            {["Unfurnished", "Semi-furnished", "Fully furnished"].map((label) => (
-            <PillButton key={label} active={filters.furnishing === label} onClick={() => setFilters((f) => ({...f, furnishing: f.furnishing === label ? "any" : (label as Listing["furnishing"])}))}>{label}</PillButton>
-            ))}
-        </FilterBlock>
+        <div className="shrink-0 md:shrink">
+          <FilterBlock title="Furnishing">
+              {["Unfurnished", "Semi-furnished", "Fully furnished"].map((label) => (
+              <PillButton key={label} active={filters.furnishing === label} onClick={() => setFilters((f) => ({...f, furnishing: f.furnishing === label ? "any" : (label as Listing["furnishing"])}))}>{label}</PillButton>
+              ))}
+          </FilterBlock>
+        </div>
 
         </div>
     </div>
@@ -1015,18 +1030,18 @@ function BuyIntroPage() {
         </div>
         </div>
 
-        <div className="flex flex-col gap-1 lg:flex-row">
+        <div className="flex flex-col gap-1 lg:flex-row overflow-x-auto no-scrollbar">
         <div className="flex flex-col gap-1 sm:flex-row">
-            <div className="w-60">
+            <div className="w-full sm:w-60">
             <SmartDropdown label="City" value={filters.city} onChange={(val) => setFilters((f) => ({ ...f, city: val as any, localities: [] }))} options={[{ value: "any", label: "Any" }, { value: "Gandhinagar", label: "Gandhinagar" }, { value: "Gift City", label: "Gift City" }, { value: "Ahmedabad", label: "Ahmedabad" }]} />
             </div>
-            <div className="w-60">
+            <div className="w-full sm:w-60">
             <SmartDropdown label="Property Type" value={filters.propertyType} onChange={(val) => setFilters((f) => ({ ...f, propertyType: val as any }))} options={[{ value: "any", label: "Any" }, { value: "Apartment", label: "Apartment" }, { value: "Tenement", label: "Tenement" }, { value: "Bungalow", label: "Bungalow" }, { value: "Penthouse", label: "Penthouse" }, { value: "Plot", label: "Plot" }, { value: "Shop", label: "Shop" }, { value: "Office", label: "Office" }]} />
             </div>
-            <div className="w-60">
+            <div className="w-full sm:w-60">
             <SmartDropdown label="Budget" value={filters.priceRange} onChange={(val) => setFilters((f) => ({ ...f, priceRange: val as any }))} options={[{ value: "any", label: "Any" }, { value: "0-50L", label: "₹0 - ₹50 Lakhs" }, { value: "50L-1Cr", label: "₹50L - ₹1 Cr" }, { value: "1Cr-1.5Cr", label: "₹1 Cr - ₹1.5 Cr" }, { value: "1.5Cr+", label: "Above ₹1.5 Cr" }]} />
             </div>
-            <div className="w-60">
+            <div className="w-full sm:w-60">
             <SmartDropdown label="Property Age" value={filters.ageOfProperty} onChange={(val) => setFilters((f) => ({ ...f, ageOfProperty: val as any }))} options={[{ value: "any", label: "Any" }, { value: "New Property", label: "New Property" }, { value: "1–3 Years Old", label: "1–3 Years Old" }, { value: "3–6 Years Old", label: "3–6 Years Old" }, { value: "6–9 Years Old", label: "6–9 Years Old" }, { value: "9+ Years Old", label: "9+ Years Old" }]} />
             </div>
         </div>
@@ -1041,11 +1056,11 @@ function BuyIntroPage() {
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400">
                     <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                     </svg>
-                    Order: Exclusive first, then Featured, then all others.
+                    Order: Exclusive first, Featured, others.
                 </div>
             </div>
 
-            <div className="relative mt-0.5 lg:mt-0 flex items-center gap-2">
+            <div className="relative mt-1 lg:mt-0 flex items-center gap-2">
                {isMapView && (
                    <button onClick={() => setIsMapView(false)} className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-medium text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50">
                         <List className="w-3.5 h-3.5" />
@@ -1067,7 +1082,6 @@ function BuyIntroPage() {
     e.stopPropagation();
     
     try {
-      // Check if user is logged in and get their role
       const savedUser = localStorage.getItem('gh_user');
       if (savedUser) {
         const parsedUser = JSON.parse(savedUser);
@@ -1077,7 +1091,6 @@ function BuyIntroPage() {
         }
       }
       
-      // Get auth token
       const token = localStorage.getItem("token") ||
                    localStorage.getItem("gh_token") ||
                    localStorage.getItem("authToken") ||
@@ -1088,7 +1101,6 @@ function BuyIntroPage() {
         return;
       }
       
-      // Call unlock API
       const response = await axios.post(
         `${API_URL}/properties/${propertyId}/unlock`,
         {},
@@ -1099,10 +1111,7 @@ function BuyIntroPage() {
       
       if (response.data.success) {
         const { contact, unlockStats } = response.data.data;
-        
-        // Add to unlocked properties set
         setUnlockedProperties(prev => new Set(prev).add(propertyId));
-        
         alert(`Contact Details Unlocked!\n\nName: ${contact.name}\nPhone: ${contact.phone}\nEmail: ${contact.email}\nWhatsApp: ${contact.whatsapp || 'Not available'}\n\nRemaining unlocks: ${unlockStats.remainingUnlocks}/${unlockStats.totalLimit}`);
       } else {
         if (response.data.data?.unlockStats) {
@@ -1130,16 +1139,27 @@ function BuyIntroPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#F5F7F9] overflow-hidden flex flex-col font-sans">
+    <main className="min-h-screen bg-[#F5F7F9] overflow-x-hidden flex flex-col font-sans">
       <Header />
 
       {!isMapView ? (
-          <section className="w-full px-3 sm:px-4 lg:px-6 xl:px-10 py-6 overflow-y-auto flex-1">
+          <section className="w-full px-4 md:px-6 lg:px-10 py-6 overflow-y-auto flex-1">
             <TopSearchBar />
 
-            <div className="mt-2 grid gap-3 md:grid-cols-[270px,1fr]">
-                <aside className="h-fit">
-                    <div onClick={() => setIsMapView(true)} className="mb-3 w-full aspect-square rounded-2xl border border-slate-200 bg-slate-100 overflow-hidden relative group cursor-pointer shadow-sm">
+            {/* Mobile View Map Button */}
+            <div className="mt-4 md:hidden">
+              <button 
+                onClick={() => setShowMobileMap(true)}
+                className="w-full flex items-center justify-center gap-2 bg-white border border-slate-200 py-3 rounded-xl shadow-sm text-slate-700 font-semibold"
+              >
+                <MapIcon className="w-4 h-4 text-[#006B5B]" />
+                View Map
+              </button>
+            </div>
+
+            <div className="mt-4 flex flex-col md:grid md:gap-3 md:grid-cols-[270px,1fr]">
+                <aside className="h-fit flex flex-col gap-3 order-1 md:order-none">
+                    <div onClick={() => setIsMapView(true)} className="hidden md:block w-full h-80 md:aspect-square rounded-2xl border border-slate-200 bg-slate-100 overflow-hidden relative group cursor-pointer shadow-sm">
                         <img 
                             src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScDLQeIDVShuT2tL3g-BkmQUdq0tId_aQP9g&s"
                             alt="Map view"
@@ -1158,29 +1178,28 @@ function BuyIntroPage() {
                     </div>
                 </aside>
 
-                <section className="space-y-3">
-                    <div className="flex items-center justify-between">
-                    <h2 className="text-base font-bold text-slate-900">
-                        {filters.city !== "any" ? `Showing properties in ${filters.city}` : "Showing all properties"}
-                    </h2>
-                    <span className="text-xs font-medium text-slate-500">
-                        {filteredListings.length} listings • Updated just now
-                    </span>
+                <section className="space-y-3 order-2 md:order-none mt-4 md:mt-0">
+                    <div className="flex items-center justify-between px-1">
+                      <h2 className="text-sm md:text-base font-bold text-slate-900">
+                          {filters.city !== "any" ? `Properties in ${filters.city}` : "All properties"}
+                      </h2>
+                      <span className="text-[10px] md:text-xs font-medium text-slate-500">
+                          {filteredListings.length} listings
+                      </span>
                     </div>
 
                     <div className="space-y-3">
                     {loading ? (
                         <div className="space-y-3">
-                            {[1, 2, 3, 4, 5, 6].map((i) => (
+                            {[1, 2, 3].map((i) => (
                                 <div key={i} className="animate-pulse">
                                     <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                                        <div className="flex gap-4">
-                                            <div className="w-32 h-32 bg-slate-200 rounded-xl"></div>
+                                        <div className="flex flex-col md:flex-row gap-4">
+                                            <div className="w-full md:w-32 h-40 md:h-32 bg-slate-200 rounded-xl"></div>
                                             <div className="flex-1 space-y-2">
                                                 <div className="h-4 bg-slate-200 rounded w-3/4"></div>
                                                 <div className="h-3 bg-slate-200 rounded w-1/2"></div>
                                                 <div className="h-3 bg-slate-200 rounded w-1/4"></div>
-                                                <div className="h-3 bg-slate-200 rounded w-1/3"></div>
                                             </div>
                                         </div>
                                     </div>
@@ -1214,7 +1233,36 @@ function BuyIntroPage() {
           <MapComponent listings={filteredListings} onBack={() => setIsMapView(false)} FilterSidebar={<FilterSidebarContent />} onSelectProperty={handleOpenDetails} />
         )}
 
+        {/* Mobile Map Modal */}
+        {showMobileMap && (
+          <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="w-full bg-white rounded-t-3xl overflow-hidden animate-in slide-in-from-bottom duration-300">
+              <div className="flex items-center justify-between p-4 border-b border-slate-100">
+                <h3 className="font-bold text-slate-900">Map Explorer</h3>
+                <button 
+                  onClick={() => setShowMobileMap(false)}
+                  className="p-2 rounded-full bg-slate-100 text-slate-600"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="h-[80vh] w-full">
+                <MapComponent 
+                  listings={filteredListings} 
+                  onBack={() => setShowMobileMap(false)} 
+                  FilterSidebar={<FilterSidebarContent />} 
+                  onSelectProperty={handleOpenDetails} 
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         <Footer />
+        <style jsx global>{`
+          .no-scrollbar::-webkit-scrollbar { display: none; }
+          .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        `}</style>
       </main>
   );
 }
@@ -1234,7 +1282,7 @@ interface SortDropdownProps { value: SortOption; onChange: (value: SortOption) =
 const SortDropdown: React.FC<SortDropdownProps> = ({ value, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const options: { label: string; value: SortOption }[] = [ { label: "Price (low to high)", value: "PriceLowHigh" }, { label: "Price (high to low)", value: "PriceHighLow" }, { label: "Size (small to large)", value: "SizeLowHigh" }, { label: "Size (large to small)", value: "SizeHighLow" }, { label: "Oldest to newest", value: "Oldest" }, { label: "Newest to oldest", value: "Newest" }, ];
+  const options: { label: string; value: SortOption }[] = [ { label: "Price (low-high)", value: "PriceLowHigh" }, { label: "Price (high-low)", value: "PriceHighLow" }, { label: "Size (small-large)", value: "SizeLowHigh" }, { label: "Size (large-small)", value: "SizeHighLow" }, { label: "Oldest", value: "Oldest" }, { label: "Newest", value: "Newest" }, ];
   const selectedLabel = options.find((o) => o.value === value)?.label;
 
   useEffect(() => {
@@ -1249,16 +1297,16 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ value, onChange }) => {
 
   return (
     <div className="relative" ref={wrapperRef}>
-      <button onClick={() => setIsOpen(!isOpen)} className="group inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-medium text-slate-600 transition-all hover:border-slate-300 hover:bg-white">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400"> <line x1="21" x2="14" y1="4" y2="4" /> <line x1="10" x2="3" y1="4" y2="4" /> <line x1="21" x2="12" y1="12" y2="12" /> <line x1="8" x2="3" y1="12" y2="12" /> <line x1="21" x2="16" y1="20" y2="20" /> <line x1="12" x2="3" y1="20" y2="20" /> </svg>
-        <span>Sort by: <span className="font-semibold text-slate-900 capitalize">{selectedLabel}</span></span>
+      <button onClick={() => setIsOpen(!isOpen)} className="group inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[10px] md:text-[11px] font-medium text-slate-600 transition-all hover:border-slate-300 hover:bg-white whitespace-nowrap">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400"> <line x1="21" x2="14" y1="4" y2="4" /> <line x1="10" x2="3" y1="4" y2="4" /> <line x1="21" x2="12" y1="12" y2="12" /> <line x1="8" x2="3" y1="12" y2="12" /> <line x1="21" x2="16" y1="20" y2="20" /> <line x1="12" x2="3" y1="20" y2="20" /> </svg>
+        <span>Sort: <span className="font-semibold text-slate-900">{selectedLabel}</span></span>
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-48 origin-top-right animate-in fade-in zoom-in-95 duration-100 rounded-xl border border-slate-100 bg-white p-1 shadow-xl shadow-slate-200/50">
+        <div className="absolute right-0 top-full z-50 mt-2 w-40 md:w-48 origin-top-right animate-in fade-in zoom-in-95 duration-100 rounded-xl border border-slate-100 bg-white p-1 shadow-xl shadow-slate-200/50">
           <div className="flex flex-col">
             {options.map((option) => (
-              <button key={option.value} onClick={() => { onChange(option.value); setIsOpen(false); }} className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs transition-colors capitalize ${ value === option.value ? "bg-emerald-50 text-emerald-700 font-medium" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900" }`}>
+              <button key={option.value} onClick={() => { onChange(option.value); setIsOpen(false); }} className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-[11px] transition-colors capitalize ${ value === option.value ? "bg-emerald-50 text-emerald-700 font-medium" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900" }`}>
                 {option.label}
                 {value === option.value && ( <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> )}
               </button>
@@ -1289,21 +1337,21 @@ const SmartDropdown: React.FC<SmartDropdownProps> = ({ label, options, value, on
   const isActive = value !== "any";
 
   return (
-    <div className="relative flex-1 min-w-[140px]" ref={wrapperRef}>
+    <div className="relative flex-1 min-w-[120px] md:min-w-[140px]" ref={wrapperRef}>
       <button onClick={() => setIsOpen(!isOpen)} className={`group flex h-8 w-full items-center justify-between rounded-full border px-3 transition-all duration-200 ${ isOpen ? "border-emerald-500 ring-1 ring-emerald-500 bg-white" : isActive ? "border-emerald-200 bg-emerald-50/30 hover:border-emerald-300" : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50" }`}>
         <div className="flex items-center gap-2 overflow-hidden">
-          <span className="shrink-0 text-xs font-medium text-slate-500">{label}</span>
+          <span className="shrink-0 text-[10px] md:text-xs font-medium text-slate-500">{label}</span>
           <span className="h-3 w-px bg-slate-200"></span>
-          <span className={`truncate text-sm ${isActive ? "font-semibold text-emerald-900" : "text-slate-700"}`}>{displayLabel}</span>
+          <span className={`truncate text-xs md:text-sm ${isActive ? "font-semibold text-emerald-900" : "text-slate-700"}`}>{displayLabel}</span>
         </div>
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`ml-2 h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${isOpen ? "rotate-180 text-emerald-600" : ""}`}> <path d="m6 9 6 6 6-6" /> </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`ml-1 h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${isOpen ? "rotate-180 text-emerald-600" : ""}`}> <path d="m6 9 6 6 6-6" /> </svg>
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 top-full z-50 mt-1.5 w-full min-w-[180px] origin-top-left animate-in fade-in zoom-in-95 duration-100 rounded-xl border border-slate-100 bg-white p-1 shadow-xl shadow-slate-200/50">
-          <div className="flex flex-col">
+        <div className="absolute left-0 top-full z-50 mt-1.5 w-full min-w-[160px] md:min-w-[180px] origin-top-left animate-in fade-in zoom-in-95 duration-100 rounded-xl border border-slate-100 bg-white p-1 shadow-xl shadow-slate-200/50">
+          <div className="flex flex-col max-h-60 overflow-y-auto custom-scrollbar">
             {options.map((option) => (
-              <button key={option.value} onClick={() => { onChange(option.value); setIsOpen(false); }} className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${ value === option.value ? "bg-emerald-50 text-emerald-700 font-medium" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900" }`}>
+              <button key={option.value} onClick={() => { onChange(option.value); setIsOpen(false); }} className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs md:text-sm transition-colors ${ value === option.value ? "bg-emerald-50 text-emerald-700 font-medium" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900" }`}>
                 {option.label}
                 {value === option.value && ( <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> )}
               </button>
@@ -1316,45 +1364,21 @@ const SmartDropdown: React.FC<SmartDropdownProps> = ({ label, options, value, on
 };
 
 function BadgeDot({ color, children }: { color: string; children: React.ReactNode; }) {
-  return ( <span className="flex items-center gap-1"> <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} /> {children} </span> );
+  return ( <span className="flex items-center gap-1 whitespace-nowrap"> <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} /> {children} </span> );
 }
 
 function FilterBlock({ title, children }: { title: string; children: React.ReactNode; }) {
-  return ( <div> <div className="text-[11px] font-semibold text-slate-500">{title}</div> <div className="mt-2 flex flex-wrap gap-1.5">{children}</div> </div> );
+  return ( <div> <div className="text-[10px] md:text-[11px] font-semibold text-slate-500 uppercase tracking-wider">{title}</div> <div className="mt-2 flex flex-wrap md:flex-wrap gap-1.5 md:gap-1.5">{children}</div> </div> );
 }
 
 function PillButton({ active, children, onClick }: { active?: boolean; children: React.ReactNode; onClick?: () => void; }) {
-  return ( <button type="button" onClick={onClick} className={`rounded-full px-3 py-1 text-[11px] transition-colors ${ active ? "border border-[#0B8A72] bg-[#E5F6F2] font-medium text-[#0B6754]" : "border border-slate-200 bg-white text-slate-600 hover:border-[#0B8A72]/60" }`}> {children} </button> );
+  return ( <button type="button" onClick={onClick} className={`rounded-full px-3 py-1 text-[10px] md:text-[11px] transition-colors whitespace-nowrap shrink-0 ${ active ? "border border-[#0B8A72] bg-[#E5F6F2] font-medium text-[#0B6754]" : "border border-slate-200 bg-white text-slate-600 hover:border-[#0B8A72]/60" }`}> {children} </button> );
 }
 
 function themeForTier(tier: Tier) {
-  const exclusive = { 
-      badge: "bg-[#DCCEB9] text-[#5A4A2E] shadow-sm", 
-      priceChip: "bg-white text-[#5A4A2E] border border-[#E6D9C4] shadow-sm", 
-      tagBg: "bg-[#F5EFE7] text-[#6B5A41] border border-[#E6D9C4]", 
-      viewBtn: "bg-[#BFA97F] hover:bg-[#a89064] text-white shadow", 
-      cardAccent: "ring-1 ring-[#EAE0CF]/40", 
-      cardBg: "bg-gradient-to-r from-[#E8DEC9] to-white" 
-  };
-  
-  const featured = { 
-      badge: "bg-[#0F7F9C] text-white shadow-sm", 
-      priceChip: "bg-white text-[#0F7F9C] border border-sky-100 shadow-sm", 
-      tagBg: "bg-[#e0f2ff] text-[#0F7F9C] border border-[#bfe0ff]", 
-      viewBtn: "bg-gradient-to-r from-[#0F7F9C] to-[#022F5A] text-white shadow hover:opacity-90", 
-      cardAccent: "ring-1 ring-sky-200", 
-      cardBg: "bg-gradient-to-r from-[#CFE5FF] to-[#F0F9FF]" 
-  };
-  
-  const regular = { 
-      badge: "bg-[#004D40] text-white", 
-      priceChip: "bg-white text-slate-800 border border-slate-100 shadow-sm", 
-      tagBg: "bg-[#E5F6F2] text-[#006B5B]", 
-      viewBtn: "bg-[#0F4C3E] hover:bg-[#0b3b30] text-white shadow", 
-      cardAccent: "", 
-      cardBg: "bg-white" 
-  };
-  
+  const exclusive = { badge: "bg-[#DCCEB9] text-[#5A4A2E] shadow-sm", priceChip: "bg-white text-[#5A4A2E] border border-[#E6D9C4] shadow-sm", tagBg: "bg-[#F5EFE7] text-[#6B5A41] border border-[#E6D9C4]", viewBtn: "bg-[#BFA97F] hover:bg-[#a89064] text-white shadow", cardAccent: "ring-1 ring-[#EAE0CF]/40", cardBg: "bg-gradient-to-r from-[#E8DEC9] to-white" };
+  const featured = { badge: "bg-[#0F7F9C] text-white shadow-sm", priceChip: "bg-white text-[#0F7F9C] border border-sky-100 shadow-sm", tagBg: "bg-[#e0f2ff] text-[#0F7F9C] border border-[#bfe0ff]", viewBtn: "bg-gradient-to-r from-[#0F7F9C] to-[#022F5A] text-white shadow hover:opacity-90", cardAccent: "ring-1 ring-sky-200", cardBg: "bg-gradient-to-r from-[#CFE5FF] to-[#F0F9FF]" };
+  const regular = { badge: "bg-[#004D40] text-white", priceChip: "bg-white text-slate-800 border border-slate-100 shadow-sm", tagBg: "bg-[#E5F6F2] text-[#006B5B]", viewBtn: "bg-[#0F4C3E] hover:bg-[#0b3b30] text-white shadow", cardAccent: "", cardBg: "bg-white" };
   if (tier === "exclusive") return exclusive;
   if (tier === "featured") return featured;
   return regular;
@@ -1367,13 +1391,8 @@ function tierLabel(tier: Tier) {
 }
 
 function ListingCard({ item, handleOpenDetails, handleUnlockSeller, isPropertyUnlocked }: { 
-  item: Listing; 
-  handleOpenDetails: (propertyId: string) => void; 
-  handleUnlockSeller: (e: React.MouseEvent, propertyId: string) => void;
-  isPropertyUnlocked: (propertyId: string) => boolean;
+  item: Listing; handleOpenDetails: (propertyId: string) => void; handleUnlockSeller: (e: React.MouseEvent, propertyId: string) => void; isPropertyUnlocked: (propertyId: string) => boolean;
 }) {
-  const router = useRouter();
-  const isOwner = item.source === "owner";
   const theme = themeForTier(item.tier);
   const getSourceLabel = () => {
       if (item.source === "owner") return { text: "Direct Owner", colorClass: "text-green-700" };
@@ -1384,59 +1403,47 @@ function ListingCard({ item, handleOpenDetails, handleUnlockSeller, isPropertyUn
   const isUnlocked = isPropertyUnlocked(item.propertyId || String(item.id));
 
   return (
-    // ADDED md:items-center to the main article tag to align image and text content vertically
-    <article onClick={() => handleOpenDetails(item.propertyId || String(item.id))} className={`relative overflow-hidden flex flex-col md:flex-row md:items-center gap-3 md:gap-5 p-3 border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer ${theme.cardAccent} ${theme.cardBg ? theme.cardBg : "bg-white"}`}>
-      {item.tier === "featured" && ( 
-          <div className="absolute left-0 top-0 bottom-0 w-2 rounded-l-2xl bg-gradient-to-b from-[#e0f2ff] to-[#f0f9ff] pointer-events-none" /> 
-      )}
-      <div className="w-full md:w-[288px] h-[190px] relative rounded-xl overflow-hidden shrink-0 bg-slate-100">
+    <article onClick={() => handleOpenDetails(item.propertyId || String(item.id))} className={`relative overflow-hidden flex flex-col md:flex-row md:items-center gap-4 p-3 md:p-4 border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer ${theme.cardAccent} ${theme.cardBg || "bg-white"}`}>
+      {item.tier === "featured" && ( <div className="absolute left-0 top-0 bottom-0 w-1 md:w-2 rounded-l-2xl bg-gradient-to-b from-[#e0f2ff] to-[#f0f9ff] pointer-events-none" /> )}
+      <div className="w-full md:w-[288px] h-48 md:h-[190px] relative rounded-xl overflow-hidden shrink-0 bg-slate-100">
         <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
-        {tierLabel(item.tier) && ( <span className={`absolute top-3 left-3 px-3 py-1 text-[11px] font-semibold rounded-full ${theme.badge}`}> {tierLabel(item.tier)} </span> )}
-        <div className="absolute left-4 bottom-4"> <span className={`px-3 py-1.5 text-[13px] rounded-lg font-semibold ${theme.priceChip}`}> {item.priceLabel} </span> </div>
+        {tierLabel(item.tier) && ( <span className={`absolute top-3 left-3 px-3 py-1 text-[10px] font-bold rounded-full ${theme.badge}`}> {tierLabel(item.tier)} </span> )}
+        <div className="absolute left-3 bottom-3"> <span className={`px-2.5 py-1.5 text-xs md:text-[13px] rounded-lg font-bold ${theme.priceChip}`}> {item.priceLabel} </span> </div>
         <div className="absolute top-3 right-3"> 
-              <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/95 backdrop-blur-sm ${sourceInfo.colorClass} text-[10px] font-bold shadow-sm`}> 
+              <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/95 backdrop-blur-sm ${sourceInfo.colorClass} text-[9px] md:text-[10px] font-bold shadow-sm`}> 
                 <ShieldCheck className="w-3 h-3" /> {sourceInfo.text} 
               </span> 
         </div>
       </div>
       <div className="flex-1 flex flex-col gap-2">
-        <div> <h3 className="text-lg font-bold text-slate-900 leading-tight"> {item.title} </h3> </div>
-        <div className="flex flex-wrap gap-2"> <span className="px-3 py-1.5 bg-slate-50 rounded-lg text-sm font-semibold text-slate-700 border border-slate-100"> {item.bedrooms > 0 ? `${item.bedrooms} BHK` : item.type} • {item.bathrooms > 0 ? `${item.bathrooms} Bath` : ""} </span> <span className="px-3 py-1.5 bg-slate-50 rounded-lg text-sm font-semibold text-slate-700 border border-slate-100"> {item.areaDisplay || `${item.areaSqft.toLocaleString()} sq ft`} </span> </div>
-        <div className="flex flex-wrap gap-2"> <span className="px-3 py-1.5 bg-white rounded-full text-xs font-medium text-slate-600 border border-slate-200"> {item.type} • {item.furnishing} </span> <span className="px-3 py-1.5 bg-white rounded-full text-xs font-medium text-slate-600 border border-slate-200"> {item.locality}, {item.city} </span> </div>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-1 text-sm text-slate-500"> <div className="flex items-center gap-1.5"> <Clock className="w-4 h-4 text-slate-400" /> <span>{item.readyStatus}</span> </div> <div className="flex items-center gap-1.5"> <Car className="w-4 h-4 text-slate-400" /> <span>{item.parking} Parking</span> </div> <div className="flex items-center gap-1.5"> <Calendar className="w-4 h-4 text-slate-400" /> <span>Property Age: {item.ageLabel}</span> </div> </div>
-        <div className="flex flex-wrap gap-2 mt-auto"> {item.tags.map((tag: string) => ( <span key={tag} className={`px-2.5 py-1 rounded-md text-[11px] font-medium ${theme.tagBg}`}> {tag} </span> ))} </div>
-        <div className="text-[11px] text-slate-400 pt-1"> Media & docs • {item.media} </div>
+        <div> <h3 className="text-base md:text-lg font-bold text-slate-900 leading-tight"> {item.title} </h3> </div>
+        <div className="flex flex-wrap gap-2"> 
+          <span className="px-2.5 py-1 bg-slate-50 rounded-lg text-xs font-semibold text-slate-700 border border-slate-100"> {item.bedrooms > 0 ? `${item.bedrooms} BHK` : item.type} • {item.bathrooms > 0 ? `${item.bathrooms} Bath` : ""} </span> 
+          <span className="px-2.5 py-1 bg-slate-50 rounded-lg text-xs font-semibold text-slate-700 border border-slate-100"> {item.areaDisplay || `${item.areaSqft.toLocaleString()} sq ft`} </span> 
+        </div>
+        <div className="flex flex-wrap gap-2"> 
+          <span className="px-2.5 py-1 bg-white rounded-full text-[10px] md:text-xs font-medium text-slate-600 border border-slate-200"> {item.type} • {item.furnishing} </span> 
+          <span className="px-2.5 py-1 bg-white rounded-full text-[10px] md:text-xs font-medium text-slate-600 border border-slate-200"> {item.locality}, {item.city} </span> 
+        </div>
+        <div className="grid grid-cols-2 md:flex md:flex-wrap items-center gap-x-4 gap-y-2 mt-1 text-[11px] md:text-sm text-slate-500"> 
+          <div className="flex items-center gap-1.5"> <Clock className="w-4 h-4 text-slate-400" /> <span className="truncate">{item.readyStatus}</span> </div> 
+          <div className="flex items-center gap-1.5"> <Car className="w-4 h-4 text-slate-400" /> <span className="truncate">{item.parking} Parking</span> </div> 
+          <div className="flex items-center gap-1.5 col-span-2"> <Calendar className="w-4 h-4 text-slate-400" /> <span className="truncate">Age: {item.ageLabel}</span> </div> 
+        </div>
+        <div className="flex flex-wrap gap-1.5 mt-auto"> {item.tags.map((tag: string) => ( <span key={tag} className={`px-2 py-0.5 rounded-md text-[9px] md:text-[11px] font-medium ${theme.tagBg}`}> {tag} </span> ))} </div>
       </div>
       <div className="w-full md:w-48 shrink-0 flex flex-col justify-between md:border-l md:border-slate-100 md:pl-4 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100">
-        <div> <div className="text-xs font-medium text-slate-500">Price</div> <div className="text-xl font-bold text-slate-900 mt-0.5"> {item.priceLabel} </div> <div className="mt-2"> <div className="text-xs text-slate-500">Seller access</div> <div className="text-xs font-medium text-slate-700 mt-0.5">
-          {isUnlocked ? (
-            <div>
-              <div className="text-green-600 font-semibold">Seller access visible</div>
-              <div className="text-[10px] text-green-500 leading-tight">Contact details unlocked</div>
-            </div>
-          ) : (
-            <div>
-              <div>{item.phoneMasked}</div>
-              <div className="text-[10px] text-slate-400 leading-tight">full number after subscription</div>
-            </div>
-          )}
-        </div> </div> </div>
-        <div className="flex flex-col gap-2 mt-4"> 
-          <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleOpenDetails(item.propertyId || String(item.id)); }} className={`w-full py-2 rounded-full text-white text-sm font-bold shadow-sm transition-all active:scale-95 ${theme.viewBtn}`}> View details </button> 
-          <button 
-            onClick={(e) => handleUnlockSeller(e, item.propertyId || String(item.id))} 
-            className={`w-full py-2 rounded-full text-sm font-bold transition-all active:scale-95 ${
-              isUnlocked 
-                ? 'bg-green-100 text-green-700 border border-green-200' 
-                : 'border border-slate-300 bg-white hover:border-slate-400 text-slate-800'
-            }`}
-          > 
-            {isUnlocked ? 'Seller Unlocked' : 'Unlock seller'} 
-          </button> 
+        <div className="flex md:flex-col justify-between items-start md:items-start">
+          <div> <div className="text-[10px] md:text-xs font-medium text-slate-500 uppercase">Price</div> <div className="text-lg md:text-xl font-extrabold text-slate-900 mt-0.5"> {item.priceLabel} </div> </div>
+          <div className="md:mt-3 text-right md:text-left"> <div className="text-[10px] md:text-xs text-slate-500 uppercase">Seller</div> <div className="text-[11px] font-semibold text-slate-700 mt-0.5">
+            {isUnlocked ? ( <span className="text-green-600">Access Visible</span> ) : ( <span>{item.phoneMasked}</span> )}
+          </div> </div> 
+        </div>
+        <div className="flex flex-row md:flex-col gap-2 mt-4"> 
+          <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleOpenDetails(item.propertyId || String(item.id)); }} className={`flex-1 md:w-full py-2 rounded-full text-white text-xs md:text-sm font-bold shadow-sm transition-all active:scale-95 ${theme.viewBtn}`}> Details </button> 
+          <button onClick={(e) => handleUnlockSeller(e, item.propertyId || String(item.id))} className={`flex-1 md:w-full py-2 rounded-full text-xs md:text-sm font-bold transition-all active:scale-95 ${isUnlocked ? 'bg-green-100 text-green-700 border border-green-200' : 'border border-slate-300 bg-white hover:border-slate-400 text-slate-800'}`}> {isUnlocked ? 'Unlocked' : 'Unlock Seller'} </button> 
         </div>
       </div>
     </article>
   );
 }
-
-// ... (rest of the code remains the same)
