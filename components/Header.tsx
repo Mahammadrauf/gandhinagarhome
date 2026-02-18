@@ -445,10 +445,10 @@ const Header = () => {
               <button onClick={handleCloseLoop} className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors bg-white/10 p-1 rounded-full"><X className="w-4 h-4" /></button>
               
               <h2 className="text-xl font-bold text-white tracking-tight">
-                  {authMode === 'signup' && step === 'role' ? 'Sign Up' : step === 'otp' ? (authMode === 'login' ? 'Verify WhatsApp OTP' : 'Dual Verification') : (authMode === 'signup' ? `Create Account as ${user.role.charAt(0).toUpperCase() + user.role.slice(1)}` : 'Welcome Back')}
+                  {authMode === 'signup' && step === 'role' ? 'Sign Up' : step === 'otp' ? (authMode === 'login' ? 'Verify Mobile OTP' : 'Dual Verification') : (authMode === 'signup' ? `Create Account as ${user.role.charAt(0).toUpperCase() + user.role.slice(1)}` : 'Welcome Back')}
               </h2>
               <p className="text-[#a3e0d5] text-xs mt-1 font-medium">
-                  {step === 'otp' ? (authMode === 'login' ? 'Enter the code sent to your WhatsApp' : 'Enter WhatsApp and Email codes') : (authMode === 'signup' && step === 'role' ? 'Join GandhinagarHomes' : (authMode === 'signup' ? `Join GandhinagarHomes as ${user.role.charAt(0).toUpperCase() + user.role.slice(1)}` : 'Login to your account'))}
+                  {step === 'otp' ? (authMode === 'login' ? 'Enter the code sent to your mobile number' : 'Enter Mobile and Email codes') : (authMode === 'signup' && step === 'role' ? 'Join GandhinagarHomes' : (authMode === 'signup' ? `Join GandhinagarHomes as ${user.role.charAt(0).toUpperCase() + user.role.slice(1)}` : 'Login to your account'))}
               </p>
             </div>
 
@@ -493,7 +493,7 @@ const Header = () => {
                   )}
 
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-gray-500 ml-1 uppercase tracking-wide">WhatsApp Number</label>
+                    <label className="text-[10px] font-bold text-gray-500 ml-1 uppercase tracking-wide">Mobile Number</label>
                     <div className="relative group">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span className="text-gray-500 font-bold text-sm">{countryCode}</span><div className="h-4 w-px bg-gray-300 mx-2"></div></div>
                       <input required type="tel" maxLength={10} pattern="[0-9]{10}" className={`w-full pl-16 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 ${BRAND_FOCUS_RING} focus:border-transparent transition-all font-semibold text-gray-800 tracking-wide text-sm`} value={user.mobile} onChange={(e) => setUser({...user, mobile: e.target.value.replace(/\D/g,'')})} />
@@ -501,7 +501,7 @@ const Header = () => {
                   </div>
 
                   <button type="submit" disabled={isLoading || user.mobile.length < 10} className={`w-full ${BRAND_BG} ${BRAND_HOVER_BG} text-white font-bold py-2.5 rounded-lg shadow-md shadow-[#006A58]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed mt-2 active:scale-[0.98] text-sm`}>
-                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (authMode === 'signup' ? 'Get OTP on Email & WhatsApp' : 'Get Login OTP')} <ArrowRight className="w-4 h-4" />
+                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (authMode === 'signup' ? 'Get OTP on Email & Mobile' : 'Get Login OTP')} <ArrowRight className="w-4 h-4" />
                   </button>
 
                   <div className="text-center pt-1">
@@ -522,7 +522,7 @@ const Header = () => {
               {step === 'otp' && (
                 <div className="flex flex-col items-center space-y-6 animate-in slide-in-from-right-8 duration-300 pb-2">
                   <div className="w-full space-y-2">
-                      <label className="text-[10px] font-bold text-gray-400 uppercase text-center block tracking-widest">WhatsApp OTP (6 Digits)</label>
+                      <label className="text-[10px] font-bold text-gray-400 uppercase text-center block tracking-widest">Mobile OTP (6 Digits)</label>
                       <div className="flex gap-2 w-full justify-center">
                       {whatsappOtp.map((digit, i) => (
                           <input
@@ -560,7 +560,7 @@ const Header = () => {
                   )}
                   
                   <button onClick={handleVerifyOtp} disabled={isLoading || whatsappOtp.join('').length < 6 || (authMode === 'signup' && emailOtp.join('').length < 6)} className={`w-full ${BRAND_BG} ${BRAND_HOVER_BG} text-white font-bold py-2.5 rounded-lg shadow-md shadow-[#006A58]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm`}>
-                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (authMode === 'login' ? 'Verify WhatsApp OTP' : 'Verify Email & WhatsApp OTP')}
+                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (authMode === 'login' ? 'Verify Mobile OTP' : 'Verify Email & Mobile OTP')}
                   </button>
 
                   <div className="flex flex-col items-center gap-1 w-full text-xs">
