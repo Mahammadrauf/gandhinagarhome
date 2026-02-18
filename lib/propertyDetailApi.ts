@@ -318,8 +318,8 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
     seller: {
       id: userId._id || '',
       name: userId.name || 'Property Owner',
-      phone: userId.phone || userId.whatsappNumber || 'Hidden',
-      whatsappNumber: userId.whatsappNumber || 'Hidden',
+      phone: userId.mobile || userId.whatsappNumber || 'Hidden',
+      whatsappNumber: userId.whatsappNumber || userId.mobile || 'Hidden',
       whatsapp: 'Shared after connect',
       email: '', // Add email field to backend if needed
       verification: 'OTP verified',

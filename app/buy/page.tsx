@@ -12,7 +12,8 @@ import {
   MapPin, Clock, Car, Calendar, Map as MapIcon, 
   ShieldCheck, X, List, Plus, Minus, ArrowLeft, Filter 
 } from "lucide-react";
-import { fetchAndTransformBuyPageProperties, BuyPageProperty } from "@/lib/buyPageApi";
+import { fetchAndTransformBuyPageProperties, BuyPageProperty, transformToBuyPageProperty } from "@/lib/buyPageApi";
+import { fetchMyProperties, transformProperty } from "@/lib/api";
 
 // --- TYPES ---
 type Tier = "exclusive" | "featured" | "regular";
@@ -729,13 +730,43 @@ function BuyIntroPage() {
       try {
         setLoading(true);
         const data = await fetchAndTransformBuyPageProperties();
-        setAllProperties(data);
+
+        let merged = data;
+        if (typeof window !== 'undefined') {
+          const savedUserRaw = localStorage.getItem('gh_user');
+          const token = localStorage.getItem('gh_token');
+          if (savedUserRaw && token) {
+            try {
+              const savedUser = JSON.parse(savedUserRaw);
+              if (savedUser?.isLoggedIn === true && savedUser?.role === 'seller') {
+                const myBackendProps = await fetchMyProperties(token);
+                const myProps = myBackendProps
+                  .map(transformProperty)
+                  .map((p) => transformToBuyPageProperty(p, 'regular'));
+
+                const existingIds = new Set(
+                  [...data.exclusive, ...data.featured, ...data.others].map((p) => p.propertyId)
+                );
+                const uniqueMine = myProps.filter((p) => !existingIds.has(p.propertyId));
+
+                merged = {
+                  ...data,
+                  others: [...uniqueMine, ...data.others]
+                };
+              }
+            } catch (e) {
+              console.error('Error merging seller properties into buy page:', e);
+            }
+          }
+        }
+
+        setAllProperties(merged);
         
         // Convert to the format expected by existing code
         const allListings: Listing[] = [
-          ...data.exclusive,
-          ...data.featured,
-          ...data.others
+          ...merged.exclusive,
+          ...merged.featured,
+          ...merged.others
         ];
         
         // Apply rotation logic

@@ -65,7 +65,8 @@ export interface BackendProperty {
   userId: {
     _id: string;
     name: string;
-    whatsappNumber: string;
+    whatsappNumber?: string;
+    mobile?: string;
     phone?: string;
   };
   createdAt: string;
@@ -176,6 +177,17 @@ export const transformProperty = (backendProp: BackendProperty): FrontendPropert
   const specs = backendProp.specifications || {};
   const pricing = backendProp.pricing || {};
   const location = backendProp.location || {};
+
+  const parseBedroomsFromBhk = (bhkValue: unknown): number => {
+    if (!bhkValue) return 0;
+    const s = String(bhkValue);
+    const match = s.match(/(\d+)/);
+    return match ? parseInt(match[1], 10) : 0;
+  };
+
+  const bedrooms = (specs as any).bedrooms ?? parseBedroomsFromBhk((specs as any).bhk);
+  const bathrooms = (specs as any).bathrooms ?? 0;
+  const areaValue = (specs as any).builtUpArea ?? (specs as any).totalArea ?? 0;
   
   return {
     id: backendProp._id,
@@ -183,9 +195,9 @@ export const transformProperty = (backendProp: BackendProperty): FrontendPropert
     price: formatPrice(pricing.expectedPrice || 0),
     location: location.sector || location.address || 'Unknown Location',
     city: location.city,
-    beds: specs.bedrooms || 0,
-    baths: specs.bathrooms || 0,
-    sqft: (specs.builtUpArea || 0).toLocaleString('en-IN'),
+    beds: bedrooms,
+    baths: bathrooms,
+    sqft: Number(areaValue || 0).toLocaleString('en-IN'),
     propertyType: backendProp.propertyType,
     features: getFeatures(backendProp.highlights || [], backendProp.amenities || [], backendProp.propertyType),
     tag: getTagStyle(backendProp.propertyCategory)
