@@ -177,28 +177,35 @@ const Header = () => {
     try {
       const mobile = user.mobile;
       const email = user.email;
+      const role = user.role;
+
+      if (authMode === 'signup' && !role) {
+        throw new Error('Please select a role');
+      }
 
       const sendMobileOtpRes = await fetch(`${API_BASE_URL}/auth/send-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mobile })
+        body: JSON.stringify(authMode === 'signup' ? { mobile, role } : { mobile })
       });
 
       const sendMobileOtpJson = await sendMobileOtpRes.json();
       if (!sendMobileOtpRes.ok || !sendMobileOtpJson?.success) {
-        throw new Error(sendMobileOtpJson?.message || 'Failed to send OTP');
+        const msg = sendMobileOtpJson?.message || 'Failed to send OTP';
+        throw new Error(msg);
       }
 
       if (authMode === 'signup') {
         const sendEmailOtpRes = await fetch(`${API_BASE_URL}/auth/send-email-otp`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email })
+          body: JSON.stringify({ email, role })
         });
 
         const sendEmailOtpJson = await sendEmailOtpRes.json();
         if (!sendEmailOtpRes.ok || !sendEmailOtpJson?.success) {
-          throw new Error(sendEmailOtpJson?.message || 'Failed to send email OTP');
+          const msg = sendEmailOtpJson?.message || 'Failed to send email OTP';
+          throw new Error(msg);
         }
       }
 
