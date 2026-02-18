@@ -324,7 +324,9 @@ const Header = () => {
     localStorage.removeItem('gh_user');
     localStorage.removeItem('gh_token');
     setIsLoggedIn(false);
+    setIsMobileMenuOpen(false);
     setUser({ firstName: '', lastName: '', email: '', mobile: '', role: '' });
+    router.push('/');
   };
 
   const openAuth = (mode: 'login' | 'signup') => {
@@ -348,6 +350,7 @@ const Header = () => {
               <span className={`text-lg font-bold text-gray-800 tracking-tight group-hover:text-[#006A58] transition-colors`}>Gandhinagar<span className="text-[#006A58]">Homes</span></span>
             </Link>
 
+            {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-8">
               <nav className="flex items-center gap-8">
                 <NavLink href="/">Home</NavLink>
@@ -381,19 +384,43 @@ const Header = () => {
               )}
             </div>
 
-            <button className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors z-50" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+            {/* Mobile Actions Container */}
+            <div className="flex items-center gap-2 md:hidden">
+              {isLoggedIn && (
+                <Link href="/profile" className="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
+                  <User className="w-6 h-6" />
+                </Link>
+              )}
+              <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors z-50" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className={`absolute top-full left-0 w-full bg-white border-t border-gray-100 shadow-lg md:hidden transition-all duration-300 ease-in-out overflow-hidden ${isMobileMenuOpen ? 'max-h-[30rem] opacity-100' : 'max-h-0 opacity-0'}`}>
+        {/* Mobile Sidebar Dropdown */}
+        <div className={`absolute top-full left-0 w-full bg-white border-t border-gray-100 shadow-lg md:hidden transition-all duration-300 ease-in-out overflow-hidden ${isMobileMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'}`}>
           <div className="flex flex-col p-4 space-y-1">
-            <NavLink mobile href="/" onClick={() => setIsMobileMenuOpen(false)}>Home</NavLink>
-            <NavLink mobile href="/buy" onClick={() => setIsMobileMenuOpen(false)}>Buy</NavLink>
-            <NavLink mobile href="/sell" onClick={() => setIsMobileMenuOpen(false)}>Sell</NavLink>
-            <NavLink mobile href="/about" onClick={() => setIsMobileMenuOpen(false)}>About Us</NavLink>
-            <NavLink mobile href="/contact" onClick={() => setIsMobileMenuOpen(false)}>Contact Us</NavLink>
+            <nav className="mb-4">
+              <NavLink mobile href="/" onClick={() => setIsMobileMenuOpen(false)}>Home</NavLink>
+              <NavLink mobile href="/buy" onClick={() => setIsMobileMenuOpen(false)}>Buy</NavLink>
+              <NavLink mobile href="/sell" onClick={() => setIsMobileMenuOpen(false)}>Sell</NavLink>
+              <NavLink mobile href="/about" onClick={() => setIsMobileMenuOpen(false)}>About Us</NavLink>
+              <NavLink mobile href="/contact" onClick={() => setIsMobileMenuOpen(false)}>Contact Us</NavLink>
+            </nav>
+            
+            {!isLoggedIn ? (
+              <div className="flex flex-col gap-3 pt-2 border-t border-gray-50">
+                <button onClick={() => openAuth('login')} className="w-full border-2 border-[#006A58] text-[#006A58] py-3 rounded-xl font-bold transition-all active:scale-95">Log In</button>
+                <button onClick={() => openAuth('signup')} className={`w-full ${BRAND_BG} text-white py-3 rounded-xl font-bold transition-all shadow-md active:scale-95`}>Sign Up</button>
+              </div>
+            ) : (
+              <div className="pt-2 border-t border-gray-50">
+                <button onClick={handleLogout} className="flex items-center gap-3 w-full p-4 text-red-600 font-bold hover:bg-red-50 rounded-xl transition-colors">
+                  <LogOut className="w-5 h-5" /> Logout
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </header>
