@@ -634,26 +634,52 @@ const handleEditMediaSubmit = () => {
     if (!isWhatsappValid) return;
 
     setIsSendingOtp(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log("Sending OTP to WhatsApp", whatsappNumber);
+    try {
+      const response = await axios.post(`${API_URL}/sell/send-otp`, {
+        mobile: whatsappNumber
+      });
 
-    setIsSendingOtp(false);
-    setOtpSent(true);
-    alert("OTP Sent to your WhatsApp number (use 1234 to verify)");
+      if (response.data.success) {
+        setOtpSent(true);
+        const otpForDev = response.data.data?.otp;
+        if (otpForDev) {
+          alert(`OTP Sent to your WhatsApp number! Development OTP: ${otpForDev}`);
+        } else {
+          alert("OTP Sent to your WhatsApp number!");
+        }
+      } else {
+        alert(response.data.message || "Failed to send OTP. Please try again.");
+      }
+    } catch (error: any) {
+      console.error("Send OTP error:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Failed to send OTP";
+      alert(errorMessage);
+    } finally {
+      setIsSendingOtp(false);
+    }
   };
 
   const handleVerifyOtp = async () => {
     setIsVerifying(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log("Verifying OTP", otp);
+    try {
+      const response = await axios.post(`${API_URL}/sell/verify-otp`, {
+        mobile: whatsappNumber,
+        otp: otp,
+        rememberMe: false
+      });
 
-    if (otp === "1234") {
+      if (response.data.success) {
+        setIsOtpVerified(true);
+        alert("WhatsApp number verified successfully!");
+      } else {
+        alert(response.data.message || "Invalid OTP. Please try again.");
+      }
+    } catch (error: any) {
+      console.error("Verify OTP error:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Failed to verify OTP";
+      alert(errorMessage);
+    } finally {
       setIsVerifying(false);
-      setIsOtpVerified(true);
-      alert("WhatsApp number verified successfully!");
-    } else {
-      setIsVerifying(false);
-      alert("Invalid OTP. Please try again.");
     }
   };
 
