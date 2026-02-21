@@ -643,9 +643,9 @@ const handleEditMediaSubmit = () => {
         setOtpSent(true);
         const otpForDev = response.data.data?.otp;
         if (otpForDev) {
-          alert(`OTP Sent to your WhatsApp number! Development OTP: ${otpForDev}`);
+          alert(`OTP Sent to your Mobile number! Development OTP: ${otpForDev}`);
         } else {
-          alert("OTP Sent to your WhatsApp number!");
+          alert("OTP Sent to your Mobile number!");
         }
       } else {
         alert(response.data.message || "Failed to send OTP. Please try again.");
@@ -670,7 +670,7 @@ const handleEditMediaSubmit = () => {
 
       if (response.data.success) {
         setIsOtpVerified(true);
-        alert("WhatsApp number verified successfully!");
+        alert("Mobile number verified successfully!");
       } else {
         alert(response.data.message || "Invalid OTP. Please try again.");
       }
@@ -822,7 +822,7 @@ const handleEditMediaSubmit = () => {
                         {triedContinue && !isEmailValid && <div className="text-xs text-red-600 mt-2">Enter a valid email address.</div>}
                       </div>
                       <div>
-                        <label className={fieldLabel}>Mobile Number</label>
+                        <label className={fieldLabel}>WhatsApp Number</label>
                         <input
                           value={mobileNumber}
                           onChange={(e) => setMobileNumber(e.target.value)}
@@ -837,7 +837,7 @@ const handleEditMediaSubmit = () => {
                       <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <label className={fieldLabel}>WhatsApp Number <span className="text-[#0b6b53]">*</span></label>
+                            <label className={fieldLabel}>Mobile Number <span className="text-[#0b6b53]">*</span></label>
                             <div className="flex gap-2">
                               <div className="flex items-center justify-center h-12 px-4 rounded-xl border border-gray-100 bg-gray-100 text-gray-700 font-semibold">{countryCode}</div>
                               <input
@@ -885,7 +885,7 @@ const handleEditMediaSubmit = () => {
 
                           {isOtpVerified && (
                              <div className="flex items-center justify-center h-12 bg-green-100 text-green-700 font-semibold rounded-lg">
-                               ✓ WhatsApp Verified
+                               ✓ Mobile Verified
                              </div>
                           )}
                         </div>

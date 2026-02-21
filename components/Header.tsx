@@ -393,7 +393,16 @@ const Header = () => {
 
             {/* Mobile Actions Container */}
             <div className="flex items-center gap-2 md:hidden">
-              {isLoggedIn && (
+              {!isLoggedIn ? (
+                <>
+                  <button onClick={() => openAuth('login')} className="flex-shrink-0 whitespace-nowrap border-2 border-[#006A58] text-[#006A58] px-3 py-2 rounded-full font-semibold text-sm transition-all duration-300 hover:bg-[#006A58]/5 active:scale-95">
+                    Log In
+                  </button>
+                  <button onClick={() => openAuth('signup')} className={`flex-shrink-0 whitespace-nowrap ${BRAND_BG} ${BRAND_HOVER_BG} text-white px-3 py-2 rounded-full font-semibold text-sm transition-all duration-300 shadow-lg shadow-[#006A58]/20 hover:shadow-[#006A58]/40 active:scale-95 transform`}>
+                    Sign Up
+                  </button>
+                </>
+              ) : (
                 <Link href="/profile" className="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
                   <User className="w-6 h-6" />
                 </Link>
@@ -406,7 +415,7 @@ const Header = () => {
         </div>
 
         {/* Mobile Sidebar Dropdown */}
-        <div className={`absolute top-full left-0 w-full bg-white border-t border-gray-100 shadow-lg md:hidden transition-all duration-300 ease-in-out overflow-hidden ${isMobileMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'}`}>
+        <div className={`absolute top-full left-0 w-full bg-white border-t border-gray-100 shadow-lg md:hidden z-40 transition-all duration-300 ease-in-out overflow-hidden ${isMobileMenuOpen ? 'max-h-screen opacity-100 pointer-events-auto' : 'max-h-0 opacity-0 pointer-events-none'}`}>
           <div className="flex flex-col p-4 space-y-1">
             <nav className="mb-4">
               <NavLink mobile href="/" onClick={() => setIsMobileMenuOpen(false)}>Home</NavLink>
@@ -418,8 +427,8 @@ const Header = () => {
             
             {!isLoggedIn ? (
               <div className="flex flex-col gap-3 pt-2 border-t border-gray-50">
-                <button onClick={() => openAuth('login')} className="w-full border-2 border-[#006A58] text-[#006A58] py-3 rounded-xl font-bold transition-all active:scale-95">Log In</button>
-                <button onClick={() => openAuth('signup')} className={`w-full ${BRAND_BG} text-white py-3 rounded-xl font-bold transition-all shadow-md active:scale-95`}>Sign Up</button>
+                <button onClick={() => openAuth('login')} className="w-full border-2 border-[#006A58] text-[#006A58] py-3 rounded-xl font-bold transition-all active:scale-95 whitespace-nowrap">Log In</button>
+                <button onClick={() => openAuth('signup')} className={`w-full ${BRAND_BG} text-white py-3 rounded-xl font-bold transition-all shadow-md active:scale-95 whitespace-nowrap`}>Sign Up</button>
               </div>
             ) : (
               <div className="pt-2 border-t border-gray-50">
@@ -435,7 +444,7 @@ const Header = () => {
       <div className="h-20" /> 
 
       {isAuthOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
           
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={handleCloseLoop} />
           
