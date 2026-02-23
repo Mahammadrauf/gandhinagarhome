@@ -868,13 +868,46 @@ const handleEditMediaSubmit = () => {
                                 {isSendingOtp ? "Sending..." : (otpSent ? "Sent" : "Send OTP")}
                               </button>
                             </div>
+                            <div className="flex flex-col sm:flex-row gap-2">
+  
+  <div className="flex flex-row gap-2 w-full sm:w-auto">
+    <div className="flex items-center justify-center h-12 px-4 rounded-xl border border-gray-100 bg-gray-100 text-gray-700 font-semibold">
+      {countryCode}
+    </div>
+
+    <input
+      value={whatsappNumber}
+      onChange={(e) => {
+        const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+        setWhatsappNumber(value);
+      }}
+      placeholder="9XXXXXXXXX"
+      className={`${triedContinue && !isWhatsappValid ? inputError : inputNormal} flex-1 w-full`}
+      disabled={otpSent || isEditMode}
+      maxLength={10}
+    />
+  </div>
+
+  <button
+    onClick={handleSendOtp}
+    disabled={!isWhatsappValid || otpSent || isSendingOtp}
+    className={`h-12 w-full sm:w-auto px-4 rounded-lg font-semibold text-sm ${
+      (!isWhatsappValid || otpSent)
+        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+        : 'bg-[#0b6b53] text-white hover:bg-[#0b6b53]'
+    }`}
+  >
+    {isSendingOtp ? "Sending..." : (otpSent ? "Sent" : "Send OTP")}
+  </button>
+
+</div>
                             {triedContinue && !isWhatsappValid && <div className="text-xs text-red-600 mt-2">Enter a valid 10-digit number.</div>}
                           </div>
 
                           {otpSent && !isOtpVerified && (
                             <div>
                               <label className={fieldLabel}>Enter OTP <span className="text-[#0b6b53]">*</span></label>
-                              <div className="flex gap-2">
+                              <div className="flex flex-col sm:flex-row gap-2">
                                 <input
                                   value={otp}
                                   onChange={(e) => setOtp(e.target.value)}
@@ -904,10 +937,10 @@ const handleEditMediaSubmit = () => {
 
                   <p className="text-sm text-gray-500">Your contact is partially visible to buyers. Full details require buyer subscription.</p>
 
-                  <div className="flex items-center justify-between mt-4">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between mt-4">
                     <button
                       onClick={onContinueFromStep1}
-                      className={canContinueStep1 ? btnPrimary : btnDisabled}
+                      className={`${canContinueStep1 ? btnPrimary : btnDisabled} w-full sm:w-auto`}
                       disabled={!canContinueStep1}
                     >
                       {isEditMode ? "Save Changes" : "Continue to Specifications"}
@@ -1393,10 +1426,10 @@ const handleEditMediaSubmit = () => {
                    </div>
 
                   {/* Row 6: Footer */}
-                  <div className="flex items-center justify-between mt-4">
-                    <div className="flex items-center gap-3">
-                      <button onClick={() => setStep(0)} className={btnLight}>Back to Basic Info</button>
-                      <button onClick={onContinueFromStep2} className={canContinueStep2 ? btnPrimary : btnDisabled} disabled={!canContinueStep2}>{isEditMode ? "Save Changes" : "Continue to Location"}</button>
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between mt-4">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                      <button onClick={() => setStep(0)} className={`${btnLight} w-full sm:w-auto`}>Back to Basic Info</button>
+                      <button onClick={onContinueFromStep2} className={`${canContinueStep2 ? btnPrimary : btnDisabled} w-full sm:w-auto`} disabled={!canContinueStep2}>{isEditMode ? "Save Changes" : "Continue to Location"}</button>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-700 font-medium">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1564,12 +1597,12 @@ Can’t find your area? Select the nearest major locality.            </p>
       />
     </div>
 
-    <div className="flex items-center justify-between mt-4">
-      <div className="flex items-center gap-3">
-        <button onClick={() => setStep(1)} className={btnLight}>Back to Specifications</button>
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between mt-4">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <button onClick={() => setStep(1)} className={`${btnLight} w-full sm:w-auto`}>Back to Specifications</button>
         <button
           onClick={onContinueFromStep3}
-          className={canContinueStep3 ? btnPrimary : btnDisabled}
+          className={`${canContinueStep3 ? btnPrimary : btnDisabled} w-full sm:w-auto`}
           disabled={!canContinueStep3}
         >
           {isEditMode ? "Save Changes" : "Continue to Media Upload"}
@@ -1849,13 +1882,13 @@ Can’t find your area? Select the nearest major locality.            </p>
                   </div>
 
                   {/* Footer: Buttons */}
-                  <div className="flex items-center justify-between mt-4">
-                    <div className="flex items-center gap-3">
-                      <button onClick={() => setStep(2)} className={btnLight}>Back to Location</button>
-                      <button onClick={handleSaveDraft} className={btnSecondary}>Save Draft</button>
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between mt-4">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                      <button onClick={() => setStep(2)} className={`${btnLight} w-full sm:w-auto`}>Back to Location</button>
+                      <button onClick={handleSaveDraft} className={`${btnSecondary} w-full sm:w-auto`}>Save Draft</button>
                       <button
   onClick={isEditMode ? handleEditMediaSubmit : handleSubmit}
-  className={saving ? btnDisabled : btnPrimary}
+  className={`${saving ? btnDisabled : btnPrimary} w-full sm:w-auto`}
   disabled={saving}
 >
   {saving ? (isEditMode ? "Saving..." : "Submitting...") : (isEditMode ? "Save & Return to Review" : "Submit Listing")}
