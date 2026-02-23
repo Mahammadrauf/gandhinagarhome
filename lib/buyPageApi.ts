@@ -55,19 +55,69 @@ export const transformToBuyPageProperty = (
 
   // Map property type from backend to frontend types
   const mapPropertyType = (backendType: string): BuyPageProperty["type"] => {
+    if (!backendType) return 'Apartment';
+    
+    const typeLower = backendType.toLowerCase();
     const typeMap: Record<string, BuyPageProperty["type"]> = {
-      '2BHK': 'Apartment',
-      '3BHK': 'Apartment',
-      '4BHK': 'Apartment',
-      'Bungalow': 'Bungalow',
-      'Plot': 'Plot',
-      'Villa': 'Bungalow',
-      'Penthouse': 'Penthouse',
-      'Tenement': 'Tenement',
-      'Shop': 'Shop',
-      'Office': 'Office'
+      '2bhk': 'Apartment',
+      '3bhk': 'Apartment',
+      '4bhk': 'Apartment',
+      'apartment': 'Apartment',
+      'bungalow': 'Bungalow',
+      'plot': 'Plot',
+      'villa': 'Bungalow',
+      'penthouse': 'Penthouse',
+      'tenement': 'Tenement',
+      'shop': 'Shop',
+      'office': 'Office'
     };
-    return typeMap[backendType] || 'Apartment';
+    return typeMap[typeLower] || 'Apartment';
+  };
+
+  // Map furnishing from backend to frontend types
+  const mapFurnishing = (backendFurnishing: string): BuyPageProperty["furnishing"] => {
+    if (!backendFurnishing) return "Unfurnished";
+    const furnishingLower = backendFurnishing.toLowerCase();
+    if (furnishingLower.includes('semi')) return "Semi-furnished";
+    if (furnishingLower.includes('full')) return "Fully furnished";
+    return "Unfurnished";
+  };
+
+  // Map age to proper label
+  const mapAgeLabel = (age: number | string): string => {
+    if (!age) return "New Property";
+    
+    // If it's already a formatted string, return as is
+    if (typeof age === 'string') {
+      const ageLower = age.toLowerCase();
+      if (ageLower.includes('new') || ageLower.includes('0-1')) return "New Property";
+      if (ageLower.includes('1-3') || ageLower.includes('1–3')) return "1–3 Years Old";
+      if (ageLower.includes('3-6') || ageLower.includes('3–6')) return "3–6 Years Old";
+      if (ageLower.includes('6-9') || ageLower.includes('6–9')) return "6–9 Years Old";
+      if (ageLower.includes('9+') || ageLower.includes('9+')) return "9+ Years Old";
+      
+      // Try to extract number from string
+      const numberMatch = age.match(/(\d+)/);
+      if (numberMatch) {
+        const ageNum = parseInt(numberMatch[1]);
+        if (ageNum <= 1) return "New Property";
+        if (ageNum <= 3) return "1–3 Years Old";
+        if (ageNum <= 6) return "3–6 Years Old";
+        if (ageNum <= 9) return "6–9 Years Old";
+        return "9+ Years Old";
+      }
+      
+      // If no number found, return as is or default
+      return age;
+    }
+    
+    // If it's a number
+    const ageNum = age as number;
+    if (ageNum <= 1) return "New Property";
+    if (ageNum <= 3) return "1–3 Years Old";
+    if (ageNum <= 6) return "3–6 Years Old";
+    if (ageNum <= 9) return "6–9 Years Old";
+    return "9+ Years Old";
   };
 
   const priceInCr = extractPriceInCr(property.price);
@@ -87,10 +137,10 @@ export const transformToBuyPageProperty = (
     areaSqft: area,
     areaDisplay: property.sqft,
     type: propertyType,
-    furnishing: "Unfurnished", // Default, can be updated based on backend data
+    furnishing: mapFurnishing((property as any).furnishing || "Unfurnished"),
     readyStatus: "Ready to move", // Default, can be updated based on backend data
-    parking: 1, // Default, can be updated based on backend data
-    ageLabel: "New Property", // Default, can be updated based on backend data
+    parking: (property as any).parking || 1, // Use actual parking data if available
+    ageLabel: mapAgeLabel((property as any).ageOfProperty || "New Property"),
     priceCr: priceInCr,
     priceLabel: property.price,
     media: "image", // Default
@@ -102,12 +152,18 @@ export const transformToBuyPageProperty = (
 };
 
 // Fetch and transform buy page properties
-export const fetchAndTransformBuyPageProperties = async (): Promise<{
+export const fetchAndTransformBuyPageProperties = async (filters?: {
+  beds?: number;
+  city?: string;
+  propertyType?: string;
+  priceRange?: string;
+  locality?: string;
+}): Promise<{
   exclusive: BuyPageProperty[];
   featured: BuyPageProperty[];
   others: BuyPageProperty[];
 }> => {
-  const data = await fetchBuyPageProperties();
+  const data = await fetchBuyPageProperties(filters);
   
   return {
     exclusive: data.exclusive.map(prop => transformToBuyPageProperty(prop, 'exclusive')),

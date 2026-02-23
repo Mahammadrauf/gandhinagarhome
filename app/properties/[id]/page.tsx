@@ -668,9 +668,15 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                     <div className="space-y-4">
                         <div className="flex justify-between items-center">
                             <span className="text-sm text-gray-500">Mobile</span>
-                            <span className="text-sm font-mono font-bold text-gray-900">
-                                {isUnlocked ? contactInfo?.phone || property.seller.phone : property.seller.phone}
-                            </span>
+                            {isUnlocked ? (
+                                <span className="text-sm font-mono font-bold text-gray-900">
+                                    {contactInfo?.phone || property.seller.phone}
+                                </span>
+                            ) : (
+                                <span className="text-sm text-gray-400 italic bg-gray-100 px-2 py-0.5 rounded select-none cursor-pointer hover:bg-gray-200 transition-colors" title="Unlock to view">
+                                    **********
+                                </span>
+                            )}
                         </div>
                         <div className="flex justify-between items-center">
                             <span className="text-sm text-gray-500">Email</span>
@@ -680,9 +686,15 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                         </div>
                         <div className="flex justify-between items-center">
                             <span className="text-sm text-gray-500">WhatsApp</span>
-                            <span className="text-sm font-bold text-gray-900">
-                                {isUnlocked ? contactInfo?.whatsapp || property.seller.whatsapp : property.seller.whatsapp}
-                            </span>
+                            {isUnlocked ? (
+                                <span className="text-sm font-bold text-gray-900">
+                                    {contactInfo?.whatsapp || property.seller.whatsapp}
+                                </span>
+                            ) : (
+                                <span className="text-sm text-gray-400 italic bg-gray-100 px-2 py-0.5 rounded select-none cursor-pointer hover:bg-gray-200 transition-colors" title="Unlock to view">
+                                    **********
+                                </span>
+                            )}
                         </div>
                     </div>
                   </div>

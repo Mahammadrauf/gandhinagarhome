@@ -723,13 +723,58 @@ function BuyIntroPage() {
 
   // State for tracking unlocked properties
   const [unlockedProperties, setUnlockedProperties] = useState<Set<string>>(new Set());
+  const accessCheckRef = useRef(false);
+
+  // Check if user is logged in (no longer restrict sellers from viewing)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !accessCheckRef.current) {
+      accessCheckRef.current = true;
+      // No longer redirect sellers - allow them to view the page
+    }
+  }, []);
 
   // Fetch properties from API
   useEffect(() => {
     const fetchProperties = async () => {
       try {
         setLoading(true);
-        const data = await fetchAndTransformBuyPageProperties();
+        
+        // Get current filters from URL
+        const beds = searchParams.get("beds");
+        const city = searchParams.get("city");
+        const propertyType = searchParams.get("propertyType");
+        const locality = searchParams.get("locality");
+        
+        // Build filters object for API
+        const apiFilters: {
+          beds?: number;
+          city?: string;
+          propertyType?: string;
+          locality?: string;
+        } = {};
+        
+        if (beds) {
+          const bedsNum = parseInt(beds, 10);
+          if (!isNaN(bedsNum) && bedsNum > 0) {
+            apiFilters.beds = bedsNum;
+          }
+        }
+        
+        if (city && city !== 'any') {
+          apiFilters.city = city;
+        }
+        
+        if (propertyType && propertyType !== 'any') {
+          apiFilters.propertyType = propertyType;
+        }
+        
+        if (locality) {
+          apiFilters.locality = locality;
+        }
+        
+        const data = await fetchAndTransformBuyPageProperties(
+          Object.keys(apiFilters).length > 0 ? apiFilters : undefined
+        );
 
         let merged = data;
         if (typeof window !== 'undefined') {
@@ -791,7 +836,7 @@ function BuyIntroPage() {
     };
 
     fetchProperties();
-  }, []);
+  }, [searchParams]); // Refetch when URL parameters change
 
   // Initialize filters from URL params
   useEffect(() => {
@@ -1117,7 +1162,7 @@ function BuyIntroPage() {
       if (savedUser) {
         const parsedUser = JSON.parse(savedUser);
         if (parsedUser.isLoggedIn && parsedUser.role === 'seller') {
-          alert('You are not eligible to unlock seller as you are logged in as seller.');
+          alert('You have logged in as seller, you cant unlock properties');
           return;
         }
       }

@@ -32,7 +32,7 @@ export interface BackendProperty {
     propertyOnFloor: number;
     builtUpArea: number;
     carpetArea: number;
-    ageOfProperty: number;
+    age: number | string;
     furnishing: string;
     facing: string;
   };
@@ -87,6 +87,9 @@ export interface FrontendProperty {
   propertyType?: string;
   features: string[];
   tag: { text: string; color: string };
+  furnishing?: string;
+  parking?: number;
+  ageOfProperty?: number | string;
 }
 
 // Transform backend property to frontend format
@@ -200,7 +203,10 @@ export const transformProperty = (backendProp: BackendProperty): FrontendPropert
     sqft: Number(areaValue || 0).toLocaleString('en-IN'),
     propertyType: backendProp.propertyType,
     features: getFeatures(backendProp.highlights || [], backendProp.amenities || [], backendProp.propertyType),
-    tag: getTagStyle(backendProp.propertyCategory)
+    tag: getTagStyle(backendProp.propertyCategory),
+    furnishing: specs.furnishing,
+    parking: (specs as any).parking || 1,
+    ageOfProperty: specs.age
   };
 };
 
@@ -288,19 +294,38 @@ export const fetchExclusiveProperties = async (): Promise<FrontendProperty[]> =>
 };
 
 // Buy page API - fetches all properties with proper ordering
-export const fetchBuyPageProperties = async (): Promise<{
+export const fetchBuyPageProperties = async (filters?: {
+  beds?: number;
+  city?: string;
+  propertyType?: string;
+  priceRange?: string;
+  locality?: string;
+}): Promise<{
   exclusive: FrontendProperty[];
   featured: FrontendProperty[];
   others: FrontendProperty[];
 }> => {
   try {
-    console.log('Fetching buy page properties...');
+    console.log('Fetching buy page properties with filters:', filters);
+    
+    // Build query string from filters
+    const queryParams = new URLSearchParams();
+    if (filters?.beds) queryParams.append('beds', filters.beds.toString());
+    if (filters?.city && filters.city !== 'any') queryParams.append('city', filters.city);
+    if (filters?.propertyType && filters.propertyType !== 'any') queryParams.append('type', filters.propertyType);
+    if (filters?.locality) queryParams.append('sector', filters.locality);
+    
+    const queryString = queryParams.toString();
+    const baseUrl = `${API_BASE_URL}/properties`;
+    const url = queryString ? `${baseUrl}?${queryString}` : baseUrl;
+    
+    console.log('Fetching properties from:', url);
     
     // Fetch all three categories in parallel
     const [exclusiveData, featuredData, allData] = await Promise.allSettled([
       fetch(`${API_BASE_URL}/properties/home/exclusive`),
       fetch(`${API_BASE_URL}/properties/home/featured`),
-      fetch(`${API_BASE_URL}/properties`)
+      fetch(url)
     ]);
 
     // Process exclusive properties
@@ -420,19 +445,20 @@ export const fetchSimilarProperties = async (propertyId: string, limit: number =
     return [];
   }
 };
-
-// Mock similar properties for fallback
 export const getMockSimilarProperties = (): FrontendProperty[] => [
   {
     id: "mock-s1",
-    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80",
+    image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80",
     price: "₹2.1 Cr",
     location: "Sargasan, Gandhinagar",
     beds: 4,
     baths: 4,
     sqft: "3,000",
     features: ["Vaastu-friendly", "2 Car Parks"],
-    tag: { text: "New", color: "#10b981" }
+    tag: { text: "New", color: "#10b981" },
+    furnishing: "Semi-furnished",
+    parking: 2,
+    ageOfProperty: 2
   },
   {
     id: "mock-s2", 
@@ -443,7 +469,10 @@ export const getMockSimilarProperties = (): FrontendProperty[] => [
     baths: 3,
     sqft: "2,400",
     features: ["Gated Community", "Gym"],
-    tag: { text: "Hot Deal", color: "#ef4444" }
+    tag: { text: "Hot Deal", color: "#ef4444" },
+    furnishing: "Fully furnished",
+    parking: 1,
+    ageOfProperty: 4
   },
   {
     id: "mock-s3",
@@ -454,7 +483,10 @@ export const getMockSimilarProperties = (): FrontendProperty[] => [
     baths: 5,
     sqft: "4,200",
     features: ["Private Pool", "Home Theater"],
-    tag: { text: "", color: "" }
+    tag: { text: "", color: "" },
+    furnishing: "Fully furnished",
+    parking: 3,
+    ageOfProperty: 1
   },
   {
     id: "mock-s4",
@@ -465,7 +497,10 @@ export const getMockSimilarProperties = (): FrontendProperty[] => [
     baths: 4,
     sqft: "3,500",
     features: ["High Rise", "Smart Home"],
-    tag: { text: "Exclusive", color: "#b59e78" }
+    tag: { text: "Exclusive", color: "#b59e78" },
+    furnishing: "Semi-furnished",
+    parking: 2,
+    ageOfProperty: 3
   },
   {
     id: "mock-s5",
@@ -476,7 +511,10 @@ export const getMockSimilarProperties = (): FrontendProperty[] => [
     baths: 3,
     sqft: "1,800",
     features: ["Garden", "Security"],
-    tag: { text: "Sold Out", color: "#6b7280" }
+    tag: { text: "Sold Out", color: "#6b7280" },
+    furnishing: "Unfurnished",
+    parking: 1,
+    ageOfProperty: 5
   }
 ];
 
@@ -491,7 +529,10 @@ const getMockOtherProperties = (): FrontendProperty[] => [
     baths: 2,
     sqft: "1,450",
     features: ["Well Maintained", "Good Location"],
-    tag: { text: "Standard", color: "bg-gray-500 text-white" }
+    tag: { text: "Standard", color: "bg-gray-500 text-white" },
+    furnishing: "Unfurnished",
+    parking: 1,
+    ageOfProperty: 6
   },
   {
     id: "mock-o2",
@@ -502,7 +543,10 @@ const getMockOtherProperties = (): FrontendProperty[] => [
     baths: 1,
     sqft: "1,200",
     features: ["Affordable", "Good Location"],
-    tag: { text: "Standard", color: "bg-gray-500 text-white" }
+    tag: { text: "Standard", color: "bg-gray-500 text-white" },
+    furnishing: "Semi-furnished",
+    parking: 1,
+    ageOfProperty: 3
   },
   {
     id: "mock-o3",
@@ -513,7 +557,10 @@ const getMockOtherProperties = (): FrontendProperty[] => [
     baths: 2,
     sqft: "1,850",
     features: ["Spacious", "Ready to Move"],
-    tag: { text: "Standard", color: "bg-gray-500 text-white" }
+    tag: { text: "Standard", color: "bg-gray-500 text-white" },
+    furnishing: "Fully furnished",
+    parking: 2,
+    ageOfProperty: 2
   }
 ];
 
@@ -560,7 +607,10 @@ const getMockFeaturedProperties = (): FrontendProperty[] => [
     baths: 4,
     sqft: "3,000",
     features: ["Ready to Move", "Modern Design"],
-    tag: { text: "Featured", color: "bg-[#0F7F9C] text-white" }
+    tag: { text: "Featured", color: "bg-[#0F7F9C] text-white" },
+    furnishing: "Semi-furnished",
+    parking: 2,
+    ageOfProperty: 1
   },
   {
     id: "mock-f2",
@@ -571,7 +621,10 @@ const getMockFeaturedProperties = (): FrontendProperty[] => [
     baths: 3,
     sqft: "1,950",
     features: ["Spacious", "Prime Location"],
-    tag: { text: "Featured", color: "bg-[#0F7F9C] text-white" }
+    tag: { text: "Featured", color: "bg-[#0F7F9C] text-white" },
+    furnishing: "Unfurnished",
+    parking: 1,
+    ageOfProperty: 4
   },
   {
     id: "mock-f3",
@@ -582,7 +635,10 @@ const getMockFeaturedProperties = (): FrontendProperty[] => [
     baths: 3,
     sqft: "2,250",
     features: ["Garden View", "Modern Kitchen"],
-    tag: { text: "Featured", color: "bg-[#0F7F9C] text-white" }
+    tag: { text: "Featured", color: "bg-[#0F7F9C] text-white" },
+    furnishing: "Fully furnished",
+    parking: 2,
+    ageOfProperty: 2
   }
 ];
 
@@ -596,7 +652,10 @@ const getMockExclusiveProperties = (): FrontendProperty[] => [
     baths: 4,
     sqft: "3,500",
     features: ["Private Pool", "Premium Location"],
-    tag: { text: "Exclusive", color: "bg-yellow-500 text-white" }
+    tag: { text: "Exclusive", color: "bg-yellow-500 text-white" },
+    furnishing: "Fully furnished",
+    parking: 3,
+    ageOfProperty: 1
   },
   {
     id: "mock-e2",
@@ -607,7 +666,10 @@ const getMockExclusiveProperties = (): FrontendProperty[] => [
     baths: 2,
     sqft: "2,100",
     features: ["City View", "Ready to Move"],
-    tag: { text: "Exclusive", color: "bg-yellow-500 text-white" }
+    tag: { text: "Exclusive", color: "bg-yellow-500 text-white" },
+    furnishing: "Semi-furnished",
+    parking: 2,
+    ageOfProperty: 3
   },
   {
     id: "mock-e3",
@@ -618,7 +680,10 @@ const getMockExclusiveProperties = (): FrontendProperty[] => [
     baths: 4,
     sqft: "3,120",
     features: ["Luxury", "Premium Location"],
-    tag: { text: "Exclusive", color: "bg-yellow-500 text-white" }
+    tag: { text: "Exclusive", color: "bg-yellow-500 text-white" },
+    furnishing: "Fully furnished",
+    parking: 2,
+    ageOfProperty: 2
   }
 ];
 

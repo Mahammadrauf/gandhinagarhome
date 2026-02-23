@@ -22,7 +22,7 @@ export interface PropertyDetail {
   areaDisplay: string;
   furnishing: string;
   facing: string;
-  ageOfProperty: number;
+  age: number | string;
   ageLabel: string;
   totalFloors: number;
   propertyOnFloor: string;
@@ -115,11 +115,19 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
   };
 
   // Get age label
-  const getAgeLabel = (age: number) => {
-    if (age === 0) return 'New Property';
-    if (age <= 3) return '1–3 Years Old';
-    if (age <= 6) return '3–6 Years Old';
-    if (age <= 9) return '6–9 Years Old';
+  const getAgeLabel = (age: number | string) => {
+    // If age is already a formatted string, return it as is
+    if (typeof age === 'string' && age.includes('Years')) {
+      return age;
+    }
+    
+    // Convert to number if it's a string
+    const ageNum = typeof age === 'string' ? parseInt(age, 10) : age;
+    
+    if (ageNum === 0) return 'New Property';
+    if (ageNum <= 3) return '1–3 Years Old';
+    if (ageNum <= 6) return '3–6 Years Old';
+    if (ageNum <= 9) return '6–9 Years Old';
     return '9+ Years Old';
   };
 
@@ -135,6 +143,14 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
     if (balconies >= 2) return `${balconies} covered`;
     if (balconies === 1) return '1 covered';
     return 'Open';
+  };
+
+  // Parse bedrooms from BHK string
+  const parseBedroomsFromBhk = (bhkValue: unknown): number => {
+    if (!bhkValue) return 0;
+    const s = String(bhkValue);
+    const match = s.match(/(\d+)/);
+    return match ? parseInt(match[1], 10) : 0;
   };
 
   // Get floor info
@@ -239,15 +255,18 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
     }
   };
 
+  // Extract bedroom count from BHK field or bedrooms field
+  const bedrooms = specs.bedrooms ?? parseBedroomsFromBhk((specs as any).bhk);
+
   // Create overview array
   const createOverview = () => [
     { label: 'Price', value: formatPrice(pricing.expectedPrice || 0), icon: 'FileText' },
-    { label: 'Bedrooms', value: `${specs.bedrooms || 0} BHK`, icon: 'BedDouble' },
+    { label: 'Bedrooms', value: `${bedrooms} BHK`, icon: 'BedDouble' },
     { label: 'Built-up Area', value: specs.builtUpArea ? `${specs.builtUpArea.toLocaleString('en-IN')} sq ft` : 'N/A', icon: 'Maximize2' },
     { label: 'Furnishing', value: specs.furnishing || 'Unfurnished', icon: 'Home' },
     { label: 'Status', value: getReadyStatus(backendProp.status), icon: 'CheckCircle2' },
     { label: 'Parking', value: getParking(specs.balconies || 0), icon: 'Car' },
-    { label: 'Age', value: getAgeLabel(specs.ageOfProperty || 0), icon: 'Clock' },
+    { label: 'Age', value: getAgeLabel(specs.age || 0), icon: 'Clock' },
     { label: 'Bathrooms', value: `${specs.bathrooms || 0} Baths`, icon: 'Bath' },
   ];
 
@@ -257,13 +276,13 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
     { label: 'Type', value: backendProp.propertyType },
     { label: 'Price', value: formatPrice(pricing.expectedPrice || 0) },
     { label: 'Built-up Area', value: specs.builtUpArea ? `${specs.builtUpArea.toLocaleString('en-IN')} sq ft` : 'N/A' },
-    { label: 'Bedrooms', value: `${specs.bedrooms || 0}` },
+    { label: 'Bedrooms', value: `${bedrooms}` },
     { label: 'Bathrooms', value: `${specs.bathrooms || 0}` },
     { label: 'Balconies', value: `${specs.balconies || 0}` },
     { label: 'Parking', value: getParking(specs.balconies || 0) },
     { label: 'Furnishing', value: specs.furnishing || 'Unfurnished' },
     { label: 'Availability', value: getReadyStatus(backendProp.status) },
-    { label: 'Age of property', value: getAgeLabel(specs.ageOfProperty || 0) },
+    { label: 'Age of property', value: getAgeLabel(specs.age || 0) },
   ];
 
   // Create badges array
@@ -287,7 +306,7 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
     city: location.city || 'Unknown',
     state: location.state || 'Unknown',
     pincode: location.pincode || '',
-    bedrooms: specs.bedrooms || 0,
+    bedrooms: bedrooms,
     bathrooms: specs.bathrooms || 0,
     balconies: specs.balconies || 0,
     builtUpArea: specs.builtUpArea || 0,
@@ -295,8 +314,8 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
     areaDisplay: specs.builtUpArea ? `${specs.builtUpArea.toLocaleString('en-IN')} sq ft` : 'N/A',
     furnishing: specs.furnishing || 'Unfurnished',
     facing: specs.facing || 'N/A',
-    ageOfProperty: specs.ageOfProperty || 0,
-    ageLabel: getAgeLabel(specs.ageOfProperty || 0),
+    age: specs.age || 0,
+    ageLabel: getAgeLabel(specs.age || 0),
     totalFloors: specs.totalFloors || 0,
     propertyOnFloor: getFloorInfo(specs.propertyOnFloor || 0, specs.totalFloors || 0),
     readyStatus: getReadyStatus(backendProp.status),
@@ -406,7 +425,7 @@ export const getMockPropertyDetail = (): PropertyDetail => {
     areaDisplay: '3,400 sq ft',
     furnishing: 'Fully furnished',
     facing: 'North-East',
-    ageOfProperty: 5,
+    age: 5,
     ageLabel: '3–6 Years Old',
     totalFloors: 10,
     propertyOnFloor: '5 of 10',

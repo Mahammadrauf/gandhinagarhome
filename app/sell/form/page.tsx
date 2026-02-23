@@ -643,7 +643,7 @@ const handleEditMediaSubmit = () => {
         setOtpSent(true);
         const otpForDev = response.data.data?.otp;
         if (otpForDev) {
-          alert(`OTP Sent to your Mobile number! Development OTP: ${otpForDev}`);
+          alert(`OTP Sent to your Mobile number!`);
         } else {
           alert("OTP Sent to your Mobile number!");
         }
@@ -778,12 +778,14 @@ const handleEditMediaSubmit = () => {
                   {/* Card 1: Name */}
                   <div className={`${cardWrapper} grid grid-cols-1 lg:grid-cols-3 gap-6`}>
                     <div>
-                      <label className={fieldLabel}>First Name <span className="text-[#0b6b53]">*</span></label>
+                      <label className={fieldLabel}>First Name <span className="text-[#0b6b53]">*</span> <span className="text-xs text-gray-500 ml-1">(from profile)</span></label>
                       <input
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
                         placeholder="e.g. Ramesh"
-                        className={`${triedContinue && !isFirstNameValid ? inputError : inputNormal}`}
+                        className={`${triedContinue && !isFirstNameValid ? inputError : inputNormal} bg-gray-50`}
+                        disabled
+                        readOnly
                       />
                       {triedContinue && !isFirstNameValid && <div className="text-xs text-red-600 mt-2">Enter first name (min 2).</div>}
                     </div>
@@ -797,12 +799,14 @@ const handleEditMediaSubmit = () => {
                       />
                     </div>
                     <div>
-                      <label className={fieldLabel}>Last Name <span className="text-[#0b6b53]">*</span></label>
+                      <label className={fieldLabel}>Last Name <span className="text-[#0b6b53]">*</span> <span className="text-xs text-gray-500 ml-1">(from profile)</span></label>
                       <input
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
                         placeholder="e.g. Shah"
-                        className={`${triedContinue && !isLastNameValid ? inputError : inputNormal}`}
+                        className={`${triedContinue && !isLastNameValid ? inputError : inputNormal} bg-gray-50`}
+                        disabled
+                        readOnly
                       />
                       {triedContinue && !isLastNameValid && <div className="text-xs text-red-600 mt-2">Enter last name (min 2).</div>}
                     </div>
@@ -812,22 +816,26 @@ const handleEditMediaSubmit = () => {
                   <div className={`${cardWrapper} space-y-6`}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label className={fieldLabel}>Email <span className="text-[#0b6b53]">*</span></label>
+                        <label className={fieldLabel}>Email <span className="text-[#0b6b53]">*</span> <span className="text-xs text-gray-500 ml-1">(from profile)</span></label>
                         <input
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           placeholder="name@example.com"
-                          className={`${triedContinue && !isEmailValid ? inputError : inputNormal}`}
+                          className={`${triedContinue && !isEmailValid ? inputError : inputNormal} bg-gray-50`}
+                          disabled
+                          readOnly
                         />
                         {triedContinue && !isEmailValid && <div className="text-xs text-red-600 mt-2">Enter a valid email address.</div>}
                       </div>
                       <div>
-                        <label className={fieldLabel}>WhatsApp Number</label>
+                        <label className={fieldLabel}>WhatsApp Number <span className="text-xs text-gray-500 ml-1">(from profile)</span></label>
                         <input
-                          value={mobileNumber}
-                          onChange={(e) => setMobileNumber(e.target.value)}
-                          placeholder="Optional"
-                          className={inputNormal}
+                          value={whatsappNumber}
+                          onChange={(e) => setWhatsappNumber(e.target.value)}
+                          placeholder="From profile"
+                          className={`${inputNormal} bg-gray-50`}
+                          disabled
+                          readOnly
                         />
                       </div>
                     </div>
@@ -849,6 +857,7 @@ const handleEditMediaSubmit = () => {
                                 placeholder="9XXXXXXXXX"
                                 className={`${triedContinue && !isWhatsappValid ? inputError : inputNormal} flex-1`}
                                 disabled={otpSent || isEditMode}
+                                readOnly
                                 maxLength={10}
                               />
                               <button

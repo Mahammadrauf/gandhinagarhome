@@ -129,8 +129,13 @@ const Header = () => {
 
   const handleCloseLoop = () => {
     setIsAuthOpen(false);
+    setUser({ firstName: '', lastName: '', email: '', mobile: '', role: '' });
+    setWhatsappOtp(['', '', '', '', '', '']);
+    setEmailOtp(['', '', '', '', '', '']);
+    setStep('details');
+    setAuthMode('login');
+    setIsLoading(false);
   };
-
 
   // --- OTP LOGIC ---
   const handleOtpChange = (index: number, value: string, type: 'whatsapp' | 'email') => {
@@ -192,6 +197,20 @@ const Header = () => {
       const sendMobileOtpJson = await sendMobileOtpRes.json();
       if (!sendMobileOtpRes.ok || !sendMobileOtpJson?.success) {
         const msg = sendMobileOtpJson?.message || 'Failed to send OTP';
+        
+        // Check if user is already registered
+        if (sendMobileOtpJson?.errorCode === 'ALREADY_REGISTERED_DIFFERENT_ROLE') {
+          const existingRole = sendMobileOtpJson?.existingRole;
+          alert(`This mobile number is already registered as a ${existingRole}. You cannot register again with a different role.`);
+          return;
+        }
+        
+        if (sendMobileOtpJson?.errorCode === 'ALREADY_REGISTERED_SAME_ROLE') {
+          const existingRole = sendMobileOtpJson?.existingRole;
+          alert(`You have already registered as a ${existingRole}. Please log in instead of registering again.`);
+          return;
+        }
+        
         throw new Error(msg);
       }
 
@@ -205,6 +224,20 @@ const Header = () => {
         const sendEmailOtpJson = await sendEmailOtpRes.json();
         if (!sendEmailOtpRes.ok || !sendEmailOtpJson?.success) {
           const msg = sendEmailOtpJson?.message || 'Failed to send email OTP';
+          
+          // Check if user is already registered
+          if (sendEmailOtpJson?.errorCode === 'ALREADY_REGISTERED_DIFFERENT_ROLE') {
+            const existingRole = sendEmailOtpJson?.existingRole;
+            alert(`This email address is already registered as a ${existingRole}. Please log in instead of registering again.`);
+            return;
+          }
+          
+          if (sendEmailOtpJson?.errorCode === 'ALREADY_REGISTERED_SAME_ROLE') {
+            const existingRole = sendEmailOtpJson?.existingRole;
+            alert(`You have already registered as a ${existingRole}. Please log in instead of registering again.`);
+            return;
+          }
+          
           throw new Error(msg);
         }
       }
@@ -537,12 +570,15 @@ const Header = () => {
                           <input
                           key={`wa-${i}`}
                           ref={(el) => { whatsappRefs.current[i] = el }}
-                          type="text"
+                          type="tel"
+                          inputMode="numeric"
+                          pattern="[0-9]"
                           maxLength={1}
                           value={digit}
                           onChange={(e) => handleOtpChange(i, e.target.value, 'whatsapp')}
                           onKeyDown={(e) => handleOtpKeyDown(i, e, 'whatsapp')}
                           className={`w-10 h-12 text-center text-xl font-bold bg-white border rounded-lg focus:outline-none focus:scale-105 transition-all caret-[#006A58] ${digit ? `border-[#006A58] text-[#006A58]` : 'border-gray-200 text-gray-800'} focus:border-[#006A58] focus:ring-2 focus:ring-[#006A58]/10 shadow-sm`}
+                          autoComplete="one-time-code"
                           />
                       ))}
                       </div>
@@ -556,12 +592,15 @@ const Header = () => {
                             <input
                             key={`em-${i}`}
                             ref={(el) => { emailRefs.current[i] = el }}
-                            type="text"
+                            type="tel"
+                            inputMode="numeric"
+                            pattern="[0-9]"
                             maxLength={1}
                             value={digit}
                             onChange={(e) => handleOtpChange(i, e.target.value, 'email')}
                             onKeyDown={(e) => handleOtpKeyDown(i, e, 'email')}
                             className={`w-9 h-11 text-center text-lg font-bold bg-white border rounded-lg focus:outline-none focus:scale-105 transition-all caret-[#006A58] ${digit ? `border-[#006A58] text-[#006A58]` : 'border-gray-200 text-gray-800'} focus:border-[#006A58] focus:ring-2 focus:ring-[#006A58]/10 shadow-sm`}
+                            autoComplete="one-time-code"
                             />
                         ))}
                         </div>
