@@ -1,13 +1,15 @@
 import { fetchBuyPageProperties, FrontendProperty } from './api';
 
-// Buy page property type that matches the existing Listing interface structure
+// Buy page property type that matches existing Listing interface structure
 export interface BuyPageProperty {
   id: number;
   propertyId: string;
+  slug?: string;
   tier: "exclusive" | "featured" | "regular";
   source: "owner" | "partner" | "builder";
   title: string;
   locality: string;
+  address: string;
   city: string;
   bedrooms: number;
   bathrooms: number;
@@ -49,8 +51,16 @@ export const transformToBuyPageProperty = (
   };
 
   // Generate a title based on property details
-  const generateTitle = (location: string, beds: number, type: string): string => {
-    return `${location} ${beds}BHK ${type}`;
+  const generateTitle = (location: string, beds: number, type: string, backendTitle?: string, address?: string): string => {
+    // If backend title exists and has content, use it as is
+    if (backendTitle && backendTitle.trim().length > 0) {
+      return backendTitle;
+    }
+    // Fallback: construct a title if no database title exists
+    if (address && address.trim().length > 0) {
+      return `${beds}BHK ${type} on ${address}`;
+    }
+    return `${beds}BHK ${type} in ${location}`;
   };
 
   // Map property type from backend to frontend types
@@ -127,10 +137,12 @@ export const transformToBuyPageProperty = (
   return {
     id: parseInt(property.id) || Math.floor(Math.random() * 1000000), // Convert string ID to number, fallback to random
     propertyId: property.id,
+    slug: property.slug,
     tier,
     source: "owner", // Default, can be updated based on backend data
-    title: generateTitle(property.location, property.beds, propertyType),
+    title: generateTitle(property.location, property.beds, propertyType, property.title, property.address),
     locality: property.location,
+    address: property.address,
     city: property.city || "Gandhinagar",
     bedrooms: property.beds,
     bathrooms: property.baths,

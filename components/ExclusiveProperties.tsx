@@ -323,7 +323,7 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
 
                         {/* UPDATED LINK: Opens in New Tab */}
                         <Link
-                          href={`/properties/${property.id}`}
+                          href={`/properties/${property.slug}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => {

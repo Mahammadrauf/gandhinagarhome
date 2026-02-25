@@ -1,4 +1,4 @@
-import { fetchPropertyById, BackendProperty } from './api';
+import { fetchPropertyById, fetchPropertyBySlug, BackendProperty } from './api';
 
 // Property detail interface for detail page
 export interface PropertyDetail {
@@ -48,7 +48,7 @@ export interface PropertyDetail {
     phone: string;
     whatsappNumber: string;
     whatsapp?: string;
-    email?: string;
+    //email?: string;
     verification: string;
     isVerified: boolean;
     isDirectOwner: boolean;
@@ -258,6 +258,17 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
   // Extract bedroom count from BHK field or bedrooms field
   const bedrooms = specs.bedrooms ?? parseBedroomsFromBhk((specs as any).bhk);
 
+  // Generate a proper title with database title first, then add BHK info if not already included
+  const generatePropertyTitle = (backendTitle: string, beds: number, propertyType: string, location: string): string => {
+    // If backend title exists and has content, use it as is
+    if (backendTitle && backendTitle.trim().length > 0) {
+      return backendTitle;
+    }
+    // Fallback: construct a title if no database title exists
+    const cleanLocation = location.split(',')[0].trim();
+    return `${beds}BHK ${propertyType} in ${cleanLocation}`;
+  };
+
   // Create overview array
   const createOverview = () => [
     { label: 'Price', value: formatPrice(pricing.expectedPrice || 0), icon: 'FileText' },
@@ -294,7 +305,7 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
 
   return {
     id: backendProp._id,
-    title: backendProp.title,
+    title: generatePropertyTitle(backendProp.title, bedrooms, backendProp.propertyType || 'Apartment', location.sector || ''),
     type: backendProp.propertyType,
     category: backendProp.category,
     propertyCategory: (backendProp.propertyCategory?.toLowerCase() === 'exclusive' ? 'exclusive' : 
@@ -340,7 +351,7 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
       phone: userId.mobile || userId.whatsappNumber || 'Hidden',
       whatsappNumber: userId.whatsappNumber || userId.mobile || 'Hidden',
       whatsapp: 'Shared after connect',
-      email: '', // Add email field to backend if needed
+      //email: '', // Add email field to backend if needed
       verification: 'OTP verified',
       isVerified: true,
       isDirectOwner: true
@@ -367,6 +378,25 @@ export const fetchPropertyDetail = async (id: string): Promise<PropertyDetail | 
     return null;
   } catch (error) {
     console.error('Error fetching property detail:', error);
+    return null;
+  }
+};
+
+// Fetch property detail by slug
+export const fetchPropertyDetailBySlug = async (slug: string): Promise<PropertyDetail | null> => {
+  try {
+    console.log('Fetching property detail for slug:', slug);
+    const backendData = await fetchPropertyBySlug(slug);
+    
+    if (backendData) {
+      const transformed = transformPropertyDetail(backendData);
+      console.log('Transformed property detail by slug:', transformed);
+      return transformed;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error fetching property detail by slug:', error);
     return null;
   }
 };
@@ -406,7 +436,7 @@ export const getMockPropertyDetail = (): PropertyDetail => {
 
   return {
     id: 'mock-detail-1',
-    title: 'Raysan Luxury Apartment • Corner Plot',
+    title: '4BHK Apartment in Raysan • Corner Plot',
     type: 'Apartment',
     category: 'Residential',
     propertyCategory: 'exclusive',
@@ -457,7 +487,7 @@ export const getMockPropertyDetail = (): PropertyDetail => {
       phone: '+91 98XX-XXXXXX',
       whatsappNumber: '+91 98765 43210',
       whatsapp: 'Shared after connect',
-      email: 'rajesh.patel@example.com',
+      //email: 'rajesh.patel@example.com',
       verification: 'OTP verified',
       isVerified: true,
       isDirectOwner: true

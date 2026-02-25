@@ -14,6 +14,7 @@ import {
   BellRing,
   Trash2
 } from 'lucide-react';
+import { updateUserProfile } from '@/lib/api';
 
 const BRAND_COLOR = "text-[#006A58]";
 const BRAND_BG = "bg-[#006A58]";
@@ -80,6 +81,57 @@ export default function BuyerProfile() {
     if (file) {
       const imageUrl = URL.createObjectURL(file);
       setProfileImage(imageUrl);
+    }
+  };
+
+  const handleSaveChanges = async () => {
+    try {
+      const token = localStorage.getItem('gh_token');
+      if (!token) {
+        alert('Authentication token not found. Please login again.');
+        return;
+      }
+
+      // Show loading state
+      const originalText = 'Save Changes';
+      const button = document.querySelector('button[onclick="handleSaveChanges()"]') as HTMLButtonElement;
+      if (button) button.textContent = 'Saving...';
+
+      const updatedUser = await updateUserProfile(token, {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        whatsappNumber: formData.whatsapp,
+        mobile: formData.mobile
+      });
+
+      if (updatedUser) {
+        // Update localStorage with the new user data
+        const savedUser = JSON.parse(localStorage.getItem('gh_user') || '{}');
+        const newUser = {
+          ...savedUser,
+          firstName: updatedUser.firstName,
+          lastName: updatedUser.lastName,
+          name: updatedUser.name,
+          mobile: updatedUser.mobile
+        };
+        localStorage.setItem('gh_user', JSON.stringify(newUser));
+        setUser(newUser);
+        
+        alert('Profile updated successfully!');
+      } else {
+        alert('Failed to update profile. Please try again.');
+      }
+
+      // Reset button text
+      if (button) button.textContent = originalText;
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      alert('An error occurred while updating your profile. Please try again.');
+      
+      // Reset button text
+      const button = document.querySelector('button[onclick="handleSaveChanges()"]') as HTMLButtonElement;
+      if (button) button.textContent = 'Save Changes';
     }
   };
 
@@ -161,7 +213,7 @@ export default function BuyerProfile() {
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                   <h3 className="text-lg font-bold text-gray-800">Personal Information</h3>
-                  <button className={`${BRAND_COLOR} hover:bg-green-50 px-4 py-2 rounded-lg text-sm font-semibold transition-colors`}>Save Changes</button>
+                  <button onClick={handleSaveChanges} className={`${BRAND_COLOR} hover:bg-green-50 px-4 py-2 rounded-lg text-sm font-semibold transition-colors`}>Save Changes</button>
                 </div>
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">

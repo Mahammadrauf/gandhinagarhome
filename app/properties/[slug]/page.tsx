@@ -43,7 +43,7 @@ import {
 } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { fetchPropertyDetail, getMockPropertyDetail, PropertyDetail } from '@/lib/propertyDetailApi';
+import { fetchPropertyDetail, fetchPropertyDetailBySlug, getMockPropertyDetail, PropertyDetail } from '@/lib/propertyDetailApi';
 import { fetchSimilarProperties, FrontendProperty } from '@/lib/api';
 
 // --- WHATSAPP ICON COMPONENT (For Share Modal) ---
@@ -103,7 +103,7 @@ const DirectOwnerBadge = () => (
     </div>
 );
 
-export default function PropertyDetailsPage({ params }: { params: { id: string } }) {
+export default function PropertyDetailsPage({ params }: { params: { slug: string } }) {
   const [mediaMode, setMediaMode] = useState('photos');
   const [galleryIndex, setGalleryIndex] = useState(0);
   const [property, setProperty] = useState<PropertyDetail | null>(null);
@@ -125,7 +125,7 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
   const [contactInfo, setContactInfo] = useState<any>(null);
   
   const router = useRouter();
-  const propertyId = params.id;
+  const propertySlug = params.slug;
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Fetch property data
@@ -135,7 +135,7 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
         setLoading(true);
         setError(null);
         
-        const propertyData = await fetchPropertyDetail(propertyId);
+        const propertyData = await fetchPropertyDetailBySlug(propertySlug);
         
         if (propertyData) {
           setProperty(propertyData);
@@ -154,16 +154,16 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
       }
     };
 
-    if (propertyId) {
+    if (propertySlug) {
       loadProperty();
     }
-  }, [propertyId]);
+  }, [propertySlug]);
 
   // Fetch similar properties
   useEffect(() => {
     const loadSimilarProperties = async () => {
       try {
-        const similarData = await fetchSimilarProperties(propertyId);
+        const similarData = await fetchSimilarProperties(property?.id || '');
         setSimilarProperties(similarData);
       } catch (err) {
         console.error('Error loading similar properties:', err);
@@ -171,16 +171,16 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
       }
     };
 
-    if (propertyId) {
+    if (property?.id) {
       loadSimilarProperties();
     }
-  }, [propertyId]);
+  }, [property?.id]);
 
   // Use theme from property data or fallback
   const theme = property ? property.theme : getTheme('exclusive');
 
   // Mock URL for sharing
-  const shareUrl = `https://gandhinagarhomes.com/properties/${propertyId || 'GH-1024'}`;
+  const shareUrl = `https://gandhinagarhomes.com/properties/${propertySlug || 'vinayak-courtyard'}`;
 
   // Show loading state
   if (loading) {
@@ -312,7 +312,7 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
       
       // Call unlock API
       const response = await axios.post(
-        `${API_URL}/properties/${propertyId}/unlock`,
+        `${API_URL}/properties/${property?.id}/unlock`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -690,12 +690,12 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                                 </span>
                             )}
                         </div>
-                        <div className="flex justify-between items-center">
+                        {/* <div className="flex justify-between items-center">
                             <span className="text-sm text-gray-500">Email</span>
                             <span className={`text-sm ${isUnlocked ? 'text-gray-900' : 'text-gray-400 italic bg-gray-100 px-2 py-0.5 rounded select-none cursor-pointer hover:bg-gray-200'} transition-colors`} title={isUnlocked ? '' : 'Unlock to view'}>
                                 {isUnlocked ? contactInfo?.email || property.seller.email : property.seller.email}
                             </span>
-                        </div>
+                        </div> */}
                         <div className="flex justify-between items-center">
                             <span className="text-sm text-gray-500">WhatsApp</span>
                             {isUnlocked ? (

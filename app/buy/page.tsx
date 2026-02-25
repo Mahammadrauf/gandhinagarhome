@@ -38,6 +38,7 @@ type SortOption =
 interface Listing {
   id: number;
   propertyId?: string;
+  slug?: string;
   tier: Tier;
   source: "owner" | "partner" | "builder";
   title: string;
@@ -92,7 +93,7 @@ const ALL_LISTINGS: Listing[] = [
     propertyId: "101",
     tier: "exclusive",
     source: "owner",
-    title: "Raysan Luxury Villa • Corner Plot",
+    title: "4BHK Bungalow in Raysan • Corner Plot",
     locality: "Raysan",
     city: "Gandhinagar",
     bedrooms: 4,
@@ -117,7 +118,7 @@ const ALL_LISTINGS: Listing[] = [
     propertyId: "102",
     tier: "exclusive",
     source: "owner",
-    title: "Adalaj Green Farmhouse",
+    title: "5BHK Bungalow in Adalaj • Green Farmhouse",
     locality: "Adalaj",
     city: "Ahmedabad",
     bedrooms: 5,
@@ -141,7 +142,7 @@ const ALL_LISTINGS: Listing[] = [
     propertyId: "103",
     tier: "exclusive",
     source: "partner",
-    title: "Gift City Penthouse • Sky View",
+    title: "4BHK Penthouse in Gift City • Sky View",
     locality: "Gift City",
     city: "Gift City",
     bedrooms: 4,
@@ -165,7 +166,7 @@ const ALL_LISTINGS: Listing[] = [
     propertyId: "104",
     tier: "exclusive",
     source: "owner",
-    title: "Sargasan Royal Bungalow",
+    title: "5BHK Bungalow in Sargasan • Royal",
     locality: "Sargasan",
     city: "Gandhinagar",
     bedrooms: 5,
@@ -189,7 +190,7 @@ const ALL_LISTINGS: Listing[] = [
     propertyId: "105",
     tier: "exclusive",
     source: "builder", 
-    title: "Ambli-Bopal Luxury Apartment",
+    title: "4BHK Apartment in Bhat • Luxury",
     locality: "Bhat", 
     city: "Ahmedabad",
     bedrooms: 4,
@@ -213,7 +214,7 @@ const ALL_LISTINGS: Listing[] = [
     propertyId: "106",
     tier: "exclusive",
     source: "owner",
-    title: "Koba Circle Villa Estate",
+    title: "6BHK Bungalow in Koba • Circle Villa Estate",
     locality: "Koba",
     city: "Gandhinagar",
     bedrooms: 6,
@@ -239,7 +240,7 @@ const ALL_LISTINGS: Listing[] = [
     propertyId: "201",
     tier: "featured",
     source: "partner",
-    title: "Kudasan High-Rise • Club Access",
+    title: "3BHK Apartment in Kudasan • High-Rise • Club Access",
     locality: "Kudasan",
     city: "Gandhinagar",
     bedrooms: 3,
@@ -263,7 +264,7 @@ const ALL_LISTINGS: Listing[] = [
     propertyId: "202",
     tier: "featured",
     source: "owner",
-    title: "Motera Sports Enclave • 2BHK",
+    title: "2BHK Apartment in Motera • Sports Enclave",
     locality: "Motera",
     city: "Ahmedabad",
     bedrooms: 2,
@@ -287,7 +288,7 @@ const ALL_LISTINGS: Listing[] = [
     propertyId: "203",
     tier: "featured",
     source: "owner",
-    title: "Zundal Elegant Tenement",
+    title: "4BHK Tenement in Zundal • Elegant",
     locality: "Zundal",
     city: "Ahmedabad",
     bedrooms: 4,
@@ -311,7 +312,7 @@ const ALL_LISTINGS: Listing[] = [
     propertyId: "204",
     tier: "featured",
     source: "partner",
-    title: "Sargasan Terrace Apartment",
+    title: "3BHK Apartment in Sargasan • Terrace",
     locality: "Sargasan",
     city: "Gandhinagar",
     bedrooms: 3,
@@ -335,7 +336,7 @@ const ALL_LISTINGS: Listing[] = [
     propertyId: "205",
     tier: "featured",
     source: "owner",
-    title: "Randesan Garden Villa",
+    title: "4BHK Bungalow in Randesan • Garden Villa",
     locality: "Randesan",
     city: "Gandhinagar",
     bedrooms: 4,
@@ -359,7 +360,7 @@ const ALL_LISTINGS: Listing[] = [
     propertyId: "206",
     tier: "featured",
     source: "partner",
-    title: "Bhat Riverfront Home",
+    title: "3BHK Apartment in Bhat • Riverfront Home",
     locality: "Bhat",
     city: "Ahmedabad",
     bedrooms: 3,
@@ -1149,8 +1150,8 @@ function BuyIntroPage() {
     </div>
   );
 
-  const handleOpenDetails = (propertyId: string) => {
-    router.push(`/properties/${propertyId}`);
+  const handleOpenDetails = (propertySlug: string) => {
+    router.push(`/properties/${propertySlug}`);
   };
 
   const handleUnlockSeller = async (e: React.MouseEvent, propertyId: string) => {
@@ -1479,7 +1480,7 @@ function ListingCard({ item, handleOpenDetails, handleUnlockSeller, isPropertyUn
   const isUnlocked = isPropertyUnlocked(item.propertyId || String(item.id));
 
   return (
-    <article onClick={() => handleOpenDetails(item.propertyId || String(item.id))} className={`relative overflow-hidden flex flex-col md:flex-row md:items-center gap-4 p-3 md:p-4 border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer ${theme.cardAccent} ${theme.cardBg || "bg-white"}`}>
+    <article onClick={() => handleOpenDetails(item.slug || item.propertyId || String(item.id))} className={`relative overflow-hidden flex flex-col md:flex-row md:items-center gap-4 p-3 md:p-4 border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer ${theme.cardAccent} ${theme.cardBg || "bg-white"}`}>
       {item.tier === "featured" && ( <div className="absolute left-0 top-0 bottom-0 w-1 md:w-2 rounded-l-2xl bg-gradient-to-b from-[#e0f2ff] to-[#f0f9ff] pointer-events-none" /> )}
       <div className="w-full md:w-[288px] h-48 md:h-[190px] relative rounded-xl overflow-hidden shrink-0 bg-slate-100">
         <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
@@ -1492,7 +1493,7 @@ function ListingCard({ item, handleOpenDetails, handleUnlockSeller, isPropertyUn
         </div>
       </div>
       <div className="flex-1 flex flex-col gap-2">
-        <div> <h3 className="text-base md:text-lg font-bold text-slate-900 leading-tight"> {item.title} </h3> </div>
+        <div> <h3 className="text-base md:text-lg font-bold text-slate-900 leading-tight"> {item.title} {item.address && item.address} </h3> </div>
         <div className="flex flex-wrap gap-2"> 
           <span className="px-2.5 py-1 bg-slate-50 rounded-lg text-xs font-semibold text-slate-700 border border-slate-100"> {item.bedrooms > 0 ? `${item.bedrooms} BHK` : item.type} • {item.bathrooms > 0 ? `${item.bathrooms} Bath` : ""} </span> 
           <span className="px-2.5 py-1 bg-slate-50 rounded-lg text-xs font-semibold text-slate-700 border border-slate-100"> {item.areaDisplay || `${item.areaSqft.toLocaleString()} sq ft`} </span> 
@@ -1516,7 +1517,7 @@ function ListingCard({ item, handleOpenDetails, handleUnlockSeller, isPropertyUn
           </div> </div> 
         </div>
         <div className="flex flex-row md:flex-col gap-2 mt-4"> 
-          <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleOpenDetails(item.propertyId || String(item.id)); }} className={`flex-1 md:w-full py-2 rounded-full text-white text-xs md:text-sm font-bold shadow-sm transition-all active:scale-95 ${theme.viewBtn}`}> Details </button> 
+          <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleOpenDetails(item.slug || item.propertyId || String(item.id)); }} className={`flex-1 md:w-full py-2 rounded-full text-white text-xs md:text-sm font-bold shadow-sm transition-all active:scale-95 ${theme.viewBtn}`}> Details </button> 
           <button onClick={(e) => handleUnlockSeller(e, item.propertyId || String(item.id))} className={`flex-1 md:w-full py-2 rounded-full text-xs md:text-sm font-bold transition-all active:scale-95 ${isUnlocked ? 'bg-green-100 text-green-700 border border-green-200' : 'border border-slate-300 bg-white hover:border-slate-400 text-slate-800'}`}> {isUnlocked ? 'Unlocked' : 'Unlock Seller'} </button> 
         </div>
       </div>

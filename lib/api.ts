@@ -77,9 +77,12 @@ export interface BackendProperty {
 // Frontend Property type (matching existing components)
 export interface FrontendProperty {
   id: string;
+  slug: string;
+  title: string;
   image: string;
   price: string;
   location: string;
+  address: string;
   city?: string;
   beds: number;
   baths: number;
@@ -95,6 +98,19 @@ export interface FrontendProperty {
 // Transform backend property to frontend format
 export const transformProperty = (backendProp: BackendProperty): FrontendProperty => {
   const primaryImage = backendProp.media.images.find(img => img.isPrimary) || backendProp.media.images[0];
+  
+  // Create slug from title
+  const createSlug = (title: string) => {
+    return title
+      .toString()
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-')           // Replace spaces with -
+      .replace(/[^\w\-]+/g, '')       // Remove all non-word chars except -
+      .replace(/\-\-+/g, '-')         // Replace multiple - with single -
+      .replace(/^-+/, '')             // Trim - from start of text
+      .replace(/-+$/, '');            // Trim - from end of text
+  };
   
   // Fallback preview images based on property type
   const getFallbackImage = (propertyType: string, sector: string) => {
@@ -194,9 +210,12 @@ export const transformProperty = (backendProp: BackendProperty): FrontendPropert
   
   return {
     id: backendProp._id,
+    slug: createSlug(backendProp.title),
+    title: backendProp.title,
     image: imageUrl,
     price: formatPrice(pricing.expectedPrice || 0),
     location: location.sector || location.address || 'Unknown Location',
+    address: location.address || '',
     city: location.city,
     beds: bedrooms,
     baths: bathrooms,
@@ -419,6 +438,30 @@ export const fetchPropertyById = async (id: string): Promise<BackendProperty | n
   }
 };
 
+// Property detail API - fetches individual property by slug
+export const fetchPropertyBySlug = async (slug: string): Promise<BackendProperty | null> => {
+  try {
+    console.log('Fetching property by slug:', slug);
+    const response = await fetch(`${API_BASE_URL}/properties/slug/${slug}`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const result: ApiResponse<BackendProperty> = await response.json();
+    console.log('Property detail by slug API response:', result);
+    
+    if (result.success && result.data) {
+      return result.data;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error fetching property detail by slug:', error);
+    return null;
+  }
+};
+
 // Similar properties API - fetches properties similar to the given property
 export const fetchSimilarProperties = async (propertyId: string, limit: number = 5): Promise<FrontendProperty[]> => {
   try {
@@ -448,6 +491,8 @@ export const fetchSimilarProperties = async (propertyId: string, limit: number =
 export const getMockSimilarProperties = (): FrontendProperty[] => [
   {
     id: "mock-s1",
+    slug: "mock-s1",
+    title: "4BHK Apartment in Sargasan",
     image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80",
     price: "₹2.1 Cr",
     location: "Sargasan, Gandhinagar",
@@ -462,6 +507,8 @@ export const getMockSimilarProperties = (): FrontendProperty[] => [
   },
   {
     id: "mock-s2", 
+    slug: "mock-s2",
+    title: "3BHK Apartment in Kudasan",
     image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80",
     price: "₹1.85 Cr",
     location: "Kudasan, Gandhinagar",
@@ -476,6 +523,8 @@ export const getMockSimilarProperties = (): FrontendProperty[] => [
   },
   {
     id: "mock-s3",
+    slug: "mock-s3",
+    title: "5BHK Apartment in Raysan",
     image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80",
     price: "₹4.5 Cr",
     location: "Raysan, Gandhinagar",
@@ -490,6 +539,8 @@ export const getMockSimilarProperties = (): FrontendProperty[] => [
   },
   {
     id: "mock-s4",
+    slug: "mock-s4",
+    title: "4BHK Apartment in Gift City",
     image: "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=800&q=80",
     price: "₹3.2 Cr",
     location: "Gift City, Gandhinagar",
@@ -504,6 +555,8 @@ export const getMockSimilarProperties = (): FrontendProperty[] => [
   },
   {
     id: "mock-s5",
+    slug: "mock-s5",
+    title: "3BHK Apartment in Randheshan",
     image: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=800&q=80",
     price: "₹1.1 Cr",
     location: "Randheshan, Gandhinagar",
@@ -522,6 +575,8 @@ export const getMockSimilarProperties = (): FrontendProperty[] => [
 const getMockOtherProperties = (): FrontendProperty[] => [
   {
     id: "mock-o1",
+    slug: "mock-o1",
+    title: "2BHK Apartment in Sector 23",
     image: "https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=800&q=80",
     price: "₹1.25 Cr",
     location: "Sector 23",
@@ -536,6 +591,8 @@ const getMockOtherProperties = (): FrontendProperty[] => [
   },
   {
     id: "mock-o2",
+    slug: "mock-o2",
+    title: "2BHK Apartment in Sector 8",
     image: "https://images.unsplash.com/photo-1494526585095-c41746248156?w=800&q=80",
     price: "₹95 L",
     location: "Sector 8",
@@ -550,6 +607,8 @@ const getMockOtherProperties = (): FrontendProperty[] => [
   },
   {
     id: "mock-o3",
+    slug: "mock-o3",
+    title: "3BHK Apartment in Sector 12",
     image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80",
     price: "₹1.55 Cr",
     location: "Sector 12",
@@ -600,6 +659,8 @@ export const fetchMyProperties = async (token: string): Promise<BackendProperty[
 const getMockFeaturedProperties = (): FrontendProperty[] => [
   {
     id: "mock-f1",
+    slug: "mock-f1",
+    title: "4BHK Apartment in Sector 5",
     image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80",
     price: "₹2.1 Cr",
     location: "Sector 5",
@@ -614,6 +675,8 @@ const getMockFeaturedProperties = (): FrontendProperty[] => [
   },
   {
     id: "mock-f2",
+    slug: "mock-f2",
+    title: "3BHK Apartment in Koba",
     image: "https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=800&q=80",
     price: "₹1.65 Cr",
     location: "Koba",
@@ -628,6 +691,8 @@ const getMockFeaturedProperties = (): FrontendProperty[] => [
   },
   {
     id: "mock-f3",
+    slug: "mock-f3",
+    title: "4BHK Villa in Koba",
     image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80",
     price: "₹2.45 Cr",
     location: "Sargasan",
@@ -645,6 +710,8 @@ const getMockFeaturedProperties = (): FrontendProperty[] => [
 const getMockExclusiveProperties = (): FrontendProperty[] => [
   {
     id: "mock-e1",
+    slug: "mock-e1",
+    title: "4BHK Apartment in Sector 21",
     image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80",
     price: "₹3.10 Cr",
     location: "Sector 21",
@@ -659,6 +726,8 @@ const getMockExclusiveProperties = (): FrontendProperty[] => [
   },
   {
     id: "mock-e2",
+    slug: "mock-e2",
+    title: "3BHK Apartment in Sector 16",
     image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80",
     price: "₹1.85 Cr",
     location: "Sector 16",
@@ -673,6 +742,8 @@ const getMockExclusiveProperties = (): FrontendProperty[] => [
   },
   {
     id: "mock-e3",
+    slug: "mock-e3",
+    title: "4BHK Apartment in Gift City",
     image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80",
     price: "₹2.35 Cr",
     location: "Gift City",
@@ -728,6 +799,48 @@ export const fetchUserProfile = async (token: string): Promise<UserProfile | nul
     return null;
   } catch (error) {
     console.error('Error fetching user profile:', error);
+    return null;
+  }
+};
+
+// API function to update user profile
+export const updateUserProfile = async (token: string, profileData: {
+  firstName: string;
+  lastName: string;
+  email: string;
+  whatsappNumber: string;
+  mobile: string;
+}): Promise<UserProfile | null> => {
+  try {
+    const url = `${API_BASE_URL}/users/profile`;
+    console.log('Updating user profile at:', url);
+    console.log('Profile data:', profileData);
+    
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(profileData)
+    });
+    
+    console.log('Update profile response status:', response.status);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const result: ApiResponse<UserProfile> = await response.json();
+    console.log('Update profile API response:', result);
+    
+    if (result.success && result.data) {
+      return result.data;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error updating user profile:', error);
     return null;
   }
 };
