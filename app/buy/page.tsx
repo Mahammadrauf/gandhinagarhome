@@ -1493,7 +1493,7 @@ function ListingCard({ item, handleOpenDetails, handleUnlockSeller, isPropertyUn
         </div>
       </div>
       <div className="flex-1 flex flex-col gap-2">
-        <div> <h3 className="text-base md:text-lg font-bold text-slate-900 leading-tight"> {item.title} {item.address && item.address} </h3> </div>
+        <div> <h3 className="text-base md:text-lg font-bold text-slate-900 leading-tight"> {item.title} </h3> </div>
         <div className="flex flex-wrap gap-2"> 
           <span className="px-2.5 py-1 bg-slate-50 rounded-lg text-xs font-semibold text-slate-700 border border-slate-100"> {item.bedrooms > 0 ? `${item.bedrooms} BHK` : item.type} • {item.bathrooms > 0 ? `${item.bathrooms} Bath` : ""} </span> 
           <span className="px-2.5 py-1 bg-slate-50 rounded-lg text-xs font-semibold text-slate-700 border border-slate-100"> {item.areaDisplay || `${item.areaSqft.toLocaleString()} sq ft`} </span> 
