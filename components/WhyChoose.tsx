@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
-import Image from 'next/image';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import { motion, Variants } from 'framer-motion';
 
@@ -17,42 +16,42 @@ const WhyChoose = () => {
       location: 'Ahmedabad',
       role: 'Seller',
       image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&q=80',
-      testimonial: 'Seamless experience from discovery to registration. Their pricing guidance was spot on and saved us time.',
+      testimonial: 'I was skeptical about selling my pre-owned flat in North Ahmedabad because other portals only brought window shoppers. GandhinagarHomes connected me with three serious buyers within a week, all of whom were specifically looking for resale properties. The paperwork was surprisingly smooth, and I didn\'t have to deal with endless spam calls. It felt like dealing with experts who actually understand the local resale market.',
     },
     {
       name: 'Darsh Trivedi',
       location: 'Gandhinagar',
       role: 'Buyer',
       image: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&q=80',
-      testimonial: 'Curated listings in Sargasan and Kudasan were perfect. Verified details gave us confidence to close quickly.',
+      testimonial: 'Finding a verified resale home in Kudasan was proving impossible until I used this platform. Most listings elsewhere are outdated or fake, but here, the transparency regarding the property\'s history and current condition was refreshing. I finally closed a deal on a 3BHK without the usual headache of hidden costs or uncertain documentation. It really is the most reliable way to find a pre-owned home in Gandhinagar.',
     },
     {
       name: 'Keval Sheth',
       location: 'Gandhinagar',
       role: 'Buyer',
       image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80',
-      testimonial: 'The team understood my needs for a 3BHK near Infocity. Their local expertise is unmatched. Highly recommended!',
+      testimonial: 'I was specifically looking for a resale apartment near Infocity but was tired of dealing with agents who didn\'t know the property details. These guys had every document verified before I even visited the site. The negotiation process was handled with total transparency, making the whole transition into my new home very stress-free. If you\'re looking for a serious resale listing in Sector 7 or nearby, don\'t waste time elsewhere.',
     },
     {
       name: 'Mansi Gadhvi',
       location: 'Ahmedabad',
       role: 'Seller',
       image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80',
-      testimonial: 'I invested in a commercial property through them. The entire process was transparent and professional. Great ROI.',
+      testimonial: 'Selling my commercial resale property was a breeze because the platform filters out everyone except high-intent buyers. I didn\'t have to explain the property value repeatedly; the leads coming in already knew the local market rates and were ready to talk numbers. The speed of closure was impressive, taking only three weeks from listing to the final handshake. It’s definitely the most efficient resale ecosystem I\'ve encountered.',
     },
     {
       name: 'Bhakti Raval',
       location: 'Gandhinagar',
       role: 'Seller',
       image: 'https://images.unsplash.com/photo-1614283233556-f35b0c801ef1?w=100&q=80',
-      testimonial: 'Sold my apartment in Raysan faster than I expected. They handled all the paperwork and negotiations flawlessly.',
+      testimonial: 'We needed to sell our Raysan bungalow quickly as we were relocating, and the resale focus of this site made all the difference. Their local expertise helped us price the property competitively, attracting genuine families instead of just bargain hunters. Every step, from the initial valuation to the final legal paperwork, was handled with professional care. We sold our home confidently and at a price we were very happy with.',
     },
     {
       name: 'Tapan Vyas',
       location: 'Gift City',
       role: 'Buyer',
       image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80',
-      testimonial: 'Found the perfect family home in Sector 7. The virtual tours were a huge help since I was relocating.',
+      testimonial: 'I was looking for a pre-owned investment near GIFT City but was worried about the legal complexities of resale transfers. The team provided end-to-end support, ensuring all previous dues and titles were clear before we moved forward. It’s a much more personal experience than the giant property portals where you\'re just a number. For anyone serious about buying a resale property in Sargasan or GIFT City, this is the gold standard.',
     },
   ];
 
@@ -177,47 +176,52 @@ const WhyChoose = () => {
               initial="hidden"
               animate={hasAnimated ? "visible" : "hidden"}
             >
-              {testimonials.map((testimonial, index) => (
-                <motion.div 
-                  key={index} 
-                  variants={itemSlideFromBottom} 
-                  className="group bg-white rounded-xl shadow-md p-6 border-l-4 border-primary relative overflow-hidden
-                             transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl hover:shadow-primary/20" 
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  
-                  <div className="flex items-start gap-4 relative z-10">
-                    <div className="relative w-14 h-14 flex-shrink-0">
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary-dark rounded-full opacity-20"></div>
-                      <Image
-                        src={testimonial.image}
-                        alt={testimonial.name}
-                        fill
-                        className="rounded-full object-cover ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-3 flex-wrap">
-                        <div>
-                          <h4 className="font-semibold text-gray-800 group-hover:text-primary transition-colors">{testimonial.name}</h4>
-                          <p className="text-sm text-gray-600">{testimonial.location}</p>
+              {testimonials.map((testimonial, index) => {
+                const initials = testimonial.name
+                  .split(" ")
+                  .map(word => word[0])
+                  .join("")
+                  .toUpperCase();
+
+                return (
+                  <motion.div 
+                    key={index} 
+                    variants={itemSlideFromBottom} 
+                    className="group bg-white rounded-xl shadow-md p-6 border-l-4 border-primary relative overflow-hidden
+                               transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl hover:shadow-primary/20" 
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    
+                    <div className="flex items-start gap-4 relative z-10">
+                      <div className="relative w-14 h-14 flex-shrink-0">
+                        <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary-dark rounded-full opacity-20"></div>
+                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white font-bold text-lg ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all">
+                          {initials}
                         </div>
-                        <span className="absolute right-6 bg-primary text-white text-base px-4 py-2 rounded-full font-medium shadow-md">
-                          {testimonial.role}
-                        </span>
                       </div>
-                      <div className="flex gap-1 mb-2">
-                        {[...Array(5)].map((_, i) => (
-                          <svg key={i} className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
-                            <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
-                          </svg>
-                        ))}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-3 flex-wrap">
+                          <div>
+                            <h4 className="font-semibold text-gray-800 group-hover:text-primary transition-colors">{testimonial.name}</h4>
+                            <p className="text-sm text-gray-600">{testimonial.location}</p>
+                          </div>
+                          <span className="absolute right-6 bg-primary text-white text-base px-4 py-2 rounded-full font-medium shadow-md">
+                            {testimonial.role}
+                          </span>
+                        </div>
+                        <div className="flex gap-1 mb-2">
+                          {[...Array(5)].map((_, i) => (
+                            <svg key={i} className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                              <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
+                            </svg>
+                          ))}
+                        </div>
+                        <p className="text-gray-700 font-bold leading-relaxed">"{testimonial.testimonial}"</p>
                       </div>
-                      <p className="text-gray-700 font-bold leading-relaxed">"{testimonial.testimonial}"</p>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
             </motion.div>
             
             {!isAtBottom ? (
