@@ -48,8 +48,6 @@ export default function SellerProfile() {
     mobile: ''
   });
 
-  const [mobileError, setMobileError] = useState('');
-
   // Fetch user's properties
   const fetchUserProperties = async () => {
     try {
@@ -115,20 +113,6 @@ export default function SellerProfile() {
       const imageUrl = URL.createObjectURL(file);
       setProfileImage(imageUrl);
     }
-  };
-
-  // new handler to save changes locally
-  const handleSaveChanges = () => {
-    const updatedUser = {
-      ...user,
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      mobile: formData.mobile,
-      // whatsapp/email remain unchanged
-    };
-    localStorage.setItem('gh_user', JSON.stringify(updatedUser));
-    setUser(updatedUser);
-    alert('Profile updated successfully');
   };
 
   if (!user) return null;
@@ -346,7 +330,12 @@ export default function SellerProfile() {
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                   <h3 className="text-lg font-bold text-gray-800">Personal Information</h3>
-                  <button onClick={handleSaveChanges} disabled={formData.mobile.length !== 10} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${formData.mobile.length === 10 ? 'bg-[#006A58] text-white hover:bg-[#005445]' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}>Save Changes</button>
+                  <button
+                    disabled={formData.mobile.length !== 10}
+                    className={`${BRAND_COLOR} hover:bg-green-50 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${formData.mobile.length !== 10 ? "border border-gray-400 opacity-50 cursor-not-allowed" : ""}`}
+                  >
+                    Save Changes
+                  </button>
                 </div>
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
@@ -391,19 +380,13 @@ export default function SellerProfile() {
                       type="tel" 
                       value={formData.mobile} 
                       onChange={(e) => {
-                        let val = e.target.value.replace(/\D/g, '');
-                        if (val.length > 10) val = val.slice(0, 10);
-                        setFormData({...formData, mobile: val});
-                        // strict validation
-                        if (val.length !== 10) {
-                          setMobileError('Mobile number must be exactly 10 digits');
-                        } else {
-                          setMobileError('');
+                        const numericValue = e.target.value.replace(/\D/g, '');
+                        if (numericValue.length <= 10) {
+                          setFormData({ ...formData, mobile: numericValue });
                         }
                       }}
                       className={`w-full p-3 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 ${BRAND_FOCUS_RING}`} 
                     />
-                    {mobileError && <div className="text-xs text-red-600 mt-1">{mobileError}</div>}
                   </div>
                 </div>
               </div>
