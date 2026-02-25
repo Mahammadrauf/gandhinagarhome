@@ -330,7 +330,12 @@ export default function SellerProfile() {
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                   <h3 className="text-lg font-bold text-gray-800">Personal Information</h3>
-                  <button className={`${BRAND_COLOR} hover:bg-green-50 px-4 py-2 rounded-lg text-sm font-semibold transition-colors`}>Save Changes</button>
+                  <button
+                    disabled={formData.mobile.length !== 10}
+                    className={`${BRAND_COLOR} hover:bg-green-50 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${formData.mobile.length !== 10 ? "border border-gray-400 opacity-50 cursor-not-allowed" : ""}`}
+                  >
+                    Save Changes
+                  </button>
                 </div>
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
@@ -374,7 +379,12 @@ export default function SellerProfile() {
                     <input 
                       type="tel" 
                       value={formData.mobile} 
-                      onChange={(e) => setFormData({...formData, mobile: e.target.value})}
+                      onChange={(e) => {
+                        const numericValue = e.target.value.replace(/\D/g, '');
+                        if (numericValue.length <= 10) {
+                          setFormData({ ...formData, mobile: numericValue });
+                        }
+                      }}
                       className={`w-full p-3 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 ${BRAND_FOCUS_RING}`} 
                     />
                   </div>

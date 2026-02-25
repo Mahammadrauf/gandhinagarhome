@@ -371,7 +371,11 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
           {/* Breadcrumb / Navigation */}
           <div className="flex items-center justify-between mb-5">
             <Link
-              href="/properties"
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                router.push('/buy');
+              }}
               className="group inline-flex items-center gap-2 text-sm font-medium text-gray-500 transition-colors"
             >
               <div className="p-1.5 rounded-full bg-white border border-gray-200 transition-colors shadow-sm">

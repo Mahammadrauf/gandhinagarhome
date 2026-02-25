@@ -643,7 +643,7 @@ const handleEditMediaSubmit = () => {
         setOtpSent(true);
         const otpForDev = response.data.data?.otp;
         if (otpForDev) {
-          alert(`OTP Sent to your Mobile number!`);
+          alert(`OTP Sent to your Mobile number! Development OTP: ${otpForDev}`);
         } else {
           alert("OTP Sent to your Mobile number!");
         }
@@ -778,14 +778,12 @@ const handleEditMediaSubmit = () => {
                   {/* Card 1: Name */}
                   <div className={`${cardWrapper} grid grid-cols-1 lg:grid-cols-3 gap-6`}>
                     <div>
-                      <label className={fieldLabel}>First Name <span className="text-[#0b6b53]">*</span> <span className="text-xs text-gray-500 ml-1">(from profile)</span></label>
+                      <label className={fieldLabel}>First Name <span className="text-[#0b6b53]">*</span></label>
                       <input
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
                         placeholder="e.g. Ramesh"
-                        className={`${triedContinue && !isFirstNameValid ? inputError : inputNormal} bg-gray-50`}
-                        disabled
-                        readOnly
+                        className={`${triedContinue && !isFirstNameValid ? inputError : inputNormal}`}
                       />
                       {triedContinue && !isFirstNameValid && <div className="text-xs text-red-600 mt-2">Enter first name (min 2).</div>}
                     </div>
@@ -799,14 +797,12 @@ const handleEditMediaSubmit = () => {
                       />
                     </div>
                     <div>
-                      <label className={fieldLabel}>Last Name <span className="text-[#0b6b53]">*</span> <span className="text-xs text-gray-500 ml-1">(from profile)</span></label>
+                      <label className={fieldLabel}>Last Name <span className="text-[#0b6b53]">*</span></label>
                       <input
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
                         placeholder="e.g. Shah"
-                        className={`${triedContinue && !isLastNameValid ? inputError : inputNormal} bg-gray-50`}
-                        disabled
-                        readOnly
+                        className={`${triedContinue && !isLastNameValid ? inputError : inputNormal}`}
                       />
                       {triedContinue && !isLastNameValid && <div className="text-xs text-red-600 mt-2">Enter last name (min 2).</div>}
                     </div>
@@ -816,26 +812,22 @@ const handleEditMediaSubmit = () => {
                   <div className={`${cardWrapper} space-y-6`}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label className={fieldLabel}>Email <span className="text-[#0b6b53]">*</span> <span className="text-xs text-gray-500 ml-1">(from profile)</span></label>
+                        <label className={fieldLabel}>Email <span className="text-[#0b6b53]">*</span></label>
                         <input
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           placeholder="name@example.com"
-                          className={`${triedContinue && !isEmailValid ? inputError : inputNormal} bg-gray-50`}
-                          disabled
-                          readOnly
+                          className={`${triedContinue && !isEmailValid ? inputError : inputNormal}`}
                         />
                         {triedContinue && !isEmailValid && <div className="text-xs text-red-600 mt-2">Enter a valid email address.</div>}
                       </div>
                       <div>
-                        <label className={fieldLabel}>WhatsApp Number <span className="text-xs text-gray-500 ml-1">(from profile)</span></label>
+                        <label className={fieldLabel}>WhatsApp Number</label>
                         <input
-                          value={whatsappNumber}
-                          onChange={(e) => setWhatsappNumber(e.target.value)}
-                          placeholder="From profile"
-                          className={`${inputNormal} bg-gray-50`}
-                          disabled
-                          readOnly
+                          value={mobileNumber}
+                          onChange={(e) => setMobileNumber(e.target.value)}
+                          placeholder="Optional"
+                          className={inputNormal}
                         />
                       </div>
                     </div>
@@ -857,7 +849,6 @@ const handleEditMediaSubmit = () => {
                                 placeholder="9XXXXXXXXX"
                                 className={`${triedContinue && !isWhatsappValid ? inputError : inputNormal} flex-1`}
                                 disabled={otpSent || isEditMode}
-                                readOnly
                                 maxLength={10}
                               />
                               <button
@@ -868,20 +859,16 @@ const handleEditMediaSubmit = () => {
                                 {isSendingOtp ? "Sending..." : (otpSent ? "Sent" : "Send OTP")}
                               </button>
                             </div>
-                            <div className="flex flex-col sm:flex-row gap-2">
-  
-  
 
+                           
   
-
-</div>
                             {triedContinue && !isWhatsappValid && <div className="text-xs text-red-600 mt-2">Enter a valid 10-digit number.</div>}
                           </div>
 
                           {otpSent && !isOtpVerified && (
                             <div>
                               <label className={fieldLabel}>Enter OTP <span className="text-[#0b6b53]">*</span></label>
-                              <div className="flex flex-col sm:flex-row gap-2">
+                              <div className="flex gap-2">
                                 <input
                                   value={otp}
                                   onChange={(e) => setOtp(e.target.value)}
@@ -911,10 +898,10 @@ const handleEditMediaSubmit = () => {
 
                   <p className="text-sm text-gray-500">Your contact is partially visible to buyers. Full details require buyer subscription.</p>
 
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between mt-4">
+                  <div className="flex items-center justify-between mt-4">
                     <button
                       onClick={onContinueFromStep1}
-                      className={`${canContinueStep1 ? btnPrimary : btnDisabled} w-full sm:w-auto`}
+                      className={canContinueStep1 ? btnPrimary : btnDisabled}
                       disabled={!canContinueStep1}
                     >
                       {isEditMode ? "Save Changes" : "Continue to Specifications"}
@@ -1400,10 +1387,10 @@ const handleEditMediaSubmit = () => {
                    </div>
 
                   {/* Row 6: Footer */}
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between mt-4">
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                      <button onClick={() => setStep(0)} className={`${btnLight} w-full sm:w-auto`}>Back to Basic Info</button>
-                      <button onClick={onContinueFromStep2} className={`${canContinueStep2 ? btnPrimary : btnDisabled} w-full sm:w-auto`} disabled={!canContinueStep2}>{isEditMode ? "Save Changes" : "Continue to Location"}</button>
+                  <div className="flex items-center justify-between mt-4">
+                    <div className="flex items-center gap-3">
+                      <button onClick={() => setStep(0)} className={btnLight}>Back to Basic Info</button>
+                      <button onClick={onContinueFromStep2} className={canContinueStep2 ? btnPrimary : btnDisabled} disabled={!canContinueStep2}>{isEditMode ? "Save Changes" : "Continue to Location"}</button>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-700 font-medium">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1571,12 +1558,12 @@ Can’t find your area? Select the nearest major locality.            </p>
       />
     </div>
 
-    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between mt-4">
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-        <button onClick={() => setStep(1)} className={`${btnLight} w-full sm:w-auto`}>Back to Specifications</button>
+    <div className="flex items-center justify-between mt-4">
+      <div className="flex items-center gap-3">
+        <button onClick={() => setStep(1)} className={btnLight}>Back to Specifications</button>
         <button
           onClick={onContinueFromStep3}
-          className={`${canContinueStep3 ? btnPrimary : btnDisabled} w-full sm:w-auto`}
+          className={canContinueStep3 ? btnPrimary : btnDisabled}
           disabled={!canContinueStep3}
         >
           {isEditMode ? "Save Changes" : "Continue to Media Upload"}
@@ -1856,13 +1843,13 @@ Can’t find your area? Select the nearest major locality.            </p>
                   </div>
 
                   {/* Footer: Buttons */}
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between mt-4">
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                      <button onClick={() => setStep(2)} className={`${btnLight} w-full sm:w-auto`}>Back to Location</button>
-                      <button onClick={handleSaveDraft} className={`${btnSecondary} w-full sm:w-auto`}>Save Draft</button>
+                  <div className="flex items-center justify-between mt-4">
+                    <div className="flex items-center gap-3">
+                      <button onClick={() => setStep(2)} className={btnLight}>Back to Location</button>
+                      <button onClick={handleSaveDraft} className={btnSecondary}>Save Draft</button>
                       <button
   onClick={isEditMode ? handleEditMediaSubmit : handleSubmit}
-  className={`${saving ? btnDisabled : btnPrimary} w-full sm:w-auto`}
+  className={saving ? btnDisabled : btnPrimary}
   disabled={saving}
 >
   {saving ? (isEditMode ? "Saving..." : "Submitting...") : (isEditMode ? "Save & Return to Review" : "Submit Listing")}
