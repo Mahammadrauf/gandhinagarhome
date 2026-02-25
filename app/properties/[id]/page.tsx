@@ -298,7 +298,15 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
                    "";
       
       if (!token) {
-        alert('Please login first to unlock seller details.');
+        // Check if user has any saved user data to determine if they're registered
+        const savedUser = localStorage.getItem('gh_user');
+        const isUserRegistered = savedUser && JSON.parse(savedUser).isLoggedIn;
+        
+        if (!isUserRegistered) {
+          alert('You need to register first before unlocking seller details.\n\nPlease sign up to create an account, then you can unlock property owner contact information.');
+        } else {
+          alert('Your session has expired. Please log in again to unlock seller details.');
+        }
         return;
       }
       

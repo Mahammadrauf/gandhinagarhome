@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 
+// Use the same API configuration as other components
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+
 interface Payment {
   _id: string
   userId: {
@@ -47,7 +50,7 @@ export default function PaymentsTable() {
     try {
       setLoading(true)
       // Replace with your actual backend API endpoint
-      const response = await axios.get('http://localhost:5000/api/admin/payments')
+      const response = await axios.get(`${API_BASE_URL}/admin/payments`)
       setPayments(response.data.data)
     } catch (err) {
       setError('Failed to fetch payments')

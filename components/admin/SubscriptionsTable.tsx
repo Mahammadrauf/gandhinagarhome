@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 
+// Use the same API configuration as other components
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+
 interface Subscription {
   _id: string
   userId: {
@@ -49,7 +52,7 @@ export default function SubscriptionsTable() {
     try {
       setLoading(true)
       // Replace with your actual backend API endpoint
-      const response = await axios.get('http://localhost:5000/api/admin/subscriptions')
+      const response = await axios.get(`${API_BASE_URL}/admin/subscriptions`)
       setSubscriptions(response.data.data)
     } catch (err) {
       setError('Failed to fetch subscriptions')

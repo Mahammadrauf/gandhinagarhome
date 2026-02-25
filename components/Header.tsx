@@ -184,8 +184,34 @@ const Header = () => {
       const email = user.email;
       const role = user.role;
 
-      if (authMode === 'signup' && !role) {
-        throw new Error('Please select a role');
+      if (authMode === 'login') {
+        try {
+          const checkUserRes = await fetch(`${API_BASE_URL}/auth/check-user`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mobile })
+          });
+          
+          const checkUserJson = await checkUserRes.json();
+          
+          // If user doesn't exist, show error immediately without sending OTP
+          if (!checkUserRes.ok || !checkUserJson?.success) {
+            if (checkUserJson?.errorCode === 'USER_NOT_FOUND' || checkUserJson?.message?.includes('not registered') || checkUserJson?.message?.includes('not found')) {
+              throw new Error('This mobile number is not registered. Please sign up first to create an account.');
+            }
+            if (checkUserJson?.errorCode === 'REGISTRATION_INCOMPLETE') {
+              throw new Error('Your registration is incomplete. Please complete the signup process first.');
+            }
+            throw new Error(checkUserJson?.message || 'Unable to verify user. Please try again.');
+          }
+        } catch (checkError: any) {
+          // If check-user endpoint fails with USER_NOT_FOUND error, show alert and stop
+          if (checkError?.message?.includes('not registered') || checkError?.message?.includes('not found')) {
+            throw new Error(checkError.message);
+          }
+          // For other errors, proceed with send-otp flow (backend will handle validation)
+          console.log('Check-user endpoint not available, proceeding with send-otp flow');
+        }
       }
 
       const sendMobileOtpRes = await fetch(`${API_BASE_URL}/auth/send-otp`, {
@@ -195,25 +221,7 @@ const Header = () => {
       });
 
       const sendMobileOtpJson = await sendMobileOtpRes.json();
-      if (!sendMobileOtpRes.ok || !sendMobileOtpJson?.success) {
-        const msg = sendMobileOtpJson?.message || 'Failed to send OTP';
-        
-        // Check if user is already registered
-        if (sendMobileOtpJson?.errorCode === 'ALREADY_REGISTERED_DIFFERENT_ROLE') {
-          const existingRole = sendMobileOtpJson?.existingRole;
-          alert(`This mobile number is already registered as a ${existingRole}. You cannot register again with a different role.`);
-          return;
-        }
-        
-        if (sendMobileOtpJson?.errorCode === 'ALREADY_REGISTERED_SAME_ROLE') {
-          const existingRole = sendMobileOtpJson?.existingRole;
-          alert(`You have already registered as a ${existingRole}. Please log in instead of registering again.`);
-          return;
-        }
-        
-        throw new Error(msg);
-      }
-
+      
       if (authMode === 'signup') {
         const sendEmailOtpRes = await fetch(`${API_BASE_URL}/auth/send-email-otp`, {
           method: 'POST',
@@ -277,11 +285,23 @@ const Header = () => {
 
         const json = await res.json();
         if (!res.ok || !json?.success) {
+          // Check if user is not registered
+          if (json?.errorCode === 'USER_NOT_FOUND' || json?.message?.includes('not registered') || json?.message?.includes('not found')) {
+            throw new Error('This mobile number is not registered. Please sign up first to create an account.');
+          }
+          // Check if user needs to complete registration
+          if (json?.errorCode === 'REGISTRATION_INCOMPLETE') {
+            throw new Error('Your registration is incomplete. Please complete the signup process first.');
+          }
           throw new Error(json?.message || 'OTP verification failed');
         }
 
+        // Additional validation: Ensure user data is complete
         const apiUser = json?.data?.user;
         const token = json?.data?.token;
+        if (!apiUser || !apiUser.mobile || !apiUser.name) {
+          throw new Error('User data is incomplete. Please complete your registration first.');
+        }
 
         const name = apiUser?.name || 'User';
         const firstName = name.split(' ')[0] || 'User';

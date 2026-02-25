@@ -171,7 +171,15 @@ export default function BuyerSubscriptionPage() {
 
       const token = getAuthToken();
       if (!token) {
-        alert("Please login first to purchase a plan.");
+        // Check if user has any saved user data to determine if they're registered
+        const savedUser = localStorage.getItem('gh_user');
+        const isUserRegistered = savedUser && JSON.parse(savedUser).isLoggedIn;
+        
+        if (!isUserRegistered) {
+          alert("You need to register first before purchasing a plan.\n\nPlease sign up to create an account, then you can purchase a subscription to unlock property owner details.");
+        } else {
+          alert("Your session has expired. Please log in again to purchase a plan.");
+        }
         
         return;
       }

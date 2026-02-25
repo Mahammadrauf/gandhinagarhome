@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 
+// Use the same API configuration as other components
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+
 interface User {
   _id: string
   name: string
@@ -32,7 +35,7 @@ export default function UsersTable() {
     try {
       setLoading(true)
       // Replace with your actual backend API endpoint
-      const response = await axios.get(`http://localhost:5000/api/admin/users?page=${page}&limit=10`)
+      const response = await axios.get(`${API_BASE_URL}/admin/users?page=${page}&limit=10`)
       setUsers(response.data.data)
       setTotalPages(response.data.pagination?.pages || 0)
       setTotalUsers(response.data.pagination?.total || 0)

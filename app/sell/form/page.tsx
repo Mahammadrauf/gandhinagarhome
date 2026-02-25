@@ -870,35 +870,9 @@ const handleEditMediaSubmit = () => {
                             </div>
                             <div className="flex flex-col sm:flex-row gap-2">
   
-  <div className="flex flex-row gap-2 w-full sm:w-auto">
-    <div className="flex items-center justify-center h-12 px-4 rounded-xl border border-gray-100 bg-gray-100 text-gray-700 font-semibold">
-      {countryCode}
-    </div>
+  
 
-    <input
-      value={whatsappNumber}
-      onChange={(e) => {
-        const value = e.target.value.replace(/\D/g, '').slice(0, 10);
-        setWhatsappNumber(value);
-      }}
-      placeholder="9XXXXXXXXX"
-      className={`${triedContinue && !isWhatsappValid ? inputError : inputNormal} flex-1 w-full`}
-      disabled={otpSent || isEditMode}
-      maxLength={10}
-    />
-  </div>
-
-  <button
-    onClick={handleSendOtp}
-    disabled={!isWhatsappValid || otpSent || isSendingOtp}
-    className={`h-12 w-full sm:w-auto px-4 rounded-lg font-semibold text-sm ${
-      (!isWhatsappValid || otpSent)
-        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-        : 'bg-[#0b6b53] text-white hover:bg-[#0b6b53]'
-    }`}
-  >
-    {isSendingOtp ? "Sending..." : (otpSent ? "Sent" : "Send OTP")}
-  </button>
+  
 
 </div>
                             {triedContinue && !isWhatsappValid && <div className="text-xs text-red-600 mt-2">Enter a valid 10-digit number.</div>}

@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 
+// Use the same API configuration as other components
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+
 interface DashboardStats {
   totalUsers: number
   totalProperties: number
@@ -37,10 +40,10 @@ export default function Dashboard() {
       
       // Fetch data from all endpoints
       const [usersRes, propertiesRes, subscriptionsRes, paymentsRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/admin/users?limit=1'),
-        axios.get('http://localhost:5000/api/admin/properties?limit=1'),
-        axios.get('http://localhost:5000/api/admin/subscriptions?limit=1'),
-        axios.get('http://localhost:5000/api/admin/payments?limit=1')
+        axios.get(`${API_BASE_URL}/admin/users?limit=1`),
+        axios.get(`${API_BASE_URL}/admin/properties?limit=1`),
+        axios.get(`${API_BASE_URL}/admin/subscriptions?limit=1`),
+        axios.get(`${API_BASE_URL}/admin/payments?limit=1`)
       ])
 
       // Extract total counts from pagination data
@@ -50,7 +53,7 @@ export default function Dashboard() {
       const totalPayments = paymentsRes.data.pagination?.total || 0
 
       // Fetch detailed stats
-      const statsRes = await axios.get('http://localhost:5000/api/admin/stats')
+      const statsRes = await axios.get(`${API_BASE_URL}/admin/stats`)
       const adminStats = statsRes.data.data
 
       // Calculate active subscriptions and total revenue from actual data

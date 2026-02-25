@@ -3,14 +3,17 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 
+// Use the same API configuration as other components
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+
 interface Property {
   _id: string
-  userId: {
+  userId?: {
     _id: string
     name: string
     mobile: string
     email: string
-  }
+  } | null
   title: string
   propertyType: string
   category: string
@@ -73,7 +76,7 @@ export default function PropertiesTable() {
     try {
       setLoading(true)
       // Replace with your actual backend API endpoint
-      const response = await axios.get(`http://localhost:5000/api/admin/properties?page=${page}&limit=10`)
+      const response = await axios.get(`${API_BASE_URL}/admin/properties?page=${page}&limit=10`)
       setProperties(response.data.data)
       setTotalPages(response.data.pagination?.pages || 0)
       setTotalProperties(response.data.pagination?.total || 0)
@@ -176,6 +179,39 @@ export default function PropertiesTable() {
     }
   }
 
+  const handleApprove = async (propertyId: string) => {
+    try {
+      const response = await axios.put(`${API_BASE_URL}/admin/properties/${propertyId}/approve`, {
+        postedBy: 'owner' // Default to owner, can be made configurable
+      })
+      
+      if (response.data.success) {
+        // Refresh the properties list
+        fetchProperties(currentPage)
+      }
+    } catch (error) {
+      console.error('Error approving property:', error)
+    }
+  }
+
+  const handleReject = async (propertyId: string) => {
+    try {
+      const rejectionReason = prompt('Please enter rejection reason:')
+      if (!rejectionReason) return
+
+      const response = await axios.put(`${API_BASE_URL}/admin/properties/${propertyId}/reject`, {
+        rejectionReason
+      })
+      
+      if (response.data.success) {
+        // Refresh the properties list
+        fetchProperties(currentPage)
+      }
+    } catch (error) {
+      console.error('Error rejecting property:', error)
+    }
+  }
+
   if (loading) {
     return <div className="text-center py-8">Loading properties...</div>
   }
@@ -220,13 +256,16 @@ export default function PropertiesTable() {
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Created At
             </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Actions
+            </th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {properties.map((property) => (
             <tr key={property._id} className="hover:bg-gray-50">
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {property.userId.name}
+                {property.userId?.name || 'Unknown User'}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {property.title}
@@ -274,6 +313,27 @@ export default function PropertiesTable() {
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {new Date(property.createdAt).toLocaleDateString()}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                {property.status === 'pending' && (
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => handleApprove(property._id)}
+                      className="px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+                    >
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => handleReject(property._id)}
+                      className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                    >
+                      Reject
+                    </button>
+                  </div>
+                )}
+                {property.status !== 'pending' && (
+                  <span className="text-gray-400">-</span>
+                )}
               </td>
             </tr>
           ))}
