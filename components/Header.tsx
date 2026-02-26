@@ -403,7 +403,7 @@ const Header = () => {
       <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${isScrolled || isMobileMenuOpen ? 'bg-white/95 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-5 border-b border-transparent'}`}>
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between">
-            <Link href="/" className="group flex items-center gap-2 flex-shrink-0 z-50">
+            <Link href="/" className="group flex items-center gap-2 flex-shrink-0 z-50 mr-3 md:mr-0">
               <div className={`${BRAND_BG} p-1.5 rounded-lg text-white transition-transform group-hover:scale-110 duration-300`}>
                 <Home className="w-5 h-5" strokeWidth={2.5} />
               </div>

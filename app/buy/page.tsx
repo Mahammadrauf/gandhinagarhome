@@ -1400,14 +1400,46 @@ interface SmartDropdownProps { label: string; options: { value: string; label: s
 const SmartDropdown: React.FC<SmartDropdownProps> = ({ label, options, value, onChange, }) => {
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [coords, setCoords] = useState<{ left: number; top: number; width: number } | null>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) { setIsOpen(false); }
+      const target = event.target as Node;
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(target) &&
+        !(dropdownRef.current && dropdownRef.current.contains(target))
+      ) {
+        setIsOpen(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    function updateCoords() {
+      const btn = buttonRef.current;
+      if (btn) {
+        const rect = btn.getBoundingClientRect();
+        // Add a small offset so dropdown doesn't stick to the button
+        setCoords({ left: Math.max(8, rect.left), top: rect.bottom + 6, width: rect.width });
+      }
+    }
+
+    if (isOpen) {
+      updateCoords();
+      window.addEventListener("resize", updateCoords);
+      window.addEventListener("scroll", updateCoords, true);
+      return () => {
+        window.removeEventListener("resize", updateCoords);
+        window.removeEventListener("scroll", updateCoords, true);
+      };
+    }
+    return;
+  }, [isOpen]);
 
   const selectedOption = options.find((opt) => opt.value === value);
   const displayLabel = selectedOption ? selectedOption.label : "Any";
@@ -1415,7 +1447,7 @@ const SmartDropdown: React.FC<SmartDropdownProps> = ({ label, options, value, on
 
   return (
     <div className="relative flex-1 min-w-[120px] md:min-w-[140px]" ref={wrapperRef}>
-      <button onClick={() => setIsOpen(!isOpen)} className={`group flex h-8 w-full items-center justify-between rounded-full border px-3 transition-all duration-200 ${ isOpen ? "border-emerald-500 ring-1 ring-emerald-500 bg-white" : isActive ? "border-emerald-200 bg-emerald-50/30 hover:border-emerald-300" : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50" }`}>
+      <button ref={buttonRef} onClick={() => setIsOpen(!isOpen)} className={`group flex h-8 w-full items-center justify-between rounded-full border px-3 transition-all duration-200 ${ isOpen ? "border-emerald-500 ring-1 ring-emerald-500 bg-white" : isActive ? "border-emerald-200 bg-emerald-50/30 hover:border-emerald-300" : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50" }`}>
         <div className="flex items-center gap-2 overflow-hidden">
           <span className="shrink-0 text-[10px] md:text-xs font-medium text-slate-500">{label}</span>
           <span className="h-3 w-px bg-slate-200"></span>
@@ -1425,7 +1457,18 @@ const SmartDropdown: React.FC<SmartDropdownProps> = ({ label, options, value, on
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 top-full z-50 mt-1.5 w-full min-w-[160px] md:min-w-[180px] origin-top-left animate-in fade-in zoom-in-95 duration-100 rounded-xl border border-slate-100 bg-white p-1 shadow-xl shadow-slate-200/50">
+        // Render as fixed positioned overlay to avoid clipping by parent containers
+        <div
+          ref={dropdownRef}
+          style={{
+            position: "fixed",
+            left: coords ? `${coords.left}px` : undefined,
+            top: coords ? `${coords.top}px` : undefined,
+            width: coords ? `${coords.width}px` : undefined,
+            zIndex: 9999,
+          }}
+          className="origin-top-left animate-in fade-in zoom-in-95 duration-100 rounded-xl border border-slate-100 bg-white p-1 shadow-xl shadow-slate-200/50"
+        >
           <div className="flex flex-col max-h-60 overflow-y-auto custom-scrollbar">
             {options.map((option) => (
               <button key={option.value} onClick={() => { onChange(option.value); setIsOpen(false); }} className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs md:text-sm transition-colors ${ value === option.value ? "bg-emerald-50 text-emerald-700 font-medium" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900" }`}>
