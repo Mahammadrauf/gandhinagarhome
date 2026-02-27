@@ -12,7 +12,9 @@ import {
   Camera,
   Shield,
   BellRing,
-  Trash2
+  Trash2,
+  Unlock,
+  Crown
 } from 'lucide-react';
 import { updateUserProfile } from '@/lib/api';
 
@@ -30,15 +32,12 @@ const MOCK_FAVORITES = [
   }
 ];
 
-const MOCK_NOTIFICATIONS = [
-  { id: 3, title: "Price Drop Alert", message: "A property in your wishlist dropped by 5%.", time: "2 days ago", read: true },
-];
-
 export default function BuyerProfile() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('profile');
   const [user, setUser] = useState<any>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [myProperties, setMyProperties] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Local form states
@@ -82,6 +81,13 @@ export default function BuyerProfile() {
       const imageUrl = URL.createObjectURL(file);
       setProfileImage(imageUrl);
     }
+  };
+
+  const handleMobileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const digitsOnly = value.replace(/\D/g, '');
+    const limitedToTen = digitsOnly.slice(0, 10);
+    setFormData({...formData, mobile: limitedToTen});
   };
 
   const handleSaveChanges = async () => {
@@ -190,12 +196,16 @@ export default function BuyerProfile() {
                 </span>
               </h2>
               <p className="text-sm text-gray-500 mt-1">{formData.email}</p>
+              <div className="mt-3 pt-3 border-t border-gray-100 w-full">
+                <span className="inline-block bg-green-50 text-[#006A58] text-xs px-3 py-1.5 rounded-full font-medium">Current Plan: Starter Pack</span>
+              </div>
             </div>
 
             <nav className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
               <SidebarItem id="profile" icon={User} label="My Profile" />
+              <SidebarItem id="unlocked" icon={Unlock} label="Unlocked Properties" />
+              <SidebarItem id="upgrade" icon={Crown} label="Upgrade Plan" />
               <SidebarItem id="favorites" icon={Heart} label="Favorites" count={MOCK_FAVORITES.length} />
-              <SidebarItem id="notifications" icon={Bell} label="Notifications" count={MOCK_NOTIFICATIONS.length} />
               <div className="my-2 border-t border-gray-100" />
               <SidebarItem id="settings" icon={Settings} label="Settings" />
               <button 
@@ -213,7 +223,7 @@ export default function BuyerProfile() {
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                   <h3 className="text-lg font-bold text-gray-800">Personal Information</h3>
-                  <button onClick={handleSaveChanges} className={`${BRAND_COLOR} hover:bg-green-50 px-4 py-2 rounded-lg text-sm font-semibold transition-colors`}>Save Changes</button>
+                  <button onClick={handleSaveChanges} disabled={formData.mobile.length !== 10} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${formData.mobile.length === 10 ? `${BRAND_COLOR} hover:bg-green-50` : 'text-gray-400 bg-gray-50 cursor-not-allowed'}`}>Save Changes</button>
                 </div>
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
@@ -257,8 +267,10 @@ export default function BuyerProfile() {
                     <input 
                       type="tel" 
                       value={formData.mobile} 
-                      onChange={(e) => setFormData({...formData, mobile: e.target.value})}
-                      className={`w-full p-3 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 ${BRAND_FOCUS_RING}`} 
+                      onChange={handleMobileChange}
+                      maxLength={10}
+                      placeholder="10 digits only"
+                      className={`w-full p-3 rounded-lg bg-gray-50 border ${formData.mobile.length === 10 ? 'border-gray-200' : formData.mobile.length > 0 ? 'border-yellow-300' : 'border-gray-200'} focus:outline-none focus:ring-2 ${BRAND_FOCUS_RING}`} 
                     />
                   </div>
                 </div>
@@ -291,25 +303,170 @@ export default function BuyerProfile() {
               </div>
             )}
 
-            {activeTab === 'notifications' && (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-6 border-b border-gray-100">
-                  <h3 className="text-lg font-bold text-gray-800">Notifications</h3>
-                </div>
-                <div>
-                  {MOCK_NOTIFICATIONS.map((notif) => (
-                    <div key={notif.id} className={`p-5 border-b border-gray-50 flex gap-4 hover:bg-gray-50 transition-colors ${!notif.read ? 'bg-green-50/50' : ''}`}>
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${!notif.read ? `${BRAND_BG} text-white` : 'bg-gray-100 text-gray-500'}`}>
-                        <Bell className="w-5 h-5" />
+            {activeTab === 'unlocked' && (
+              <div className="space-y-6">
+                <h3 className="text-xl font-bold text-gray-800">Unlocked Properties</h3>
+                {myProperties.length === 0 ? (
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="p-12 flex flex-col items-center justify-center text-center">
+                      <div className={`w-16 h-16 rounded-full ${BRAND_BG} flex items-center justify-center mb-4`}>
+                        <Unlock className="w-8 h-8 text-white" />
                       </div>
-                      <div className="flex-1">
-                        <h4 className={`text-sm font-semibold ${!notif.read ? 'text-gray-900' : 'text-gray-600'}`}>{notif.title}</h4>
-                        <p className="text-sm text-gray-500 mt-0.5">{notif.message}</p>
-                        <span className="text-xs text-gray-400 mt-2 block">{notif.time}</span>
-                      </div>
-                      {!notif.read && <div className="w-2 h-2 rounded-full bg-red-500 mt-2"></div>}
+                      <h3 className="text-xl font-bold text-gray-800 mb-2">No Unlocked Properties Yet</h3>
+                      <p className="text-gray-500 text-sm mb-6">Unlock owner details to connect directly.</p>
+                      <button 
+                        onClick={() => router.push('/buy')}
+                        className={`${BRAND_BG} text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition-opacity`}
+                      >
+                        Browse Properties
+                      </button>
                     </div>
-                  ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {myProperties.map((item: any) => (
+                      <div key={item.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all group">
+                        <div className="relative">
+                          <img src={item.image} alt={item.title} className="w-full h-48 object-cover" />
+                          <button className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md text-red-500 hover:bg-red-50">
+                            <Heart className="w-4 h-4 fill-current" />
+                          </button>
+                        </div>
+                        <div className="p-4">
+                          <h4 className="font-bold text-gray-800 truncate">{item.title}</h4>
+                          <p className="text-gray-500 text-sm mt-1 mb-3 flex items-center gap-1"><MapPin className="w-3 h-3" /> {item.location}</p>
+                          <div className="flex items-center justify-between">
+                            <span className={`font-bold ${BRAND_COLOR}`}>{item.price}</span>
+                            <button className={`text-xs border border-[#006A58] ${BRAND_COLOR} px-3 py-1.5 rounded-lg hover:bg-green-50 font-medium`}>View Details</button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'upgrade' && (
+              <div className="space-y-6">
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">Upgrade Your Plan</h3>
+                  <p className="text-gray-500">Unlock more properties and get priority support.</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Current Plan - Starter */}
+                  <div className="bg-[#e7fcf7] rounded-2xl shadow-xl shadow-[#0b6b53]/5 border-2 border-[#0b6b53] overflow-hidden hover:shadow-xl transition-all">
+                    <div className="p-6 border-b-2 border-[#0b6b53]/10">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="text-lg font-bold text-[#0b6b53]">Starter Pack</h4>
+                        <span className="bg-[#0b6b53] text-white text-xs px-2 py-1 rounded-full font-semibold">Current Plan</span>
+                      </div>
+                      <div className="mb-4">
+                        <span className="text-3xl font-bold text-[#0b6b53]">₹1,997</span>
+                      </div>
+                      <ul className="space-y-2">
+                        <li className="flex items-center gap-2 text-gray-700 text-sm">
+                          <span className="w-4 h-4 rounded-full bg-[#0b6b53] flex items-center justify-center flex-shrink-0">
+                            <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg>
+                          </span>
+                          Unlock 5 Properties
+                        </li>
+                        <li className="flex items-center gap-2 text-gray-700 text-sm">
+                          <span className="w-4 h-4 rounded-full bg-[#0b6b53] flex items-center justify-center flex-shrink-0">
+                            <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg>
+                          </span>
+                          Valid for 60 Days
+                        </li>
+                      </ul>
+                    </div>
+                    <div className="p-6">
+                      <button disabled className="w-full bg-gray-200 text-gray-600 py-2.5 rounded-lg font-semibold cursor-not-allowed">
+                        Active Plan
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Smart Plan - Blue */}
+                  <div className="bg-[#f4fbff] rounded-2xl shadow-xl shadow-[#0F7F9C]/10 border-2 border-[#0F7F9C]/30 overflow-hidden hover:border-[#0F7F9C] transition-all">
+                    <div className="p-6 border-b border-[#0F7F9C]/10">
+                      <h4 className="text-lg font-bold text-[#022F5A] mb-4">Smart Pack</h4>
+                      <div className="mb-4">
+                        <span className="text-3xl font-bold text-[#0F7F9C]">₹4,997</span>
+                      </div>
+                      <ul className="space-y-2">
+                        <li className="flex items-center gap-2 text-gray-700 text-sm">
+                          <span className="w-4 h-4 rounded-full bg-[#0F7F9C] flex items-center justify-center flex-shrink-0">
+                            <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg>
+                          </span>
+                          Unlock 15 Properties
+                        </li>
+                        <li className="flex items-center gap-2 text-gray-700 text-sm">
+                          <span className="w-4 h-4 rounded-full bg-[#0F7F9C] flex items-center justify-center flex-shrink-0">
+                            <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg>
+                          </span>
+                          Priority Support
+                        </li>
+                        <li className="flex items-center gap-2 text-gray-700 text-sm">
+                          <span className="w-4 h-4 rounded-full bg-[#0F7F9C] flex items-center justify-center flex-shrink-0">
+                            <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg>
+                          </span>
+                          Valid for 60 Days
+                        </li>
+                      </ul>
+                    </div>
+                    <div className="p-6">
+                      <button 
+                        onClick={() => router.push('/buy/subscription')}
+                        className="w-full bg-gradient-to-r from-[#0F7F9C] to-[#022F5A] text-white py-2.5 rounded-lg font-semibold hover:shadow-lg transition-all"
+                      >
+                        Upgrade to Smart Pack
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Investor Plan - Gold/Brown */}
+                  <div className="bg-gradient-to-b from-[#FDFBF7] to-[#fcf8f0] rounded-2xl shadow-2xl shadow-[#B59E78]/25 border-2 border-[#B59E78] ring-4 ring-[#B59E78]/10 overflow-hidden hover:shadow-2xl transition-all">
+                    <div className="p-6 border-b border-[#B59E78]/10">
+                      <h4 className="text-lg font-bold text-[#5C5042] mb-4">Investor Pack</h4>
+                      <div className="mb-4">
+                        <span className="text-3xl font-bold text-[#8C7A5B]">₹9,997</span>
+                      </div>
+                      <ul className="space-y-2">
+                        <li className="flex items-center gap-2 text-gray-700 text-sm">
+                          <span className="w-4 h-4 rounded-full bg-[#B59E78] flex items-center justify-center flex-shrink-0">
+                            <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg>
+                          </span>
+                          Unlock 40 Properties
+                        </li>
+                        <li className="flex items-center gap-2 text-gray-700 text-sm">
+                          <span className="w-4 h-4 rounded-full bg-[#B59E78] flex items-center justify-center flex-shrink-0">
+                            <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg>
+                          </span>
+                          Relationship Manager
+                        </li>
+                        <li className="flex items-center gap-2 text-gray-700 text-sm">
+                          <span className="w-4 h-4 rounded-full bg-[#B59E78] flex items-center justify-center flex-shrink-0">
+                            <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg>
+                          </span>
+                          Legal Assistance
+                        </li>
+                        <li className="flex items-center gap-2 text-gray-700 text-sm">
+                          <span className="w-4 h-4 rounded-full bg-[#B59E78] flex items-center justify-center flex-shrink-0">
+                            <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg>
+                          </span>
+                          Valid for 60 Days
+                        </li>
+                      </ul>
+                    </div>
+                    <div className="p-6">
+                      <button 
+                        onClick={() => router.push('/buy/subscription')}
+                        className="w-full bg-gradient-to-r from-[#B59E78] to-[#8C7A5B] text-white py-2.5 rounded-lg font-semibold hover:shadow-lg transition-all"
+                      >
+                        Upgrade to Investor Pack
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
