@@ -878,7 +878,7 @@ const handleEditMediaSubmit = () => {
                                 <input
                                   value={otp}
                                   onChange={(e) => setOtp(e.target.value)}
-                                  placeholder="Enter 4-digit OTP"
+                                  placeholder="Enter 6-digit OTP"
                                   className={inputNormal}
                                 />
                                 <button

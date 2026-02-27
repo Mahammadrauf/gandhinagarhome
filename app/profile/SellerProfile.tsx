@@ -292,7 +292,7 @@ export default function SellerProfile() {
                       <div className="flex-1 flex flex-col justify-between">
                         <div>
                           <div className="flex justify-between items-start">
-                            <h4 className="font-bold text-gray-800 text-lg">{property.beds} BHK {property.propertyType}</h4>
+                            <h4 className="font-bold text-gray-800 text-lg">{property.title} {property.beds} BHK {property.propertyType}</h4>
                             <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
                               Active
                             </span>
