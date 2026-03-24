@@ -14,7 +14,7 @@ const manrope = Manrope({
 });
 
 // === COLORS & BUTTON STYLES ===
-const BRAND_HEX = "#056F5E";
+const BRAND_HEX = "#044c43";
 const BRAND_GREEN = `bg-[${BRAND_HEX}]`;
 
 // Button Styles
@@ -136,12 +136,9 @@ const Hero = () => {
           {/* <div className="absolute inset-0 bg-[#056F5E]" /> */}
           {/* <div className="absolute inset-0 bg-gradient-to-tr from-black/40 via-transparent to-white/5 pointer-events-none" /> */}
           
-          {/* New hero.png background */}
-          <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: 'url("/images/hero.png")' }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-tr from-black/60 via-transparent to-black/20 pointer-events-none" />
+          {/* Plain dark teal green background */}
+          <div className="absolute inset-0 bg-[#044c43]" />
+          <div className="absolute inset-0 bg-gradient-to-tr from-black/20 via-transparent to-black/10 pointer-events-none" />
 
           {/* TEXT BLOCK */}
           <div className="absolute top-0 bottom-0 left-0 right-0 flex flex-col justify-start pt-6 sm:pt-8 md:pt-10 px-4 sm:px-6 md:px-24 z-10 text-white max-w-4xl">
