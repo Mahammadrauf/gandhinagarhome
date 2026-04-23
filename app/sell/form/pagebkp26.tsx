@@ -1,16 +1,77 @@
-// app/sell/page.tsx
+// app/sell/form/page.tsx
 "use client";
 
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+import { useEffect } from "react";
 import { Listbox, Transition } from "@headlessui/react";
-import React, { Fragment, useRef, useState, KeyboardEvent } from "react"; 
+import React, { Fragment, useRef, useState, KeyboardEvent } from "react";
+import { useRouter } from "next/navigation";
 import axios from 'axios';
 import API_URL from '@/app/config/config';
+import LocationPicker from "@/components/LocationPicker";
+import { fetchUserProfile } from '@/lib/api';
 
 type Step = 0 | 1 | 2 | 3;
 const stepTitles = ["Basic Information", "Specifications", "Location", "Media Upload"];
 
+// Utility functions for data formatting
 const validateEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
 const onlyDigitsOrSymbols = (v: string) => /^[0-9+\-\s()]*$/.test(v);
+
+const formatPrice = (price: string): string => {
+  const numPrice = parseFloat(price.replace(/,/g, ''));
+  if (isNaN(numPrice)) return price;
+
+  if (numPrice >= 10000000) {
+    const cr = (numPrice / 10000000).toFixed(2);
+    return `₹${parseFloat(cr)} Cr`;
+  } else if (numPrice >= 100000) {
+    const lac = (numPrice / 100000).toFixed(2);
+    return `₹${parseFloat(lac)} Lac`;
+  } else {
+    return `₹${numPrice.toLocaleString('en-IN')}`;
+  }
+};
+
+/// City and locality data
+const CITY_AREAS: Record<string, string[]> = {
+  Gandhinagar: ["Raysan", "Randesan", "Sargasan", "Kudasan", "Koba", "Sectors"],
+  Ahmedabad: ["Motera", "Chandkheda", "Zundal", "Adalaj", "Bhat", "Tapovan", "Vaishnodevi"],
+  "Gift City": ["Gift City"],
+};
+
+const priceToWords = (num: number): string => {
+  if (!num || isNaN(num)) return "";
+  const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
+  const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+  const format = (n: number, suffix: string) => {
+    if (n === 0) return "";
+    let str = n > 19 ? b[Math.floor(n / 10)] + " " + a[n % 10] : a[n];
+    return str + suffix;
+  };
+
+  let res = "";
+  res += format(Math.floor(num / 10000000), "Crore ");
+  res += format(Math.floor((num / 100000) % 100), "Lakh ");
+  res += format(Math.floor((num / 1000) % 100), "Thousand ");
+  res += format(Math.floor((num / 100) % 10), "Hundred ");
+
+  const lastTwo = num % 100;
+  if (num > 100 && lastTwo > 0) res += "and ";
+  res += format(lastTwo, "");
+
+  return "₹ " + res.trim();
+};
+
+const mapAgeToLabel = (age: string): string => {
+  return age; // Labels are already descriptive strings
+};
+
+const formatArea = (size: string, unit: string): string => {
+  return `${size} ${unit}`;
+};
 
 // Small inline chevron icon for dropdowns
 const DropdownChevron = () => (
@@ -34,17 +95,21 @@ const DropdownChevron = () => (
  * Updated Sell page
  */
 
-export default function SellPage() {
+function SellFormPageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const isEditMode = searchParams.get("mode") === "edit";
   const [step, setStep] = useState<Step>(0);
 
   // Basic Info
   const [firstName, setFirstName] = useState("");
-  const [middleName, setMiddleName] = useState(""); 
-  const [lastName, setLastName] = useState(""); 
+  const [middleName, setMiddleName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [mobile, setMobile] = useState("");
-  const [alternateNumber, setAlternateNumber] = useState(""); 
-  
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [mobileNumber, setMobileNumber] = useState("");
+  const [countryCode, setCountryCode] = useState("+91");
+
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
@@ -52,17 +117,22 @@ export default function SellPage() {
   const [isOtpVerified, setIsOtpVerified] = useState(false);
 
   // Specifications
-  const [title, setTitle] = useState(""); // property name
-  const [bedrooms, setBedrooms] = useState("2");
-  const [propertyType, setPropertyType] = useState("Apartment");
-  const [bathrooms, setBathrooms] = useState("2");
-  const [balcony, setBalcony] = useState("0");
-  const [parking, setParking] = useState("None");
-  // Age of property 1–25 and 25+
-  const [ageOfProperty, setAgeOfProperty] = useState("1");
-  const [furnishing, setFurnishing] = useState<"Unfurnished" | "Semi-furnished" | "Fully furnished">("Unfurnished");
-  const [availability, setAvailability] = useState<"Ready" | "After1Month">("Ready");
-  const [price, setPrice] = useState("");
+  const [title, setTitle] = useState(""); // Society / Project Name (Single Source)
+  const [bedrooms, setBedrooms] = useState("");
+
+  // UPDATED DEFAULT
+  const [propertyType, setPropertyType] = useState("");
+
+  const [bathrooms, setBathrooms] = useState("");
+  const [balcony, setBalcony] = useState("");
+  const [parking, setParking] = useState("");
+
+  // Age of property: Updated options
+  const [ageOfProperty, setAgeOfProperty] = useState("");
+  const [furnishing, setFurnishing] = useState<string>("");
+
+  // Asking Price: Default 0.00
+  const [price, setPrice] = useState("0.00");
   const [amenities, setAmenities] = useState<string[]>([]);
   const [currentAmenity, setCurrentAmenity] = useState("");
 
@@ -71,11 +141,14 @@ export default function SellPage() {
   const [propertySizeUnit, setPropertySizeUnit] = useState<"sq ft" | "sq m" | "sq yd">("sq ft");
 
   // Location
-  const [city, setCity] = useState("Gandhinagar");
+  const [city, setCity] = useState("");
   const [locality, setLocality] = useState("");
-  const [society, setSociety] = useState(""); 
-  const [unitNo, setUnitNo] = useState(""); 
+  const [address, setAddress] = useState(""); // NEW Address field
+  const [unitNo, setUnitNo] = useState("");
   const [pincode, setPincode] = useState("");
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
+  const [pickedDisplayAddress, setPickedDisplayAddress] = useState("");
 
   // Media
   const [photos, setPhotos] = useState<File[]>([]);
@@ -89,52 +162,185 @@ export default function SellPage() {
   const saleDeedRef = useRef<HTMLInputElement | null>(null);
   const brochureRef = useRef<HTMLInputElement | null>(null);
 
+  // Media metadata for edit mode (when File objects are not available)
+  const [existingPhotosCount, setExistingPhotosCount] = useState(0);
+  const [existingHasVideo, setExistingHasVideo] = useState(false);
+  const [existingHasSaleDeed, setExistingHasSaleDeed] = useState(false);
+  const [existingHasBrochure, setExistingHasBrochure] = useState(false);
+
   // UI
   const [triedContinue, setTriedContinue] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+  if (!isEditMode) return;
+
+  const stepParam = searchParams.get("step");
+  if (stepParam !== null) {
+    const s = Number(stepParam);
+    if (s >= 0 && s <= 3) {
+      setStep(s as Step);
+    }
+  }
+}, [isEditMode, searchParams]);
+
+useEffect(() => {
+  if (!isEditMode) return;
+
+  const saved = localStorage.getItem("pendingListing");
+  if (!saved) return;
+
+  const d = JSON.parse(saved);
+
+  setFirstName(d.firstName || "");
+  setMiddleName(d.middleName || "");
+  setLastName(d.lastName || "");
+  setEmail(d.email || "");
+  setWhatsappNumber(d.whatsappNumber || "");
+  setMobileNumber(d.mobileNumber || "");
+  setCountryCode(d.countryCode || "+91");
+
+  setTitle(d.title || "");
+  setBedrooms(d.bedrooms || "");
+  setPropertyType(d.propertyType || "");
+  setBathrooms(d.bathrooms || "");
+  setBalcony(d.balcony || "");
+  setParking(d.parking || "");
+  setAgeOfProperty(d.ageOfProperty || "");
+  setFurnishing(d.furnishing || "");
+  setPrice(d.price ? d.price.toString() : "0.00");
+  setAmenities(d.amenities || []);
+  setPropertySize(d.propertySize || "");
+  setPropertySizeUnit(d.propertySizeUnit || "sq ft");
+
+    setCity(d.city || "");
+    setLocality(d.locality || "");
+    setAddress(d.address || "");
+    setUnitNo(d.unitNo || "");
+    setPincode(d.pincode || "");
+
+    // Load media metadata in edit mode
+    setExistingPhotosCount(d.photosCount || 0);
+    setExistingHasVideo(d.hasVideo || false);
+    setExistingHasSaleDeed(d.hasSaleDeed || false);
+    setExistingHasBrochure(d.hasBrochure || false);
+  }, [isEditMode]);
+
+  // Auto-fetch user profile on component mount
+  useEffect(() => {
+    const savedUser = localStorage.getItem('gh_user');
+    console.log('Auto-fetch: User data from localStorage:', savedUser);
+    
+    if (!savedUser) {
+      console.log('Auto-fetch: No user data found in localStorage, skipping profile fetch');
+      return;
+    }
+
+    try {
+      const parsedUser = JSON.parse(savedUser);
+      console.log('Auto-fetch: Parsed user data:', parsedUser);
+      
+      if (parsedUser.isLoggedIn === true && (parsedUser.role === 'buyer' || parsedUser.role === 'seller')) {
+        // Split user name into parts
+        const nameParts = parsedUser.name ? parsedUser.name.trim().split(' ') : [];
+        const firstName = nameParts[0] || parsedUser.firstName || '';
+        const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : parsedUser.lastName || '';
+        const middleName = nameParts.length > 2 ? nameParts.slice(1, -1).join(' ') : '';
+
+        console.log('Auto-fetch: Name parts:', { firstName, middleName, lastName, originalName: parsedUser.name });
+
+        // Only populate if fields are empty (don't override existing data)
+        setFirstName(prev => {
+          console.log('Auto-fetch: Setting firstName - current:', prev, 'new:', firstName);
+          return prev || firstName;
+        });
+        setMiddleName(prev => {
+          console.log('Auto-fetch: Setting middleName - current:', prev, 'new:', middleName);
+          return prev || middleName;
+        });
+        setLastName(prev => {
+          console.log('Auto-fetch: Setting lastName - current:', prev, 'new:', lastName);
+          return prev || lastName;
+        });
+        setEmail(prev => {
+          console.log('Auto-fetch: Setting email - current:', prev, 'new:', parsedUser.email);
+          return prev || parsedUser.email || '';
+        });
+        setWhatsappNumber(prev => {
+          console.log('Auto-fetch: Setting whatsappNumber - current:', prev, 'new:', parsedUser.mobile);
+          return prev || parsedUser.mobile || '';
+        });
+        setMobileNumber(prev => {
+          console.log('Auto-fetch: Setting mobileNumber - current:', prev, 'new:', parsedUser.mobile);
+          return prev || parsedUser.mobile || '';
+        });
+        
+        console.log('User profile loaded and form populated:', parsedUser);
+      } else {
+        console.log('Auto-fetch: User not logged in or invalid role');
+      }
+    } catch (error) {
+      console.error('Auto-fetch: Error parsing user data:', error);
+    }
+  }, []);
+
   // validation
   // Step 1 Validation
-  const isFirstNameValid = firstName.trim().length >= 2; 
-  const isLastNameValid = lastName.trim().length >= 2; 
+  const isFirstNameValid = firstName.trim().length >= 2;
+  const isLastNameValid = lastName.trim().length >= 2;
   const isEmailValid = validateEmail(email);
-  const isMobileValid = mobile.trim().length >= 10 && onlyDigitsOrSymbols(mobile); 
-  const canContinueStep1 = isFirstNameValid && isLastNameValid && isEmailValid && isMobileValid && isOtpVerified;
+  const isWhatsappValid = whatsappNumber.length === 10;
+  const canContinueStep1 = isFirstNameValid && isLastNameValid && isEmailValid && (isEditMode ? true : (isWhatsappValid && isOtpVerified));
 
   // Step 2 Validation
   const isTitleValid = title.trim().length >= 3;
   const isBedroomsValid = Number(bedrooms.replace("+", "")) >= 1;
   const isBathroomsValid = Number(bathrooms.replace("+", "")) >= 1;
-  const isPriceValid = price.trim().length > 0;
+  const isPriceValid = parseFloat(price.replace(/,/g, '')) > 0;
   const canContinueStep2 = isTitleValid && isBedroomsValid && isBathroomsValid && isPriceValid;
 
   // Step 3 Validation
   const isCityValid = city.trim().length > 2;
   const isLocalityValid = locality.trim().length > 2;
-  const isPincodeValid = pincode.trim().length >= 6 && onlyDigitsOrSymbols(pincode);
-  const isSocietyValid = society.trim().length >= 3; 
-  const isUnitNoValid = unitNo.trim().length > 0; 
-  const canContinueStep3 = isCityValid && isLocalityValid && isPincodeValid && isSocietyValid && isUnitNoValid;
-  
+  const isPincodeValid = pincode.length === 6;
+  const isSocietyValid = title.trim().length >= 3;
+  const isUnitNoValid = unitNo.trim().length > 0;
+  const isAddressValid = address.trim().length > 5;
+  const canContinueStep3 = isCityValid && isLocalityValid && isPincodeValid && isSocietyValid && isUnitNoValid && isAddressValid;
 
   // --- Helper arrays for ALL dropdowns ---
-  const propertyTypeOptions = ["Apartment", "Villa", "Bungalow", "Plot", "Other"];
+  const propertyTypeOptions = ["Apartment", "Tenement", "Bungalow", "Penthouse", "Plot", "Shop", "Office"];
   const bedroomOptions = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10+"];
   const balconyOptions = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10+"];
   const bathroomOptions = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10+"];
   const parkingOptions = ["None", "1", "2", "3+"];
 
-  // Age of property: 1–25 and 25+
+  // Age of property: Updated options
   const ageOfPropertyOptions = [
-    ...Array.from({ length: 25 }, (_, i) => `${i + 1}`),
-    "25+",
+    "New Property",
+    "1–3 Years Old",
+    "3–6 Years Old",
+    "6–9 Years Old",
+    "9+ Years Old"
   ];
 
   const furnishingOptions = ["Unfurnished", "Semi-furnished", "Fully furnished"];
-  const availabilityOptions = ["Ready", "After1Month"];
+  const cityOptions = ["Gandhinagar", "Gift City", "Ahmedabad"];
   const amenitySuggestions = ["Lift", "Security", "Garden", "Gym", "Swimming Pool", "Clubhouse", "Parking"];
-
   const propertySizeUnitOptions: Array<"sq ft" | "sq m" | "sq yd"> = ["sq ft", "sq m", "sq yd"];
+
+  const handlePriceInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, ""); // Remove non-digits
+    if (value === "") {
+      setPrice("");
+    } else {
+      const numValue = parseInt(value, 10);
+      // Limit price to 99,99,99,999 (one less than 100 Crore)
+      if (numValue <= 999999999) {
+        setPrice(numValue.toLocaleString('en-IN'));
+      }
+    }
+  };
 
   const canNavigateTo = (target: number) => {
     if (target === 0) return true;
@@ -144,25 +350,25 @@ export default function SellPage() {
     return false;
   };
 
-  // --- UPDATED: Added scroll to top ---
   const goTo = (s: Step) => {
     if (!canNavigateTo(s)) {
       setTriedContinue(true);
       return;
     }
     setStep(s);
-    setTriedContinue(false); 
-    window.scrollTo({ top: 0, behavior: 'auto' }); // Scroll to top
+    setTriedContinue(false);
+    window.scrollTo({ top: 0, behavior: 'auto' });
   };
 
   const next = () => setStep((prev) => ((prev + 1) % 4) as Step);
   const prev = () => setStep((prev) => (prev - 1 >= 0 ? (prev - 1) : 0) as Step);
 
-  // Save draft (placeholder)
+  // Save draft
   const handleSaveDraft = () => {
     setSaving(true);
+    const numericPrice = parseFloat(price.replace(/,/g, ''));
     const payload = {
-      firstName, middleName, lastName, email, mobile, alternateNumber,
+      firstName, middleName, lastName, email, whatsappNumber, mobileNumber, countryCode,
       title,
       bedrooms,
       propertyType,
@@ -171,12 +377,11 @@ export default function SellPage() {
       parking,
       ageOfProperty,
       furnishing,
-      availability,
-      price,
+      price: numericPrice,
       amenities,
       propertySize,
       propertySizeUnit,
-      city, locality, society, unitNo, pincode,
+      city, locality, address, unitNo, pincode,
       photosCount: photos.length,
       hasVideo: !!video,
       hasSaleDeed: !!saleDeed,
@@ -191,77 +396,161 @@ export default function SellPage() {
     }, 700);
   };
 
-  // Submit (stub)
+  const buildPayload = () => {
+  const numericPrice = parseFloat(price.replace(/,/g, ""));
+  return {
+    firstName, middleName, lastName, email, whatsappNumber, mobileNumber, countryCode,
+    title, bedrooms, propertyType, bathrooms, balcony, parking,
+    ageOfProperty, furnishing,
+    price: numericPrice,
+    amenities,
+    propertySize,
+    propertySizeUnit,
+    city, locality, address, unitNo, pincode,
+    photosCount: isEditMode && photos.length === 0 ? existingPhotosCount : photos.length,
+    hasVideo: isEditMode && !video ? existingHasVideo : !!video,
+    hasSaleDeed: isEditMode && !saleDeed ? existingHasSaleDeed : !!saleDeed,
+    hasBrochure: isEditMode && !brochure ? existingHasBrochure : !!brochure,
+  };
+};
+
+const handleEditMediaSubmit = () => {
+  localStorage.setItem(
+    "pendingListing",
+    JSON.stringify({
+      ...buildPayload(),
+      submittedAt: new Date().toISOString(),
+    })
+  );
+
+  router.replace("/sell/confirmation");
+};
+
+
+
+  // Submit
   const handleSubmit = async () => {
-    if (!canContinueStep1) {
-      setStep(0);
-      setTriedContinue(true);
-      alert("Please complete Basic Information and verify your mobile number.");
-      return;
-    }
-    if (!canContinueStep2) {
-      setStep(1);
-      setTriedContinue(true);
-      alert("Please complete Specifications.");
-      return;
-    }
-    if (!canContinueStep3) {
-      setStep(2);
-      setTriedContinue(true);
-      alert("Please complete Location details (Project, Unit, Locality, City, Pincode).");
-      return;
-    }
+  if (!canContinueStep1) {
+    setStep(0);
+    setTriedContinue(true);
+    alert("Please complete Basic Information and verify your WhatsApp number.");
+    return;
+  }
+  if (!canContinueStep2) {
+    setStep(1);
+    setTriedContinue(true);
+    alert("Please complete Specifications.");
+    return;
+  }
+  if (!canContinueStep3) {
+    setStep(2);
+    setTriedContinue(true);
+    alert("Please complete Location details.");
+    return;
+  }
 
+  try {
+    setSaving(true);
+
+    // Create FormData for file uploads
     const formData = new FormData();
-  formData.append('firstName', firstName ?? '');
-  formData.append('middleName', middleName ?? '');
-  formData.append('lastName', lastName ?? '');
-  formData.append('email', email ?? '');
-  formData.append('mobile', mobile ?? '');
-  formData.append('alternateNumber', alternateNumber ?? '');
-  formData.append('title', title ?? '');
-  formData.append('bedrooms', bedrooms ?? '');
-  formData.append('propertyType', propertyType ?? '');
-  formData.append('bathrooms', bathrooms ?? '');
-  formData.append('balcony', balcony ?? '');
-  formData.append('parking', parking ?? '');
-  formData.append('ageOfProperty', ageOfProperty ?? '');
-  formData.append('furnishing', furnishing ?? '');
-  formData.append('availability', availability ?? '');
-  formData.append('price', price ?? '');
-  formData.append('amenities', JSON.stringify(amenities ?? []));
-  formData.append('propertySize', propertySize ?? '');
-  formData.append('propertySizeUnit', propertySizeUnit ?? '');
-  formData.append('city', city ?? '');
-  formData.append('locality', locality ?? '');
-  formData.append('society', society ?? '');
-  formData.append('unitNo', unitNo ?? '');
-  formData.append('pincode', pincode ?? '');
 
-  // Handle images (assume photos is an array of File objects)
-  photos.forEach((photo, idx) => {
-    formData.append('images', photo); // field name 'images' for backend
-  });
+    // Add basic form fields
+    formData.append('firstName', firstName);
+    formData.append('middleName', middleName);
+    formData.append('lastName', lastName);
+    formData.append('email', email);
+    formData.append('whatsappNumber', whatsappNumber);
+    formData.append('mobileNumber', mobileNumber);
+    formData.append('countryCode', countryCode);
+    formData.append('title', title);
+    formData.append('bedrooms', bedrooms);
+    formData.append('propertyType', propertyType);
+    formData.append('bathrooms', bathrooms);
+    formData.append('balcony', balcony);
+    formData.append('parking', parking);
+    formData.append('ageOfProperty', ageOfProperty);
+    formData.append('furnishing', furnishing);
+    formData.append('availability', 'Immediate'); // Default availability
+    
+    const numericPrice = parseFloat(price.replace(/,/g, ''));
+    formData.append('price', numericPrice.toString());
+    
+    formData.append('amenities', JSON.stringify(amenities));
+    formData.append('propertySize', propertySize);
+    formData.append('propertySizeUnit', propertySizeUnit);
+    formData.append('city', city);
+    formData.append('locality', locality);
+    formData.append('society', title); // Using title as society name
+    formData.append('unitNo', unitNo);
+    formData.append('pincode', pincode);
 
-  if (video) formData.append('video', video); // file object
-  if (saleDeed) formData.append('documents', saleDeed); // file object
-  if (brochure) formData.append('documents', brochure); // file object
-
-    try {
-    const res = await axios.post(`${API_URL}/sell`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
-    if (res.data.success) {
-      alert('Listing submitted! We will contact you.');
-    } else {
-      alert('Submission failed: ' + (res.data.message || 'Server error'));
+    // Add files if they exist
+    if (photos.length > 0) {
+      photos.forEach((photo) => {
+        formData.append('images', photo);
+      });
     }
-  } catch (err) {
-    alert('Network error — try again.');
+
+    if (video) {
+      formData.append('video', video);
+    }
+
+    // Combine sale deed and brochure into documents array
+    const documents = [];
+    if (saleDeed) documents.push(saleDeed);
+    if (brochure) documents.push(brochure);
+    
+    if (documents.length > 0) {
+      documents.forEach((doc) => {
+        formData.append('documents', doc);
+      });
+    }
+
+    // Make API call
+    const response = await axios.post(`${API_URL}/sell`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    if (response.data.success) {
+      // Store success response
+      localStorage.setItem("pendingListing", JSON.stringify({
+        ...buildPayload(),
+        submittedAt: new Date().toISOString(),
+        apiResponse: response.data.data
+      }));
+
+      alert("Sell request submitted successfully!");
+    } else {
+      // Store data even on failure
+      localStorage.setItem("pendingListing", JSON.stringify({
+        ...buildPayload(),
+        submittedAt: new Date().toISOString(),
+      }));
+      alert("There was an issue submitting, but your data is saved. Please proceed to review.");
+    }
+
+    router.push("/sell/confirmation");
+
+  } catch (error: any) {
+    console.error("Sell API error:", error);
+    const errorMessage = error.response?.data?.message || error.message || "Error creating sell request";
+    // Store data even on error
+    localStorage.setItem("pendingListing", JSON.stringify({
+      ...buildPayload(),
+      submittedAt: new Date().toISOString(),
+    }));
+    alert(`There was an issue submitting: ${errorMessage}. Your data is saved, please proceed to review.`);
+    router.push("/sell/confirmation");
+  } finally {
+    setSaving(false);
   }
 };
 
-  // Files
+
+  // Files handlers
   const onAddPhotos = (files: FileList | null) => {
     if (!files) return;
     const maxRemaining = 9 - photos.length;
@@ -287,71 +576,113 @@ export default function SellPage() {
   const removeSaleDeed = () => setSaleDeed(null);
   const removeBrochure = () => setBrochure(null);
 
-  // --- UPDATED: Added scroll to top ---
   const onContinueFromStep1 = () => {
-    setTriedContinue(true); 
+    setTriedContinue(true);
     if (!canContinueStep1) {
-      if (!isOtpVerified) {
-        alert("Please verify your mobile number to continue.");
+      if (!isEditMode && !isOtpVerified) {
+        alert("Please verify your WhatsApp number to continue.");
       }
       return;
     }
+
+    if (isEditMode) {
+      localStorage.setItem("pendingListing", JSON.stringify(buildPayload()));
+      router.push("/sell/confirmation");
+      return;
+    }
+
     setStep(1);
-    setTriedContinue(false); 
-    window.scrollTo({ top: 0, behavior: 'auto' }); // Scroll to top
+    setTriedContinue(false);
+    window.scrollTo({ top: 0, behavior: 'auto' });
   };
 
-  // --- UPDATED: Added scroll to top ---
   const onContinueFromStep2 = () => {
-    if (!canContinueStep2) {
-      setTriedContinue(true); 
-      return;
-    }
-    setStep(2);
-    setTriedContinue(false); 
-    window.scrollTo({ top: 0, behavior: 'auto' }); // Scroll to top
-  };
+  if (!canContinueStep2) {
+    setTriedContinue(true);
+    return;
+  }
 
-  // --- UPDATED: Added scroll to top ---
+  if (isEditMode) {
+    localStorage.setItem("pendingListing", JSON.stringify(buildPayload()));
+    router.push("/sell/confirmation");
+    return;
+  }
+
+  setStep(2);
+};
+
+
   const onContinueFromStep3 = () => {
-    if (!canContinueStep3) {
-      setTriedContinue(true); 
-      return;
-    }
-    setStep(3);
-    setTriedContinue(false); 
-    window.scrollTo({ top: 0, behavior: 'auto' }); // Scroll to top
-  };
+  if (!canContinueStep3) {
+    setTriedContinue(true);
+    return;
+  }
+
+  if (isEditMode) {
+    localStorage.setItem("pendingListing", JSON.stringify(buildPayload()));
+    router.push("/sell/confirmation");
+    return;
+  }
+
+  setStep(3);
+};
+
 
   // --- OTP Functions ---
   const handleSendOtp = async () => {
     setTriedContinue(true);
-    if (!isMobileValid) return;
+    if (!isWhatsappValid) return;
 
     setIsSendingOtp(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log("Sending OTP to", mobile);
-    
-    setIsSendingOtp(false);
-    setOtpSent(true);
-    alert("OTP Sent to your mobile number (use 1234 to verify)");
+    try {
+      const response = await axios.post(`${API_URL}/sell/send-otp`, {
+        mobile: whatsappNumber
+      });
+
+      if (response.data.success) {
+        setOtpSent(true);
+        const otpForDev = response.data.data?.otp;
+        if (otpForDev) {
+          alert(`OTP Sent to your Mobile number! Development OTP: ${otpForDev}`);
+        } else {
+          alert("OTP Sent to your Mobile number!");
+        }
+      } else {
+        alert(response.data.message || "Failed to send OTP. Please try again.");
+      }
+    } catch (error: any) {
+      console.error("Send OTP error:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Failed to send OTP";
+      alert(errorMessage);
+    } finally {
+      setIsSendingOtp(false);
+    }
   };
 
   const handleVerifyOtp = async () => {
     setIsVerifying(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log("Verifying OTP", otp);
+    try {
+      const response = await axios.post(`${API_URL}/sell/verify-otp`, {
+        mobile: whatsappNumber,
+        otp: otp,
+        rememberMe: false
+      });
 
-    if (otp === "1234") { // Placeholder OTP
+      if (response.data.success) {
+        setIsOtpVerified(true);
+        alert("Mobile number verified successfully!");
+      } else {
+        alert(response.data.message || "Invalid OTP. Please try again.");
+      }
+    } catch (error: any) {
+      console.error("Verify OTP error:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Failed to verify OTP";
+      alert(errorMessage);
+    } finally {
       setIsVerifying(false);
-      setIsOtpVerified(true);
-      alert("Mobile number verified successfully!");
-    } else {
-      setIsVerifying(false);
-      alert("Invalid OTP. Please try again.");
     }
   };
-  
+
   // --- Amenities Functions ---
   const addAmenity = (amenityToAdd: string) => {
     const trimmed = amenityToAdd.trim();
@@ -365,7 +696,7 @@ export default function SellPage() {
   };
   const handleAmenityKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      e.preventDefault(); 
+      e.preventDefault();
       addAmenity(currentAmenity);
     }
   };
@@ -374,7 +705,7 @@ export default function SellPage() {
   // Reusable classes
   const inputBase = "w-full h-12 rounded-xl px-4 border outline-none shadow-sm";
   const inputNormal = `${inputBase} border-gray-100 bg-white`;
-  const selectNormal = `${inputNormal} appearance-none bg-no-repeat pr-10 text-left`; // background arrow removed; we show SVG chevron
+  const selectNormal = `${inputNormal} appearance-none bg-no-repeat pr-10 text-left`;
   const inputError = `${inputBase} border-red-200 bg-red-50`;
   const btnPrimary = "inline-flex items-center justify-center h-12 px-6 rounded-full bg-[#0b6b53] text-white font-semibold transition transform hover:scale-[1.02]";
   const btnSecondary = "inline-flex items-center justify-center h-12 px-5 rounded-lg border border-gray-200 bg-white text-gray-700 transition hover:shadow-sm";
@@ -429,7 +760,7 @@ export default function SellPage() {
           {/* Main content */}
           <main className="lg:col-span-9">
             <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-              
+
               {/* --- STEP 0: BASIC INFO --- */}
               {step === 0 && (
                 <div className="space-y-6">
@@ -438,12 +769,12 @@ export default function SellPage() {
                     <h3 className="text-lg font-semibold">Step 1: Basic Information</h3>
                     <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2l7 3v5c0 5-3 9-7 11-4-2-7-6-7-11V5l7-3z" stroke="#6b7280" strokeWidth="1.5" fill="none" />
+                        <path d="M10 3L8 8l-5 2 5 2 2 5 2-5 5-2-5-2zM14 14l-2 5-2-5-5-2 5-2 2-5 2 5 5 2z"></path>
                       </svg>
                       <span>Privacy protected</span>
                     </div>
                   </div>
-                  
+
                   {/* Card 1: Name */}
                   <div className={`${cardWrapper} grid grid-cols-1 lg:grid-cols-3 gap-6`}>
                     <div>
@@ -491,10 +822,10 @@ export default function SellPage() {
                         {triedContinue && !isEmailValid && <div className="text-xs text-red-600 mt-2">Enter a valid email address.</div>}
                       </div>
                       <div>
-                        <label className={fieldLabel}>Whatsapp Number</label>
+                        <label className={fieldLabel}>WhatsApp Number</label>
                         <input
-                          value={alternateNumber}
-                          onChange={(e) => setAlternateNumber(e.target.value)}
+                          value={mobileNumber}
+                          onChange={(e) => setMobileNumber(e.target.value)}
                           placeholder="Optional"
                           className={inputNormal}
                         />
@@ -502,57 +833,67 @@ export default function SellPage() {
                     </div>
 
                     {/* OTP Section */}
-                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className={fieldLabel}>Mobile Number <span className="text-[#0b6b53]">*</span></label>
-                          <div className="flex gap-2">
-                            <input
-                              value={mobile}
-                              onChange={(e) => setMobile(e.target.value)}
-                              placeholder="+91 9XXXXXXXXX"
-                              className={`${triedContinue && !isMobileValid ? inputError : inputNormal}`}
-                              disabled={otpSent} 
-                            />
-                            <button
-                              onClick={handleSendOtp}
-                              disabled={!isMobileValid || otpSent || isSendingOtp}
-                              className={`h-12 px-4 rounded-lg font-semibold text-sm ${(!isMobileValid || otpSent) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-primary text-white hover:bg-primary-dark'}`}
-                            >
-                              {isSendingOtp ? "Sending..." : (otpSent ? "Sent" : "Send OTP")}
-                            </button>
-                          </div>
-                          {triedContinue && !isMobileValid && <div className="text-xs text-red-600 mt-2">Enter a valid 10-digit number.</div>}
-                        </div>
-
-                        {otpSent && !isOtpVerified && (
+                    {!isEditMode && (
+                      <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <label className={fieldLabel}>Enter OTP <span className="text-[#0b6b53]">*</span></label>
+                            <label className={fieldLabel}>Mobile Number <span className="text-[#0b6b53]">*</span></label>
                             <div className="flex gap-2">
+                              <div className="flex items-center justify-center h-12 px-4 rounded-xl border border-gray-100 bg-gray-100 text-gray-700 font-semibold">{countryCode}</div>
                               <input
-                                value={otp}
-                                onChange={(e) => setOtp(e.target.value)}
-                                placeholder="Enter 6-digit OTP"
-                                className={inputNormal}
+                                value={whatsappNumber}
+                                onChange={(e) => {
+                                  const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                  setWhatsappNumber(value);
+                                }}
+                                placeholder="9XXXXXXXXX"
+                                className={`${triedContinue && !isWhatsappValid ? inputError : inputNormal} flex-1`}
+                                disabled={otpSent || isEditMode}
+                                maxLength={10}
                               />
                               <button
-                                onClick={handleVerifyOtp}
-                                disabled={isVerifying || otp.length < 4}
-                                className={`h-12 px-4 rounded-lg font-semibold text-sm ${isVerifying || otp.length < 4 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
+                                onClick={handleSendOtp}
+                                disabled={!isWhatsappValid || otpSent || isSendingOtp}
+                                className={`h-12 px-4 rounded-lg font-semibold text-sm ${(!isWhatsappValid || otpSent) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-[#0b6b53] text-white hover:bg-[#0b6b53]'}`}
                               >
-                                {isVerifying ? "Verifying..." : "Verify"}
+                                {isSendingOtp ? "Sending..." : (otpSent ? "Sent" : "Send OTP")}
                               </button>
                             </div>
+
+                           
+  
+                            {triedContinue && !isWhatsappValid && <div className="text-xs text-red-600 mt-2">Enter a valid 10-digit number.</div>}
                           </div>
-                        )}
-                        
-                        {isOtpVerified && (
-                           <div className="flex items-center justify-center h-12 bg-green-100 text-green-700 font-semibold rounded-lg">
-                             ✓ Mobile Verified
-                           </div>
-                        )}
+
+                          {otpSent && !isOtpVerified && (
+                            <div>
+                              <label className={fieldLabel}>Enter OTP <span className="text-[#0b6b53]">*</span></label>
+                              <div className="flex gap-2">
+                                <input
+                                  value={otp}
+                                  onChange={(e) => setOtp(e.target.value)}
+                                  placeholder="Enter 4-digit OTP"
+                                  className={inputNormal}
+                                />
+                                <button
+                                  onClick={handleVerifyOtp}
+                                  disabled={isVerifying || otp.length < 4}
+                                  className={`h-12 px-4 rounded-lg font-semibold text-sm ${isVerifying || otp.length < 4 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
+                                >
+                                  {isVerifying ? "Verifying..." : "Verify"}
+                                </button>
+                              </div>
+                            </div>
+                          )}
+
+                          {isOtpVerified && (
+                             <div className="flex items-center justify-center h-12 bg-green-100 text-green-700 font-semibold rounded-lg">
+                               ✓ Mobile Verified
+                             </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
 
                   <p className="text-sm text-gray-500">Your contact is partially visible to buyers. Full details require buyer subscription.</p>
@@ -563,19 +904,11 @@ export default function SellPage() {
                       className={canContinueStep1 ? btnPrimary : btnDisabled}
                       disabled={!canContinueStep1}
                     >
-                      Continue to Specifications
+                      {isEditMode ? "Save Changes" : "Continue to Specifications"}
                     </button>
-                    
-                    <div className="flex items-center gap-2 text-sm text-gray-700 font-medium">
-                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                         <path d="M10 3L8 8l-5 2 5 2 2 5 2-5 5-2-5-2zM14 14l-2 5-2-5-5-2 5-2 2-5 2 5 5 2z"></path>
-                       </svg>
-                      Well-detailed listings rank higher
-                    </div>
                   </div>
                 </div>
               )}
-              {/* --- END OF STEP 0 BLOCK --- */}
 
 
               {/* --- STEP 1: SPECIFICATIONS --- */}
@@ -603,9 +936,9 @@ export default function SellPage() {
                   {/* Row 1: Property Name / Type */}
                   <div className={cardWrapper + " grid grid-cols-1 md:grid-cols-2 gap-6"}>
                     <div>
-                      <label className={fieldLabel}>Property Name (Society / Project) <span className="text-[#0b6b53]">*</span></label>
+                      <label className={fieldLabel}>Society / Project Name <span className="text-[#0b6b53]">*</span></label>
                       <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g., Shilp Residency" className={`${triedContinue && !isTitleValid ? inputError : inputNormal}`} />
-                      {triedContinue && !isTitleValid && <div className="text-xs text-red-600 mt-2">Please enter property name.</div>}
+                      {triedContinue && !isTitleValid && <div className="text-xs text-red-600 mt-2">Please enter society / project name.</div>}
                     </div>
 
                     <div>
@@ -613,8 +946,9 @@ export default function SellPage() {
                       <Listbox value={propertyType} onChange={setPropertyType}>
                         <div className="relative">
                           <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
-                            <span className="block truncate">{propertyType}</span>
-                            <DropdownChevron />
+<span className={`block truncate ${!propertyType ? 'text-gray-400' : 'text-black'}`}>
+  {propertyType || "Select property type"}
+</span>                            <DropdownChevron />
                           </Listbox.Button>
                           <Transition
                             as={Fragment}
@@ -653,14 +987,14 @@ export default function SellPage() {
 
                   {/* Row 2: Bedrooms / Balcony / Bathrooms */}
                   <div className={cardWrapper + " grid grid-cols-1 md:grid-cols-3 gap-6"}>
-                    {/* --- BEDROOMS --- */}
                     <div>
                       <label className={fieldLabel}>Bedrooms <span className="text-[#0b6b53]">*</span></label>
-                       <Listbox value={bedrooms} onChange={setBedrooms}>
+                        <Listbox value={bedrooms} onChange={setBedrooms}>
                         <div className="relative">
                           <Listbox.Button className={`${selectNormal} ${triedContinue && !isBedroomsValid ? 'border-red-200' : 'border-gray-100'} flex items-center justify-between`}>
-                            <span className="block truncate">{bedrooms}</span>
-                            <DropdownChevron />
+<span className={`block truncate ${!bedrooms ? 'text-gray-400' : 'text-black'}`}>
+  {bedrooms || "Select bedrooms"}
+</span>                            <DropdownChevron />
                           </Listbox.Button>
                           <Transition
                             as={Fragment}
@@ -697,14 +1031,14 @@ export default function SellPage() {
                       {triedContinue && !isBedroomsValid && <div className="text-xs text-red-600 mt-2">Choose bedrooms.</div>}
                     </div>
 
-                    {/* --- BALCONY --- */}
                     <div>
                       <label className={fieldLabel}>Balcony</label>
                       <Listbox value={balcony} onChange={setBalcony}>
                         <div className="relative">
                           <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
-                            <span className="block truncate">{balcony}</span>
-                            <DropdownChevron />
+<span className={`block truncate ${!balcony ? 'text-gray-400' : 'text-black'}`}>
+  {balcony || "Select balcony"}
+</span>                            <DropdownChevron />
                           </Listbox.Button>
                           <Transition
                             as={Fragment}
@@ -740,14 +1074,14 @@ export default function SellPage() {
                       </Listbox>
                     </div>
 
-                    {/* --- BATHROOMS --- */}
                     <div>
                       <label className={fieldLabel}>Bathrooms <span className="text-[#0b6b53]">*</span></label>
                       <Listbox value={bathrooms} onChange={setBathrooms}>
                         <div className="relative">
                           <Listbox.Button className={`${selectNormal} ${triedContinue && !isBathroomsValid ? 'border-red-200' : 'border-gray-100'} flex items-center justify-between`}>
-                            <span className="block truncate">{bathrooms}</span>
-                            <DropdownChevron />
+<span className={`block truncate ${!bathrooms ? 'text-gray-400' : 'text-black'}`}>
+  {bathrooms || "Select bathrooms"}
+</span>                            <DropdownChevron />
                           </Listbox.Button>
                           <Transition
                             as={Fragment}
@@ -781,20 +1115,20 @@ export default function SellPage() {
                           </Transition>
                         </div>
                       </Listbox>
-                       {triedContinue && !isBathroomsValid && <div className="text-xs text-red-600 mt-2">Required</div>}
+                        {triedContinue && !isBathroomsValid && <div className="text-xs text-red-600 mt-2">Required</div>}
                     </div>
                   </div>
 
                   {/* Row 3: Parking / Age / Furnishing */}
                   <div className={cardWrapper + " grid grid-cols-1 md:grid-cols-3 gap-6"}>
-                    {/* --- PARKING --- */}
                     <div>
                       <label className={fieldLabel}>Parking</label>
                       <Listbox value={parking} onChange={setParking}>
                         <div className="relative">
                           <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
-                            <span className="block truncate">{parking}</span>
-                            <DropdownChevron />
+<span className={`block truncate ${!parking ? 'text-gray-400' : 'text-black'}`}>
+  {parking || "Select parking"}
+</span>                            <DropdownChevron />
                           </Listbox.Button>
                           <Transition
                             as={Fragment}
@@ -830,14 +1164,14 @@ export default function SellPage() {
                       </Listbox>
                     </div>
 
-                    {/* --- AGE OF PROPERTY --- */}
                     <div>
-                      <label className={fieldLabel}>Age of Property (years)</label>
+                      <label className={fieldLabel}>Property Age</label>
                       <Listbox value={ageOfProperty} onChange={setAgeOfProperty}>
                         <div className="relative">
                           <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
-                            <span className="block truncate">{ageOfProperty}</span>
-                            <DropdownChevron />
+<span className={`block truncate ${!ageOfProperty ? 'text-gray-400' : 'text-black'}`}>
+  {ageOfProperty || "Select age of property"}
+</span>                            <DropdownChevron />
                           </Listbox.Button>
                           <Transition
                             as={Fragment}
@@ -873,14 +1207,14 @@ export default function SellPage() {
                       </Listbox>
                     </div>
 
-                    {/* --- FURNISHING --- */}
                     <div>
                       <label className={fieldLabel}>Furnishing</label>
                       <Listbox value={furnishing} onChange={setFurnishing as any}>
                         <div className="relative">
                           <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
-                            <span className="block truncate">{furnishing}</span>
-                            <DropdownChevron />
+<span className={`block truncate ${!furnishing ? 'text-gray-400' : 'text-black'}`}>
+  {furnishing || "Select furnishing"}
+</span>                            <DropdownChevron />
                           </Listbox.Button>
                           <Transition
                             as={Fragment}
@@ -917,7 +1251,7 @@ export default function SellPage() {
                     </div>
                   </div>
 
-                  {/* NEW Row: Size of Property */}
+                  {/* Size of Property */}
                   <div className={cardWrapper + " grid grid-cols-1 md:grid-cols-2 gap-6"}>
                     <div>
                       <label className={fieldLabel}>Size of Property</label>
@@ -970,125 +1304,104 @@ export default function SellPage() {
                         </Listbox>
                       </div>
                       <p className="text-xs text-gray-500 mt-2">
-                        Example: 1200 sq ft (carpet / built-up as per your local standard).
+                        Example: 1200 sq ft (built-up as per your local standard).
                       </p>
                     </div>
-                  </div>
-                  
-                  {/* Row 4: Availability / Price */}
-                  <div className={cardWrapper + " grid grid-cols-1 md:grid-cols-2 gap-6"}>
-                     {/* --- AVAILABILITY --- */}
-                     <div>
-                      <label className={fieldLabel}>Availability</label>
-                      <Listbox value={availability} onChange={setAvailability as any}>
-                        <div className="relative">
-                          <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
-                            <span className="block truncate">{availability === "Ready" ? "Immediately" : "After 1 Month"}</span>
-                            <DropdownChevron />
-                          </Listbox.Button>
-                          <Transition
-                            as={Fragment}
-                            leave="transition ease-in duration-100"
-                            leaveFrom="opacity-100"
-                            leaveTo="opacity-0"
-                          >
-                            <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-20">
-                              {availabilityOptions.map((option, optionIdx) => (
-                                <Listbox.Option
-                                  key={optionIdx}
-                                  className={({ active }) =>
-                                    `relative cursor-default select-none py-2 px-4 ${
-                                      active ? 'bg-[#f1faf6] text-[#0b6b53]' : 'text-gray-900'
-                                    }`
-                                  }
-                                  value={option}
-                                >
-                                  {({ selected }) => (
-                                    <span
-                                      className={`block truncate ${
-                                        selected ? 'font-medium' : 'font-normal'
-                                      }`}
-                                    >
-                                      {option === "Ready" ? "Immediately" : "After 1 Month"}
-                                    </span>
-                                  )}
-                                </Listbox.Option>
-                              ))}
-                            </Listbox.Options>
-                          </Transition>
-                        </div>
-                      </Listbox>
-                    </div>
-                    
+
                     <div>
-                      <label className={fieldLabel}>Price (₹) <span className="text-[#0b6b53]">*</span></label>
-                      <input value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Enter total price" className={`${triedContinue && !isPriceValid ? inputError : inputNormal}`} />
-                      {triedContinue && !isPriceValid && <div className="text-xs text-red-600 mt-2">Required</div>}
-                    </div>
+  {/* Flex container to put label and info text side-by-side */}
+  <div className="flex items-center justify-between mb-2">
+    <label className="text-sm font-semibold text-gray-800">
+      Asking Price (₹) <span className="text-[#0b6b53]">*</span>
+    </label>
+    <span className="text-xs text-gray-500 font-normal">
+      All-inclusive(Excl.Stamp Duty)
+    </span>
+  </div>
+
+  <div className="relative">
+    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-black font-small">₹</span>
+    <input
+      value={price === "0.00" || price === "" ? "" : price}
+      onChange={handlePriceInput}
+      placeholder="0.00"
+      className={`${triedContinue && !isPriceValid ? inputError : inputNormal} pl-8 text-medium font-regular ${price && price !== "0.00" ? 'text-black' : 'text-gray-400'}`}
+    />
+  </div>
+
+  {price && (
+    <div className="mt-2 px-1 text-sm font-medium text-black flex items-start gap-2 animate-in fade-in slide-in-from-top-1">
+      <span>{priceToWords(parseInt(price.replace(/,/g, ''), 10))}</span>
+    </div>
+  )}
+
+  {/* Removed the bottom <p> tag as per your request */}
+  {triedContinue && !isPriceValid && <div className="text-xs text-red-600 mt-2">Required</div>}
+</div>
                   </div>
-                  
+
                   {/* Row 5: Amenities */}
                    <div className={cardWrapper + " grid grid-cols-1"}>
-                      <div>
-                        <label className={fieldLabel}>Amenities</label>
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {amenities.map((amenity, index) => (
-                            <div key={index} className="inline-flex items-center gap-2 bg-gray-100 text-gray-800 text-sm font-medium px-3 py-1.5 rounded-full">
-                              <span>{amenity}</span>
-                              <button
-                                type="button"
-                                onClick={() => removeAmenity(index)}
-                                className="bg-gray-300 text-gray-600 rounded-full w-4 h-4 flex items-center justify-center text-xs hover:bg-gray-400"
-                              >
-                                &times;
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                        
-                        <input 
-                          value={currentAmenity} 
-                          onChange={(e) => setCurrentAmenity(e.target.value)} 
-                          onKeyDown={handleAmenityKeyDown}
-                          placeholder="Type an amenity and press Enter..." 
-                          className={inputNormal} 
-                        />
+                     <div>
+                       <label className={fieldLabel}>Amenities</label>
+                       <div className="flex flex-wrap gap-2 mb-4">
+                         {amenities.map((amenity, index) => (
+                           <div key={index} className="inline-flex items-center gap-2 bg-gray-100 text-gray-800 text-sm font-medium px-3 py-1.5 rounded-full">
+                             <span>{amenity}</span>
+                             <button
+                               type="button"
+                               onClick={() => removeAmenity(index)}
+                               className="bg-gray-300 text-gray-600 rounded-full w-4 h-4 flex items-center justify-center text-xs hover:bg-gray-400"
+                             >
+                               &times;
+                             </button>
+                           </div>
+                         ))}
+                       </div>
 
-                        <div className="mt-4">
-                          <p className="text-xs text-gray-600 mb-2">Suggestions:</p>
-                          <div className="flex flex-wrap gap-2">
-                            {amenitySuggestions.map((suggestion) => (
-                              <button
-                                type="button"
-                                key={suggestion}
-                                onClick={() => addAmenity(suggestion)}
-                                className="inline-flex bg-white border border-gray-200 text-gray-700 text-sm px-3 py-1.5 rounded-full cursor-pointer hover:bg-gray-50 disabled:opacity-50"
-                                disabled={amenities.includes(suggestion)} 
-                              >
-                                + {suggestion}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
+                       <input
+                         value={currentAmenity}
+                         onChange={(e) => setCurrentAmenity(e.target.value)}
+                         onKeyDown={handleAmenityKeyDown}
+                         placeholder="Type an amenity and press Enter..."
+                         className={inputNormal}
+                       />
+
+                       <div className="mt-4">
+                         <p className="text-xs text-gray-600 mb-2">Suggestions:</p>
+                         <div className="flex flex-wrap gap-2">
+                           {amenitySuggestions.map((suggestion) => (
+                             <button
+                               type="button"
+                               key={suggestion}
+                               onClick={() => addAmenity(suggestion)}
+                               className="inline-flex bg-white border border-gray-200 text-gray-700 text-sm px-3 py-1.5 rounded-full cursor-pointer hover:bg-gray-50 disabled:opacity-50"
+                               disabled={amenities.includes(suggestion)}
+                             >
+                               + {suggestion}
+                             </button>
+                           ))}
+                         </div>
+                       </div>
+                     </div>
                    </div>
 
                   {/* Row 6: Footer */}
                   <div className="flex items-center justify-between mt-4">
                     <div className="flex items-center gap-3">
                       <button onClick={() => setStep(0)} className={btnLight}>Back to Basic Info</button>
-                      <button onClick={onContinueFromStep2} className={canContinueStep2 ? btnPrimary : btnDisabled} disabled={!canContinueStep2}>Continue to Location</button>
+                      <button onClick={onContinueFromStep2} className={canContinueStep2 ? btnPrimary : btnDisabled} disabled={!canContinueStep2}>{isEditMode ? "Save Changes" : "Continue to Location"}</button>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-700 font-medium">
-                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                         <path d="M10 3L8 8l-5 2 5 2 2 5 2-5 5-2-5-2zM14 14l-2 5-2-5-5-2 5-2 2-5 2 5 5 2z"></path>
-                       </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M10 3L8 8l-5 2 5 2 2 5 2-5 5-2-5-2zM14 14l-2 5-2-5-5-2 5-2 2-5 2 5 5 2z"></path>
+                        </svg>
                       Well-detailed listings rank higher
                     </div>
                   </div>
                 </div>
               )}
-              {/* --- END OF STEP 1 BLOCK --- */}
+
 
               {/* --- STEP 2: LOCATION --- */}
 {step === 2 && (
@@ -1097,17 +1410,7 @@ export default function SellPage() {
     <div className="flex items-center justify-between">
       <h3 className="text-lg font-semibold">Step 3: Location</h3>
       <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
           <circle cx="12" cy="10" r="3"></circle>
         </svg>
@@ -1115,159 +1418,181 @@ export default function SellPage() {
       </div>
     </div>
 
-    {/* Card 1: Project Name / Locality */}
-    <div className={cardWrapper + " grid grid-cols-1 md:grid-cols-2 gap-6"}>
-      <div>
-        <label className={fieldLabel}>
-          Project Name <span className="text-[#0b6b53]">*</span>
-        </label>
-        <input
-          value={society}
-          onChange={(e) => setSociety(e.target.value)}
-          placeholder="e.g., Shilp Residency"
-          className={`${triedContinue && !isSocietyValid ? inputError : inputNormal}`}
-        />
-        {triedContinue && !isSocietyValid && (
-          <div className="text-xs text-red-600 mt-2">
-            Please enter a project name.
-          </div>
-        )}
-      </div>
-      <div>
-        <label className={fieldLabel}>
-          Locality / Area <span className="text-[#0b6b53]">*</span>
-        </label>
-        <input
-          value={locality}
-          onChange={(e) => setLocality(e.target.value)}
-          placeholder="e.g., Kudasan"
-          className={`${triedContinue && !isLocalityValid ? inputError : inputNormal}`}
-        />
-        {triedContinue && !isLocalityValid && (
-          <div className="text-xs text-red-600 mt-2">
-            Please enter a locality.
-          </div>
-        )}
-      </div>
-    </div>
+    {/* Combined Card: Project Details, Address, City, Locality & Pincode */}
+    <div className={cardWrapper + " space-y-6"}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-2">
+          <label className={fieldLabel}>Society / Project Name <span className="text-[#0b6b53]">*</span></label>
+          <input
+            value={title}
+            readOnly
+            placeholder="e.g., Shilp Residency"
+            className={inputNormal + " bg-gray-50 text-gray-500 cursor-not-allowed"}
+          />
+        </div>
 
-    {/* Card 2: Unit No / Pincode */}
-    <div className={cardWrapper + " grid grid-cols-1 md:grid-cols-2 gap-6"}>
-      <div>
-        <label className={fieldLabel}>
-          Unit No <span className="text-[#0b6b53]">*</span>
-        </label>
-        <input
-          value={unitNo}
-          onChange={(e) => setUnitNo(e.target.value)}
-          placeholder="e.g., B-701"
-          className={`${triedContinue && !isUnitNoValid ? inputError : inputNormal}`}
-        />
-        {triedContinue && !isUnitNoValid && (
-          <div className="text-xs text-red-600 mt-2">
-            Please enter a unit number.
-          </div>
-        )}
+        <div className="md:col-span-1">
+          <label className={fieldLabel}>Unit No <span className="text-[#0b6b53]">*</span></label>
+          <input
+            value={unitNo}
+            onChange={(e) => setUnitNo(e.target.value)}
+            placeholder="e.g., B-701"
+            className={`${triedContinue && !isUnitNoValid ? inputError : inputNormal}`}
+          />
+          {triedContinue && !isUnitNoValid && <div className="text-xs text-red-600 mt-2">Required</div>}
+        </div>
       </div>
+
+      {/* Address Field */}
       <div>
-        <label className={fieldLabel}>
-          Pincode <span className="text-[#0b6b53]">*</span>
-        </label>
+        <label className={fieldLabel}>Address <span className="text-[#0b6b53]">*</span></label>
+        <textarea
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          placeholder="Enter full property address"
+          className={`${triedContinue && !isAddressValid ? "border-red-200 bg-red-50" : "border-gray-100 bg-white"} w-full rounded-xl px-4 py-3 border outline-none shadow-sm min-h-[100px]`}
+        />
+        {triedContinue && !isAddressValid && <div className="text-xs text-red-600 mt-2">Please enter full address.</div>}
+      </div>
+
+      {/* City and Locality Side-by-Side */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* City Dropdown */}
+        <div>
+          <label className={fieldLabel}>City <span className="text-[#0b6b53]">*</span></label>
+          <Listbox value={city} onChange={(val) => { setCity(val); setLocality(""); }}>
+            <div className="relative">
+              <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
+                <span className={`block truncate ${!city ? 'text-gray-400' : 'text-black'}`}>
+                  {city || "Select city"}
+                </span>
+                <DropdownChevron />
+              </Listbox.Button>
+              <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
+                <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-20">
+                  {cityOptions.map((option, idx) => (
+                    <Listbox.Option
+                      key={idx}
+                      className={({ active }) => `relative cursor-default select-none py-2 px-4 ${active ? 'bg-[#f1faf6] text-[#0b6b53]' : 'text-gray-900'}`}
+                      value={option}
+                    >
+                      {({ selected }) => <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>{option}</span>}
+                    </Listbox.Option>
+                  ))}
+                </Listbox.Options>
+              </Transition>
+            </div>
+          </Listbox>
+          {triedContinue && !isCityValid && <div className="text-xs text-red-600 mt-2">Please enter a city.</div>}
+        </div>
+
+        {/* Locality Dropdown */}
+        <div>
+          <label className={fieldLabel}>Locality / Area <span className="text-[#0b6b53]">*</span></label>
+          <Listbox value={locality} onChange={setLocality} disabled={!city}>
+            <div className="relative">
+              <Listbox.Button className={`${selectNormal} flex items-center justify-between ${!city ? 'bg-gray-50 opacity-60 cursor-not-allowed' : ''}`}>
+                <span className={`block truncate ${!locality ? 'text-gray-400' : 'text-black'}`}>
+                  {!city ? "Select city first" : (locality || "Select locality")}
+                </span>
+                <DropdownChevron />
+              </Listbox.Button>
+              <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
+                <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-20">
+                  {city && CITY_AREAS[city]?.map((area, idx) => (
+                    <Listbox.Option
+                      key={idx}
+                      className={({ active }) => `relative cursor-default select-none py-2 px-4 ${active ? 'bg-[#f1faf6] text-[#0b6b53]' : 'text-gray-900'}`}
+                      value={area}
+                    >
+                      {({ selected }) => <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>{area}</span>}
+                    </Listbox.Option>
+                  ))}
+                </Listbox.Options>
+              </Transition>
+            </div>
+          </Listbox>
+
+          {/* Helper Message Added Here */}
+          {city && (
+            <p className="text-[11px] text-gray-500 mt-2 px-1 leading-relaxed">
+Can’t find your area? Select the nearest major locality.            </p>
+          )}
+
+          {triedContinue && !isLocalityValid && <div className="text-xs text-red-600 mt-2">Please enter a locality.</div>}
+        </div>
+      </div>
+
+      {/* Pincode Bottom (Full Width) */}
+      <div>
+        <label className={fieldLabel}>Pincode <span className="text-[#0b6b53]">*</span></label>
         <input
           value={pincode}
-          onChange={(e) => setPincode(e.target.value)}
+          onChange={(e) => {
+            const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+            setPincode(value);
+          }}
           placeholder="e.g., 382421"
           className={`${triedContinue && !isPincodeValid ? inputError : inputNormal}`}
+          maxLength={6}
         />
-        {triedContinue && !isPincodeValid && (
-          <div className="text-xs text-red-600 mt-2">
-            Please enter a valid 6-digit pincode.
-          </div>
-        )}
-      </div>
-    </div>
-
-    {/* Card 3: City */}
-    <div className={cardWrapper + " grid grid-cols-1"}>
-      <div>
-        <label className={fieldLabel}>
-          City <span className="text-[#0b6b53]">*</span>
-        </label>
-        <input
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          placeholder="Gandhinagar"
-          className={`${triedContinue && !isCityValid ? inputError : inputNormal}`}
-        />
-        {triedContinue && !isCityValid && (
-          <div className="text-xs text-red-600 mt-2">
-            Please enter a city.
-          </div>
-        )}
+        {triedContinue && !isPincodeValid && <div className="text-xs text-red-600 mt-2">Please enter a valid 6-digit pincode.</div>}
       </div>
     </div>
 
     {/* Card 4: Map */}
     <div className={cardWrapper + " p-2"}>
-      {/* NEW helper text */}
       <p className="text-sm text-gray-600 mb-3 px-1">
         Click on the map to open the location picker, search your address and drop a pin so buyers can see your exact location.
       </p>
-
-      <div className="h-60 rounded-lg bg-gray-200 grid place-items-center text-sm text-gray-500 overflow-hidden cursor-pointer">
-        <img
-          src="https://placehold.co/800x400/e2e8f0/64748b?text=Map+Integration+Placeholder"
-          alt="Map placeholder"
-          className="w-full h-full object-cover"
-        />
-      </div>
+      <LocationPicker
+        value={{ lat: latitude, lng: longitude, displayAddress: pickedDisplayAddress }}
+        onChange={(next) => {
+          setLatitude(next.lat);
+          setLongitude(next.lng);
+          setPickedDisplayAddress(next.displayAddress || "");
+          if (next.displayAddress && address.trim().length < 6) {
+            setAddress(next.displayAddress);
+          }
+        }}
+      />
     </div>
 
-    <p className="text-sm text-gray-500">
-      Accurate location helps buyers filter results effectively.
-    </p>
-
-    {/* Footer: Buttons */}
     <div className="flex items-center justify-between mt-4">
       <div className="flex items-center gap-3">
-        <button onClick={() => setStep(1)} className={btnLight}>
-          Back to Specifications
-        </button>
+        <button onClick={() => setStep(1)} className={btnLight}>Back to Specifications</button>
         <button
           onClick={onContinueFromStep3}
           className={canContinueStep3 ? btnPrimary : btnDisabled}
           disabled={!canContinueStep3}
         >
-          Continue to Media Upload
+          {isEditMode ? "Save Changes" : "Continue to Media Upload"}
         </button>
       </div>
     </div>
   </div>
 )}
 
-              {/* --- END OF STEP 2 BLOCK --- */}
 
-              {/* --- STEP 3: MEDIA (UPDATED TEXT) --- */}
+              {/* --- STEP 3: MEDIA --- */}
               {step === 3 && (
                 <div className="space-y-6">
-                   {/* Row 0: Header */}
+                    {/* Row 0: Header */}
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold">Step 4: Media Upload </h3>
                     <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                      {/* --- UPDATED TEXT --- */}
                       Add photos to get 5x more views
                     </div>
                   </div>
 
-                  {/* Card 1: Photos – SINGLE UPLOAD BOX + PREVIEW GRID */}
+                  {/* Card 1: Photos */}
                   <div className={cardWrapper}>
                     <label className={fieldLabel}>Upload Photos (Optional)</label>
                     <p className="text-sm text-gray-500 mb-4">
                       Listings with photos get 5x more views. You can add them now or later from your dashboard.
                     </p>
 
-                    {/* Single big clickable box */}
                     <div
                       className="rounded-lg border-2 border-dashed border-gray-200 bg-white px-6 py-6 flex flex-col items-center justify-center text-center cursor-pointer hover:border-[#0b6b53]/60 hover:bg-[#f8fffc]"
                       onClick={() => photoRef.current?.click()}
@@ -1299,9 +1624,18 @@ export default function SellPage() {
                           {photos.length} photo{photos.length > 1 ? "s" : ""} selected
                         </p>
                       )}
+                      {isEditMode && existingPhotosCount > 0 && photos.length === 0 && (
+                        <p className="text-xs text-green-600 mt-2">
+                          ✓ {existingPhotosCount} photo{existingPhotosCount > 1 ? "s" : ""} already uploaded
+                        </p>
+                      )}
+                      {isEditMode && existingPhotosCount > 0 && photos.length > 0 && (
+                        <p className="text-xs text-blue-600 mt-2">
+                          {existingPhotosCount} existing + {photos.length} new photo{photos.length > 1 ? "s" : ""} selected
+                        </p>
+                      )}
                     </div>
 
-                    {/* Hidden file input */}
                     <input
                       ref={photoRef}
                       type="file"
@@ -1311,12 +1645,29 @@ export default function SellPage() {
                       onChange={(e) => onAddPhotos(e.target.files)}
                     />
 
-                    {/* Preview thumbnails if any */}
-                    {photos.length > 0 && (
+                    {(photos.length > 0 || (isEditMode && existingPhotosCount > 0)) && (
                       <div className="mt-4 grid grid-cols-3 md:grid-cols-5 gap-3">
+                        {/* Show existing photos in edit mode */}
+                        {isEditMode && existingPhotosCount > 0 && Array.from({ length: existingPhotosCount }).map((_, i) => (
+                          <div
+                            key={`existing-${i}`}
+                            className="aspect-square rounded-lg border border-green-200 flex items-center justify-center bg-green-50 overflow-hidden relative"
+                          >
+                            <div className="text-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-600 mx-auto mb-1">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                <polyline points="21 15 16 10 5 21"></polyline>
+                              </svg>
+                              <p className="text-xs text-green-700 font-medium">Photo {i + 1}</p>
+                              <p className="text-xs text-green-600">Already uploaded</p>
+                            </div>
+                          </div>
+                        ))}
+                        {/* Show newly added photos */}
                         {photos.map((file, i) => (
                           <div
-                            key={i}
+                            key={`new-${i}`}
                             className="aspect-square rounded-lg border border-gray-200 flex items-center justify-center bg-white overflow-hidden relative"
                           >
                             <img
@@ -1335,14 +1686,14 @@ export default function SellPage() {
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Card 2: Video */}
                   <div className={cardWrapper}>
                     <label className={fieldLabel}>Upload Video (Optional)</label>
                     <p className="text-sm text-gray-500 mb-4">
                       A video tour can also be added now or later.
                     </p>
-                    <div className="h-24 rounded-lg border-2 border-dashed border-gray-200 flex items-center gap-4 px-6">
+                    <div className="h-24 rounded-lg border-2 border-dashed border-gray-200 bg-white flex items-center gap-4 px-6">
                       {video ? (
                         <div className="flex items-center gap-4 w-full">
                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#0b6b53]"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
@@ -1352,24 +1703,34 @@ export default function SellPage() {
                           </div>
                           <button onClick={removeVideo} className="text-sm text-red-600 font-medium ml-auto">Remove</button>
                         </div>
+                      ) : isEditMode && existingHasVideo ? (
+                        <div className="flex items-center gap-4 w-full">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-600"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+                          <div className="flex-1">
+                            <p className="text-sm text-green-700 font-medium">Video already uploaded</p>
+                            <p className="text-xs text-green-600">Click "Add Video" to replace</p>
+                          </div>
+                          <button onClick={() => videoRef.current?.click()} className="ml-auto h-10 w-32 flex justify-center items-center rounded-lg bg-[#0b6b53] text-white text-sm font-semibold">Replace Video</button>
+                        </div>
                       ) : (
                         <div className="flex items-center gap-4 w-full">
                           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400"><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
                           <div className="text-sm text-gray-500">No video uploaded</div>
-                          <button onClick={() => videoRef.current?.click()} className="ml-auto h-10 px-4 rounded-lg bg-[#0b6b53] text-white text-sm font-semibold">Add Video</button>
+
+                          <button onClick={() => videoRef.current?.click()} className="ml-auto h-10 w-40 flex justify-center items-center rounded-lg bg-[#0b6b53] text-white text-sm font-semibold">Add Video</button>
                         </div>
                       )}
                       <input ref={videoRef} type="file" accept="video/*" className="hidden" onChange={(e) => onAddVideo(e.target.files)} />
                     </div>
                   </div>
 
-                  {/* Card 3: Sale Deed / Index Copy */}
+                  {/* Card 3: Sale Deed */}
                   <div className={cardWrapper}>
                     <label className={fieldLabel}>Upload Sale Deed / Index Copy (Optional)</label>
                     <p className="text-sm text-gray-500 mb-4">
                       Uploading a sale deed or index copy helps buyers verify ownership and adds trust to your listing.
                     </p>
-                    <div className="h-24 rounded-lg border-2 border-dashed border-gray-200 flex items-center gap-4 px-6">
+                    <div className="h-24 rounded-lg border-2 border-dashed border-gray-200 bg-white flex items-center gap-4 px-6">
                       {saleDeed ? (
                         <div className="flex items-center gap-4 w-full">
                           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#0b6b53]">
@@ -1382,6 +1743,20 @@ export default function SellPage() {
                           </div>
                           <button onClick={removeSaleDeed} className="text-sm text-red-600 font-medium ml-auto">Remove</button>
                         </div>
+                      ) : isEditMode && existingHasSaleDeed ? (
+                        <div className="flex items-center gap-4 w-full">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-600">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                          </svg>
+                          <div className="flex-1">
+                            <p className="text-sm text-green-700 font-medium">Sale Deed already uploaded</p>
+                            <p className="text-xs text-green-600">Click "Add Document" to replace</p>
+                          </div>
+                          <button onClick={() => saleDeedRef.current?.click()} className="ml-auto h-10 w-40 flex justify-center items-center rounded-lg bg-[#0b6b53] text-white text-sm font-semibold">
+                            Replace Document
+                          </button>
+                        </div>
                       ) : (
                         <div className="flex items-center gap-4 w-full">
                           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
@@ -1389,7 +1764,8 @@ export default function SellPage() {
                             <polyline points="14 2 14 8 20 8"></polyline>
                           </svg>
                           <div className="text-sm text-gray-500">No document uploaded</div>
-                          <button onClick={() => saleDeedRef.current?.click()} className="ml-auto h-10 px-4 rounded-lg bg-[#0b6b53] text-white text-sm font-semibold">
+
+                          <button onClick={() => saleDeedRef.current?.click()} className="ml-auto h-10 w-40 flex justify-center items-center rounded-lg bg-[#0b6b53] text-white text-sm font-semibold">
                             Add Document
                           </button>
                         </div>
@@ -1410,7 +1786,7 @@ export default function SellPage() {
                     <p className="text-sm text-gray-500 mb-4">
                       Share your project or property brochure so buyers can see detailed plans, layouts and highlights.
                     </p>
-                    <div className="h-24 rounded-lg border-2 border-dashed border-gray-200 flex items-center gap-4 px-6">
+                    <div className="h-24 rounded-lg border-2 border-dashed border-gray-200 bg-white flex items-center gap-4 px-6">
                       {brochure ? (
                         <div className="flex items-center gap-4 w-full">
                           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#0b6b53]">
@@ -1425,6 +1801,22 @@ export default function SellPage() {
                           </div>
                           <button onClick={removeBrochure} className="text-sm text-red-600 font-medium ml-auto">Remove</button>
                         </div>
+                      ) : isEditMode && existingHasBrochure ? (
+                        <div className="flex items-center gap-4 w-full">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-600">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                            <path d="M4 4.5A2.5 2.5 0 0 1 6.5 7H20"></path>
+                            <path d="M4 4.5v15"></path>
+                            <path d="M20 4.5v15"></path>
+                          </svg>
+                          <div className="flex-1">
+                            <p className="text-sm text-green-700 font-medium">Brochure already uploaded</p>
+                            <p className="text-xs text-green-600">Click "Add Brochure" to replace</p>
+                          </div>
+                          <button onClick={() => brochureRef.current?.click()} className="ml-auto h-10 w-40 flex justify-center items-center rounded-lg bg-[#0b6b53] text-white text-sm font-semibold">
+                            Replace Brochure
+                          </button>
+                        </div>
                       ) : (
                         <div className="flex items-center gap-4 w-full">
                           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
@@ -1434,7 +1826,8 @@ export default function SellPage() {
                             <path d="M20 4.5v15"></path>
                           </svg>
                           <div className="text-sm text-gray-500">No brochure uploaded</div>
-                          <button onClick={() => brochureRef.current?.click()} className="ml-auto h-10 px-4 rounded-lg bg-[#0b6b53] text-white text-sm font-semibold">
+
+                          <button onClick={() => brochureRef.current?.click()} className="ml-auto h-10 w-40 flex justify-center items-center rounded-lg bg-[#0b6b53] text-white text-sm font-semibold">
                             Add Brochure
                           </button>
                         </div>
@@ -1454,7 +1847,14 @@ export default function SellPage() {
                     <div className="flex items-center gap-3">
                       <button onClick={() => setStep(2)} className={btnLight}>Back to Location</button>
                       <button onClick={handleSaveDraft} className={btnSecondary}>Save Draft</button>
-                      <button onClick={handleSubmit} className={btnPrimary}>Submit Listing</button>
+                      <button
+  onClick={isEditMode ? handleEditMediaSubmit : handleSubmit}
+  className={saving ? btnDisabled : btnPrimary}
+  disabled={saving}
+>
+  {saving ? (isEditMode ? "Saving..." : "Submitting...") : (isEditMode ? "Save & Return to Review" : "Submit Listing")}
+</button>
+
                     </div>
                   </div>
                 </div>
@@ -1464,20 +1864,25 @@ export default function SellPage() {
         </div>
       </div>
 
-      {/* Local styles */}
       <style jsx>{`
-        /* minor focus style */
         input:focus, select:focus, textarea:focus, [role="listbox"]:focus-within, [role="listbox"]:focus {
           box-shadow: 0 8px 24px rgba(11,107,83,0.06);
           border-color: rgba(11,107,83,0.45);
         }
-        
-        /* This applies the focus ring to our custom Listbox button */
+
         [role="listbox"] > button:focus {
            box-shadow: 0 8px 24px rgba(11,107,83,0.06);
            border-color: rgba(11,107,83,0.45);
         }
       `}</style>
     </div>
+  );  
+}
+
+export default function SellFormPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SellFormPageContent />
+    </Suspense>
   );
 }

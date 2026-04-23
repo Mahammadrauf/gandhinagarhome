@@ -16,7 +16,7 @@ import {
   Unlock,
   Crown
 } from 'lucide-react';
-import { updateUserProfile } from '@/lib/api';
+import { updateUserProfile, fetchUnlockedProperties, transformProperty, getFavorites } from '@/lib/api';
 
 const BRAND_COLOR = "text-[#006A58]";
 const BRAND_BG = "bg-[#006A58]";
@@ -28,7 +28,8 @@ const MOCK_FAVORITES = [
     title: "4 BHK Villa with Garden",
     location: "Raysan, Gandhinagar",
     price: "₹ 2.5 Cr",
-    image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&q=80&w=400"
+    image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&q=80&w=400",
+    slug: "4-bhk-villa-garden-raysan"
   }
 ];
 
@@ -38,6 +39,10 @@ export default function BuyerProfile() {
   const [user, setUser] = useState<any>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [myProperties, setMyProperties] = useState<any[]>([]);
+  const [unlockedProperties, setUnlockedProperties] = useState<any[]>([]);
+  const [loadingUnlocked, setLoadingUnlocked] = useState(false);
+  const [favorites, setFavorites] = useState<any[]>([]);
+  const [loadingFavorites, setLoadingFavorites] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Local form states
@@ -69,6 +74,60 @@ export default function BuyerProfile() {
       }
     }
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'unlocked' && user) {
+      fetchUnlockedPropertiesData();
+    }
+  }, [activeTab, user]);
+
+  useEffect(() => {
+    if (activeTab === 'favorites' && user) {
+      fetchFavoritesData();
+    }
+  }, [activeTab, user]);
+
+  const fetchFavoritesData = async () => {
+    try {
+      setLoadingFavorites(true);
+      const token = localStorage.getItem('gh_token');
+      if (!token) {
+        console.error('No authentication token found');
+        return;
+      }
+      
+      const properties = await getFavorites(token);
+      console.log('Raw favorites from API:', properties);
+      // Transform backend properties to frontend format
+      const transformedProperties = properties.map(transformProperty);
+      console.log('Transformed favorites:', transformedProperties);
+      setFavorites(transformedProperties);
+    } catch (error) {
+      console.error('Error fetching favorites:', error);
+    } finally {
+      setLoadingFavorites(false);
+    }
+  };
+
+  const fetchUnlockedPropertiesData = async () => {
+    try {
+      setLoadingUnlocked(true);
+      const token = localStorage.getItem('gh_token');
+      if (!token) {
+        console.error('No authentication token found');
+        return;
+      }
+      
+      const properties = await fetchUnlockedProperties(token);
+      // Transform backend properties to frontend format
+      const transformedProperties = properties.map(transformProperty);
+      setUnlockedProperties(transformedProperties);
+    } catch (error) {
+      console.error('Error fetching unlocked properties:', error);
+    } finally {
+      setLoadingUnlocked(false);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('gh_user');
@@ -205,7 +264,7 @@ export default function BuyerProfile() {
               <SidebarItem id="profile" icon={User} label="My Profile" />
               <SidebarItem id="unlocked" icon={Unlock} label="Unlocked Properties" />
               <SidebarItem id="upgrade" icon={Crown} label="Upgrade Plan" />
-              <SidebarItem id="favorites" icon={Heart} label="Favorites" count={MOCK_FAVORITES.length} />
+              <SidebarItem id="favorites" icon={Heart} label="Favorites" count={favorites.length} />
               <div className="my-2 border-t border-gray-100" />
               <SidebarItem id="settings" icon={Settings} label="Settings" />
               <button 
@@ -219,6 +278,62 @@ export default function BuyerProfile() {
           </div>
 
           <div className="flex-1">
+            {activeTab === 'unlocked' && (
+              <div className="space-y-6">
+                <h3 className="text-xl font-bold text-gray-800">Unlocked Properties</h3>
+                {loadingUnlocked ? (
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="p-12 flex flex-col items-center justify-center text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#006A58] mb-4"></div>
+                      <p className="text-gray-500 text-sm">Loading unlocked properties...</p>
+                    </div>
+                  </div>
+                ) : unlockedProperties.length === 0 ? (
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="p-12 flex flex-col items-center justify-center text-center">
+                      <div className={`w-16 h-16 rounded-full ${BRAND_BG} flex items-center justify-center mb-4`}>
+                        <Unlock className="w-8 h-8 text-white" />
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-800 mb-2">No Unlocked Properties Yet</h3>
+                      <p className="text-gray-500 text-sm mb-6">Unlock owner details to connect directly.</p>
+                      <button 
+                        onClick={() => router.push('/buy')}
+                        className={`${BRAND_BG} text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition-opacity`}
+                      >
+                        Browse Properties
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {unlockedProperties.map((item: any) => (
+                      <div key={item.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all group">
+                        <div className="relative">
+                          <img src={item.image} alt={item.title} className="w-full h-48 object-cover" />
+                          <div className="absolute top-3 left-3 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                            Unlocked
+                          </div>
+                        </div>
+                        <div className="p-4">
+                          <h4 className="font-bold text-gray-800 truncate">{item.title}</h4>
+                          <p className="text-gray-500 text-sm mt-1 mb-3 flex items-center gap-1"><MapPin className="w-3 h-3" /> {item.location}</p>
+                          <div className="flex items-center justify-between">
+                            <span className={`font-bold ${BRAND_COLOR}`}>{item.price}</span>
+                            <button 
+                              onClick={() => router.push(`/properties/${item.slug}`)}
+                              className={`text-xs border border-[#006A58] ${BRAND_COLOR} px-3 py-1.5 rounded-lg hover:bg-green-50 font-medium`}
+                            >
+                              View Details
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {activeTab === 'profile' && (
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-6 border-b border-gray-100 flex justify-between items-center">
@@ -280,8 +395,32 @@ export default function BuyerProfile() {
             {activeTab === 'favorites' && (
               <div className="space-y-6">
                  <h3 className="text-xl font-bold text-gray-800">Shortlisted Properties</h3>
+                 {loadingFavorites ? (
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="p-12 flex flex-col items-center justify-center text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#006A58] mb-4"></div>
+                      <p className="text-gray-500 text-sm">Loading favorites...</p>
+                    </div>
+                  </div>
+                ) : favorites.length === 0 ? (
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="p-12 flex flex-col items-center justify-center text-center">
+                      <div className={`w-16 h-16 rounded-full ${BRAND_BG} flex items-center justify-center mb-4`}>
+                        <Heart className="w-8 h-8 text-white" />
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-800 mb-2">No Favorites Yet</h3>
+                      <p className="text-gray-500 text-sm mb-6">Start adding properties to your favorites to see them here.</p>
+                      <button 
+                        onClick={() => router.push('/buy')}
+                        className={`${BRAND_BG} text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition-opacity`}
+                      >
+                        Browse Properties
+                      </button>
+                    </div>
+                  </div>
+                ) : (
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {MOCK_FAVORITES.map(item => (
+                  {favorites.map(item => (
                     <div key={item.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all group">
                       <div className="relative">
                         <img src={item.image} alt={item.title} className="w-full h-48 object-cover" />
@@ -294,55 +433,17 @@ export default function BuyerProfile() {
                         <p className="text-gray-500 text-sm mt-1 mb-3 flex items-center gap-1"><MapPin className="w-3 h-3" /> {item.location}</p>
                         <div className="flex items-center justify-between">
                           <span className={`font-bold ${BRAND_COLOR}`}>{item.price}</span>
-                          <button className={`text-xs border border-[#006A58] ${BRAND_COLOR} px-3 py-1.5 rounded-lg hover:bg-green-50 font-medium`}>View Details</button>
+                          <button 
+                            onClick={() => router.push(`/properties/${item.slug}`)}
+                            className={`text-xs border border-[#006A58] ${BRAND_COLOR} px-3 py-1.5 rounded-lg hover:bg-green-50 font-medium`}
+                          >
+                            View Details
+                          </button>
                         </div>
                       </div>
                     </div>
                   ))}
-                 </div>
-              </div>
-            )}
-
-            {activeTab === 'unlocked' && (
-              <div className="space-y-6">
-                <h3 className="text-xl font-bold text-gray-800">Unlocked Properties</h3>
-                {myProperties.length === 0 ? (
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div className="p-12 flex flex-col items-center justify-center text-center">
-                      <div className={`w-16 h-16 rounded-full ${BRAND_BG} flex items-center justify-center mb-4`}>
-                        <Unlock className="w-8 h-8 text-white" />
-                      </div>
-                      <h3 className="text-xl font-bold text-gray-800 mb-2">No Unlocked Properties Yet</h3>
-                      <p className="text-gray-500 text-sm mb-6">Unlock owner details to connect directly.</p>
-                      <button 
-                        onClick={() => router.push('/buy')}
-                        className={`${BRAND_BG} text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition-opacity`}
-                      >
-                        Browse Properties
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {myProperties.map((item: any) => (
-                      <div key={item.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all group">
-                        <div className="relative">
-                          <img src={item.image} alt={item.title} className="w-full h-48 object-cover" />
-                          <button className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md text-red-500 hover:bg-red-50">
-                            <Heart className="w-4 h-4 fill-current" />
-                          </button>
-                        </div>
-                        <div className="p-4">
-                          <h4 className="font-bold text-gray-800 truncate">{item.title}</h4>
-                          <p className="text-gray-500 text-sm mt-1 mb-3 flex items-center gap-1"><MapPin className="w-3 h-3" /> {item.location}</p>
-                          <div className="flex items-center justify-between">
-                            <span className={`font-bold ${BRAND_COLOR}`}>{item.price}</span>
-                            <button className={`text-xs border border-[#006A58] ${BRAND_COLOR} px-3 py-1.5 rounded-lg hover:bg-green-50 font-medium`}>View Details</button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                </div>
                 )}
               </div>
             )}

@@ -92,8 +92,8 @@ export default function SellerProfile() {
     }
   }, []);
 
-  const handlePropertyClick = (propertyId: string) => {
-    router.push(`/properties/${propertyId}`);
+  const handlePropertyClick = (propertySlug: string) => {
+    router.push(`/properties/${propertySlug}`);
   };
 
   const handleLogout = () => {
@@ -286,7 +286,7 @@ export default function SellerProfile() {
                     <div 
                       key={property.id} 
                       className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-col md:flex-row gap-4 hover:shadow-md transition-shadow cursor-pointer"
-                      onClick={() => handlePropertyClick(property.id)}
+                      onClick={() => handlePropertyClick(property.slug)}
                     >
                       <img src={property.image} alt={property.location} className="w-full md:w-48 h-32 object-cover rounded-xl" />
                       <div className="flex-1 flex flex-col justify-between">

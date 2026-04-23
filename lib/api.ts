@@ -3,6 +3,8 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/a
 // Debug logging
 console.log('API_BASE_URL:', API_BASE_URL);
 
+import { generatePropertyUrl } from './propertyUrl';
+
 export interface ApiResponse<T> {
   success: boolean;
   data: T;
@@ -13,6 +15,7 @@ export interface ApiResponse<T> {
 // Backend Property structure from MongoDB
 export interface BackendProperty {
   _id: string;
+  propertyid?: string;
   title: string;
   propertyType: string;
   category: string;
@@ -210,7 +213,7 @@ export const transformProperty = (backendProp: BackendProperty): FrontendPropert
   
   return {
     id: backendProp._id,
-    slug: createSlug(backendProp.title),
+    slug: generatePropertyUrl(backendProp.title, backendProp.propertyid, (specs as any).bhk, location.city),
     title: backendProp.title,
     image: imageUrl,
     price: formatPrice(pricing.expectedPrice || 0),
@@ -858,5 +861,168 @@ export const updateUserProfile = async (token: string, profileData: {
   } catch (error) {
     console.error('Error updating user profile:', error);
     return null;
+  }
+};
+
+// API function to fetch user's unlocked properties
+export const fetchUnlockedProperties = async (token: string): Promise<BackendProperty[]> => {
+  try {
+    const url = `${API_BASE_URL}/users/unlocked-properties`;
+    console.log('Fetching unlocked properties from:', url);
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    console.log('Unlocked properties response status:', response.status);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const result: ApiResponse<BackendProperty[]> = await response.json();
+    console.log('Unlocked properties API response:', result);
+    
+    if (result.success && result.data) {
+      return result.data;
+    }
+    
+    return [];
+  } catch (error) {
+    console.error('Error fetching unlocked properties:', error);
+    return [];
+  }
+};
+
+// Favorites API functions
+export const addToFavorites = async (token: string, propertyId: string): Promise<{ success: boolean; message: string; favoritesCount?: number }> => {
+  try {
+    const url = `${API_BASE_URL}/favorites/add`;
+    console.log('Adding to favorites:', propertyId);
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ propertyId })
+    });
+    
+    const result = await response.json();
+    console.log('Add to favorites response:', result);
+    
+    if (response.ok && result.success) {
+      return {
+        success: true,
+        message: result.message,
+        favoritesCount: result.data?.favoritesCount
+      };
+    }
+    
+    return {
+      success: false,
+      message: result.message || 'Failed to add to favorites'
+    };
+  } catch (error) {
+    console.error('Error adding to favorites:', error);
+    return {
+      success: false,
+      message: 'Failed to add to favorites'
+    };
+  }
+};
+
+export const removeFromFavorites = async (token: string, propertyId: string): Promise<{ success: boolean; message: string; favoritesCount?: number }> => {
+  try {
+    const url = `${API_BASE_URL}/favorites/remove`;
+    console.log('Removing from favorites:', propertyId);
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ propertyId })
+    });
+    
+    const result = await response.json();
+    console.log('Remove from favorites response:', result);
+    
+    if (response.ok && result.success) {
+      return {
+        success: true,
+        message: result.message,
+        favoritesCount: result.data?.favoritesCount
+      };
+    }
+    
+    return {
+      success: false,
+      message: result.message || 'Failed to remove from favorites'
+    };
+  } catch (error) {
+    console.error('Error removing from favorites:', error);
+    return {
+      success: false,
+      message: 'Failed to remove from favorites'
+    };
+  }
+};
+
+export const getFavorites = async (token: string): Promise<BackendProperty[]> => {
+  try {
+    const url = `${API_BASE_URL}/favorites`;
+    console.log('Fetching favorites from:', url);
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    console.log('Favorites response status:', response.status);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const result: ApiResponse<BackendProperty[]> = await response.json();
+    console.log('Favorites API response:', result);
+    
+    if (result.success && result.data) {
+      return result.data;
+    }
+    
+    return [];
+  } catch (error) {
+    console.error('Error fetching favorites:', error);
+    return [];
+  }
+};
+
+export const checkFavorite = async (token: string, propertyId: string): Promise<boolean> => {
+  try {
+    const url = `${API_BASE_URL}/favorites/check/${propertyId}`;
+    console.log('Checking favorite status:', propertyId);
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const result = await response.json();
+    console.log('Check favorite response:', result);
+    
+    return result.success ? result.data.isFavorite : false;
+  } catch (error) {
+    console.error('Error checking favorite status:', error);
+    return false;
   }
 };

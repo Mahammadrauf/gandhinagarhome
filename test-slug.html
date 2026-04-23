@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Slug Generation Test</title>
+</head>
+<body>
+    <h1>Slug Generation Test</h1>
+    <div id="results"></div>
+    
+    <script type="module">
+        // Copy the slug generation functions here for testing
+        const generateSlug = (title) => {
+            return title
+                .toLowerCase()
+                .replace(/[^\w\s-]/g, '') // Remove special characters
+                .replace(/\s+/g, '-') // Replace spaces with hyphens
+                .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+                .trim();
+        };
+
+        const generatePropertyUrl = (title, propertyId, bhk, city) => {
+            const slug = generateSlug(title);
+            
+            // Build the enhanced slug with BHK and city if available
+            let enhancedSlug = slug;
+            
+            if (bhk) {
+                // Clean BHK value (e.g., "1 BHK" -> "1-BHK")
+                const cleanBhk = bhk.toLowerCase().replace(/\s+/g, '-');
+                enhancedSlug = `${cleanBhk}-${enhancedSlug}`;
+            }
+            
+            if (city) {
+                // Clean city name and add to slug
+                const cleanCity = city.toLowerCase().replace(/\s+/g, '-');
+                enhancedSlug = `${enhancedSlug}-${cleanCity}`;
+            }
+            
+            if (propertyId) {
+                return `${enhancedSlug}-${propertyId}`;
+            }
+            
+            // Fallback for properties without property ID
+            return `${enhancedSlug}-GH-0012`;
+        };
+
+        // Test data based on your API response
+        const testTitle = "test topwnishop";
+        const testPropertyId = "RR-7573";
+        const testBhk = "1 BHK";
+        const testCity = "Gandhinagar";
+
+        // Generate slug with new format
+        const newSlug = generatePropertyUrl(testTitle, testPropertyId, testBhk, testCity);
+
+        const results = document.getElementById('results');
+        results.innerHTML = `
+            <h2>Test Results:</h2>
+            <p><strong>Title:</strong> ${testTitle}</p>
+            <p><strong>BHK:</strong> ${testBhk}</p>
+            <p><strong>City:</strong> ${testCity}</p>
+            <p><strong>Property ID:</strong> ${testPropertyId}</p>
+            <p><strong>Generated Slug:</strong> <code style="background: #f0f0f0; padding: 2px 4px;">${newSlug}</code></p>
+            <p><strong>Expected Format:</strong> <code style="background: #f0f0f0; padding: 2px 4px;">1-bhk-test-topwnishop-gandhinagar-RR-7573</code></p>
+            <p><strong>Match:</strong> ${newSlug === '1-bhk-test-topwnishop-gandhinagar-RR-7573' ? '✅ YES' : '❌ NO'}</p>
+            
+            <h3>Additional Tests:</h3>
+            <p><strong>Old format (fallback):</strong> <code>${generatePropertyUrl(testTitle, testPropertyId)}</code></p>
+            <p><strong>BHK only:</strong> <code>${generatePropertyUrl(testTitle, testPropertyId, testBhk)}</code></p>
+            <p><strong>City only:</strong> <code>${generatePropertyUrl(testTitle, testPropertyId, undefined, testCity)}</code></p>
+            
+            <h3>URL Format:</h3>
+            <p><strong>Full URL:</strong> <code>http://localhost:3000/properties/${newSlug}</code></p>
+        `;
+    </script>
+</body>
+</html>

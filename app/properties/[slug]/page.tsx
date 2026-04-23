@@ -44,7 +44,8 @@ import {
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { fetchPropertyDetail, fetchPropertyDetailBySlug, getMockPropertyDetail, PropertyDetail } from '@/lib/propertyDetailApi';
-import { fetchSimilarProperties, FrontendProperty } from '@/lib/api';
+import { fetchSimilarProperties, FrontendProperty, addToFavorites, removeFromFavorites, checkFavorite } from '@/lib/api';
+import { parsePropertyUrl, generateShareUrl } from '@/lib/propertyUrl';
 
 // --- WHATSAPP ICON COMPONENT (For Share Modal) ---
 const WhatsAppIcon = () => (
@@ -124,6 +125,10 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
   const [unlockStats, setUnlockStats] = useState<any>(null);
   const [contactInfo, setContactInfo] = useState<any>(null);
   
+  // -- FAVORITE STATE --
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
+  
   const router = useRouter();
   const propertySlug = params.slug;
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -176,11 +181,60 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
     }
   }, [property?.id]);
 
+  // Check favorite status when property loads
+  useEffect(() => {
+    const checkFavoriteStatus = async () => {
+      if (!property?.id) return;
+      
+      const token = localStorage.getItem("token") ||
+                   localStorage.getItem("gh_token") ||
+                   localStorage.getItem("authToken") ||
+                   "";
+      
+      if (token) {
+        try {
+          const favoriteStatus = await checkFavorite(token, property.id);
+          setIsFavorite(favoriteStatus);
+        } catch (error) {
+          console.error('Error checking favorite status:', error);
+        }
+      }
+    };
+
+    checkFavoriteStatus();
+  }, [property?.id]);
+
+  // Toggle favorite
+  const toggleFavorite = async () => {
+    if (!property?.id) return;
+    
+    const token = localStorage.getItem("token") ||
+                 localStorage.getItem("gh_token") ||
+                 localStorage.getItem("authToken") ||
+                 "";
+    
+    if (token) {
+      try {
+        setFavoriteLoading(true);
+        if (isFavorite) {
+          await removeFromFavorites(token, property.id);
+        } else {
+          await addToFavorites(token, property.id);
+        }
+        setIsFavorite(!isFavorite);
+      } catch (error) {
+        console.error('Error toggling favorite:', error);
+      } finally {
+        setFavoriteLoading(false);
+      }
+    }
+  };
+
   // Use theme from property data or fallback
   const theme = property ? property.theme : getTheme('exclusive');
 
-  // Mock URL for sharing
-  const shareUrl = `https://gandhinagarhomes.com/properties/${propertySlug || 'vinayak-courtyard'}`;
+  // Generate share URL with property ID
+  const shareUrl = property ? generateShareUrl(property.title, property.propertyid) : `https://gandhinagarhomes.com/properties/${propertySlug || 'vinayak-courtyard'}`;
 
   // Show loading state
   if (loading) {
@@ -391,8 +445,17 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
                >
                   <Share2 className="w-4 h-4" /> Share
                </button>
-               <button className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-red-600 transition-colors bg-white px-4 py-2 rounded-full border border-gray-200 hover:shadow-md active:scale-95 duration-200">
-                  <Heart className="w-4 h-4" /> Save
+               <button 
+                 onClick={toggleFavorite}
+                 disabled={favoriteLoading}
+                 className={`inline-flex items-center gap-2 text-sm font-medium transition-colors bg-white px-4 py-2 rounded-full border hover:shadow-md active:scale-95 duration-200 ${
+                   isFavorite 
+                     ? 'text-red-600 border-red-200 hover:bg-red-50' 
+                     : 'text-gray-500 border-gray-200 hover:text-red-600'
+                 } ${favoriteLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+               >
+                  <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
+                  {favoriteLoading ? 'Loading...' : isFavorite ? 'Saved' : 'Save'}
                </button>
             </div>
           </div>

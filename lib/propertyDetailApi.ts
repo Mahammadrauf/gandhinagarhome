@@ -3,6 +3,7 @@ import { fetchPropertyById, fetchPropertyBySlug, BackendProperty } from './api';
 // Property detail interface for detail page
 export interface PropertyDetail {
   id: string;
+  propertyid?: string;
   title: string;
   type: string;
   category: string;
@@ -294,6 +295,7 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
     { label: 'Furnishing', value: specs.furnishing || 'Unfurnished' },
     { label: 'Availability', value: getReadyStatus(backendProp.status) },
     { label: 'Age of property', value: getAgeLabel(specs.age || 0) },
+    { label: 'Property ID', value: backendProp.propertyid || 'GH-0012' },
   ];
 
   // Create badges array
@@ -305,6 +307,7 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
 
   return {
     id: backendProp._id,
+    propertyid: backendProp.propertyid,
     title: generatePropertyTitle(backendProp.title, bedrooms, backendProp.propertyType || 'Apartment', location.sector || ''),
     type: backendProp.propertyType,
     category: backendProp.category,
@@ -436,6 +439,7 @@ export const getMockPropertyDetail = (): PropertyDetail => {
 
   return {
     id: 'mock-detail-1',
+    propertyid: 'GH-0012',
     title: '4BHK Apartment in Raysan • Corner Plot',
     type: 'Apartment',
     category: 'Residential',
