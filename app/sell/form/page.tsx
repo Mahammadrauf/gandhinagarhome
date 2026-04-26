@@ -294,8 +294,8 @@ useEffect(() => {
 
   // Step 2 Validation
   const isTitleValid = title.trim().length >= 3;
-  const isBedroomsValid = Number(bedrooms.replace("+", "")) >= 1;
-  const isBathroomsValid = Number(bathrooms.replace("+", "")) >= 1;
+  const isBedroomsValid = Number(bedrooms.replace("+", "")) >= 0;
+  const isBathroomsValid = Number(bathrooms.replace("+", "")) >= 0;
   const isPriceValid = parseFloat(price.replace(/,/g, '')) > 0;
   const canContinueStep2 = isTitleValid && isBedroomsValid && isBathroomsValid && isPriceValid;
 
@@ -310,9 +310,9 @@ useEffect(() => {
 
   // --- Helper arrays for ALL dropdowns ---
   const propertyTypeOptions = ["Apartment", "Tenement", "Bungalow", "Penthouse", "Plot", "Shop", "Office"];
-  const bedroomOptions = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10+"];
+  const bedroomOptions = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10+"];
   const balconyOptions = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10+"];
-  const bathroomOptions = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10+"];
+  const bathroomOptions = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10+"];
   const parkingOptions = ["None", "1", "2", "3+"];
 
   // Age of property: Updated options
@@ -519,10 +519,18 @@ const handleEditMediaSubmit = () => {
       localStorage.setItem("pendingListing", JSON.stringify({
         ...buildPayload(),
         submittedAt: new Date().toISOString(),
-        apiResponse: response.data.data
+        apiResponse: response.data.data,
+        paymentInfo: response.data.payment
       }));
 
-      alert("Sell request submitted successfully!");
+      // Check if payment is required
+      if (response.data.payment?.required) {
+        // Route to payment page with payment info
+        router.push(`/sell/subscription?tier=${response.data.payment.tier}&required=true`);
+      } else {
+        // Route to confirmation page for free submissions
+        router.push("/sell/confirmation");
+      }
     } else {
       // Store data even on failure
       localStorage.setItem("pendingListing", JSON.stringify({
@@ -530,9 +538,8 @@ const handleEditMediaSubmit = () => {
         submittedAt: new Date().toISOString(),
       }));
       alert("There was an issue submitting, but your data is saved. Please proceed to review.");
+      router.push("/sell/confirmation");
     }
-
-    router.push("/sell/confirmation");
 
   } catch (error: any) {
     console.error("Sell API error:", error);
@@ -580,7 +587,7 @@ const handleEditMediaSubmit = () => {
     setTriedContinue(true);
     if (!canContinueStep1) {
       if (!isEditMode && !isOtpVerified) {
-        alert("Please verify your WhatsApp number to continue.");
+        alert("Please verify your Mobile number via SMS to continue.");
       }
       return;
     }
@@ -635,7 +642,7 @@ const handleEditMediaSubmit = () => {
 
     setIsSendingOtp(true);
     try {
-      const response = await axios.post(`${API_URL}/sell/send-otp`, {
+      const response = await axios.post(`${API_URL}/sell-otp/send-otp`, {
         mobile: whatsappNumber
       });
 
@@ -643,16 +650,16 @@ const handleEditMediaSubmit = () => {
         setOtpSent(true);
         const otpForDev = response.data.data?.otp;
         if (otpForDev) {
-          alert(`OTP Sent to your Mobile number!`);
+          alert(`OTP Sent to your Mobile number via SMS! Development OTP: ${otpForDev}`);
         } else {
-          alert("OTP Sent to your Mobile number!");
+          alert("OTP Sent to your Mobile number via SMS!");
         }
       } else {
         alert(response.data.message || "Failed to send OTP. Please try again.");
       }
     } catch (error: any) {
-      console.error("Send OTP error:", error);
-      const errorMessage = error.response?.data?.message || error.message || "Failed to send OTP";
+      console.error("Send SMS OTP error:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Failed to send SMS OTP";
       alert(errorMessage);
     } finally {
       setIsSendingOtp(false);
@@ -662,21 +669,20 @@ const handleEditMediaSubmit = () => {
   const handleVerifyOtp = async () => {
     setIsVerifying(true);
     try {
-      const response = await axios.post(`${API_URL}/sell/verify-otp`, {
+      const response = await axios.post(`${API_URL}/sell-otp/verify-otp`, {
         mobile: whatsappNumber,
-        otp: otp,
-        rememberMe: false
+        otp: otp
       });
 
       if (response.data.success) {
         setIsOtpVerified(true);
-        alert("Mobile number verified successfully!");
+        alert("Mobile number verified successfully via SMS!");
       } else {
         alert(response.data.message || "Invalid OTP. Please try again.");
       }
     } catch (error: any) {
-      console.error("Verify OTP error:", error);
-      const errorMessage = error.response?.data?.message || error.message || "Failed to verify OTP";
+      console.error("Verify SMS OTP error:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Failed to verify SMS OTP";
       alert(errorMessage);
     } finally {
       setIsVerifying(false);

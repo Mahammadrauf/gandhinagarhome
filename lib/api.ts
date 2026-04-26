@@ -71,6 +71,7 @@ export interface BackendProperty {
     whatsappNumber?: string;
     mobile?: string;
     phone?: string;
+    sellerType?: 'agent' | 'owner' | 'builder';
   };
   createdAt: string;
   updatedAt: string;
@@ -257,20 +258,20 @@ export const fetchFeaturedProperties = async (): Promise<FrontendProperty[]> => 
       return transformed;
     }
     
-    // Return mock data if API returns no data
-    console.log('No data from API, returning mock data');
+    // Return empty array if API returns no data
+    console.log('No data from API, returning empty array');
     console.log('Reason:', {
       success: result.success,
       hasData: !!result.data,
       dataLength: result.data?.length,
       dataContent: result.data
     });
-    return getMockFeaturedProperties();
+    return [];
   } catch (error) {
     console.error('Error fetching featured properties:', error);
-    // Return mock data on error
-    console.log('Returning mock data due to error');
-    return getMockFeaturedProperties();
+    // Return empty array on error
+    console.log('Returning empty array due to error');
+    return [];
   }
 };
 
@@ -298,20 +299,20 @@ export const fetchExclusiveProperties = async (): Promise<FrontendProperty[]> =>
       return transformed;
     }
     
-    // Return mock data if API returns no data
-    console.log('No data from API, returning mock data');
+    // Return empty array if API returns no data
+    console.log('No data from API, returning empty array');
     console.log('Reason:', {
       success: result.success,
       hasData: !!result.data,
       dataLength: result.data?.length,
       dataContent: result.data
     });
-    return getMockExclusiveProperties();
+    return [];
   } catch (error) {
     console.error('Error fetching exclusive properties:', error);
-    // Return mock data on error
-    console.log('Returning mock data due to error');
-    return getMockExclusiveProperties();
+    // Return empty array on error
+    console.log('Returning empty array due to error');
+    return [];
   }
 };
 
@@ -361,9 +362,7 @@ export const fetchBuyPageProperties = async (filters?: {
         }
       }
     }
-    if (exclusive.length === 0) {
-      exclusive = getMockExclusiveProperties();
-    }
+    // Keep exclusive as empty array if no data from API
 
     // Process featured properties
     let featured: FrontendProperty[] = [];
@@ -376,9 +375,7 @@ export const fetchBuyPageProperties = async (filters?: {
         }
       }
     }
-    if (featured.length === 0) {
-      featured = getMockFeaturedProperties();
-    }
+    // Keep featured as empty array if no data from API
 
     // Process all other properties
     let others: FrontendProperty[] = [];
@@ -396,9 +393,7 @@ export const fetchBuyPageProperties = async (filters?: {
         }
       }
     }
-    if (others.length === 0) {
-      others = getMockOtherProperties();
-    }
+    // Keep others as empty array if no data from API
 
     console.log('Buy page data loaded:', {
       exclusive: exclusive.length,
@@ -410,9 +405,9 @@ export const fetchBuyPageProperties = async (filters?: {
   } catch (error) {
     console.error('Error fetching buy page properties:', error);
     return {
-      exclusive: getMockExclusiveProperties(),
-      featured: getMockFeaturedProperties(),
-      others: getMockOtherProperties()
+      exclusive: [],
+      featured: [],
+      others: []
     };
   }
 };

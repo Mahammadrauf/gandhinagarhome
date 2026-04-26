@@ -72,7 +72,8 @@ const Header = () => {
     lastName: '', 
     email: '', 
     mobile: '',
-    role: '' as 'buyer' | 'seller' | '' 
+    role: '' as 'buyer' | 'seller' | '',
+    sellerType: '' as 'agent' | 'owner' | 'builder' | ''
   });
 
   // Handle Scroll Effect
@@ -95,7 +96,8 @@ const Header = () => {
             lastName: parsedUser.lastName || '',
             email: parsedUser.email || '',
             mobile: parsedUser.mobile || '',
-            role: (parsedUser.role || '') as '' | 'buyer' | 'seller'
+            role: (parsedUser.role || '') as '' | 'buyer' | 'seller',
+            sellerType: (parsedUser.sellerType || '') as 'agent' | 'owner' | 'builder' | ''
           });
         }
       } catch (e) {
@@ -129,7 +131,7 @@ const Header = () => {
 
   const handleCloseLoop = () => {
     setIsAuthOpen(false);
-    setUser({ firstName: '', lastName: '', email: '', mobile: '', role: '' });
+    setUser({ firstName: '', lastName: '', email: '', mobile: '', role: '', sellerType: '' });
     setWhatsappOtp(['', '', '', '', '', '']);
     setEmailOtp(['', '', '', '', '', '']);
     setStep('details');
@@ -173,6 +175,10 @@ const Header = () => {
     if (authMode === 'signup') {
       if (!user.firstName.trim() || !user.lastName.trim() || !user.email.trim() || !user.mobile.trim()) {
         return; 
+      }
+      if (user.role === 'seller' && !user.sellerType) {
+        alert('Please select your type (Agent, Owner, or Builder)');
+        return;
       }
     } else {
       if (!user.mobile.trim()) return;
@@ -321,7 +327,7 @@ const Header = () => {
         if (token) localStorage.setItem('gh_token', token);
 
         setIsLoggedIn(true);
-        setUser({ firstName, lastName, email: updatedUser.email, mobile: updatedUser.mobile, role: updatedUser.role as '' | 'buyer' | 'seller' });
+        setUser({ firstName, lastName, email: updatedUser.email, mobile: updatedUser.mobile, role: updatedUser.role as '' | 'buyer' | 'seller', sellerType: '' });
         setIsAuthOpen(false);
         router.push('/profile');
       } else {
@@ -333,6 +339,7 @@ const Header = () => {
           firstName: user.firstName,
           lastName: user.lastName,
           role: user.role,
+          sellerType: user.sellerType,
           rememberMe: false
         };
 
@@ -368,7 +375,7 @@ const Header = () => {
         if (token) localStorage.setItem('gh_token', token);
 
         setIsLoggedIn(true);
-        setUser({ firstName, lastName, email: updatedUser.email, mobile: updatedUser.mobile, role: updatedUser.role as '' | 'buyer' | 'seller' });
+        setUser({ firstName, lastName, email: updatedUser.email, mobile: updatedUser.mobile, role: updatedUser.role as '' | 'buyer' | 'seller', sellerType: '' });
         setIsAuthOpen(false);
         router.push('/profile');
       }
@@ -385,7 +392,7 @@ const Header = () => {
     localStorage.removeItem('gh_token');
     setIsLoggedIn(false);
     setIsMobileMenuOpen(false);
-    setUser({ firstName: '', lastName: '', email: '', mobile: '', role: '' });
+    setUser({ firstName: '', lastName: '', email: '', mobile: '', role: '', sellerType: '' });
     router.push('/');
   };
 
@@ -551,6 +558,22 @@ const Header = () => {
                         <label className="text-[10px] font-bold text-gray-500 ml-1 uppercase tracking-wide">Email Address</label>
                         <input required type="email" className={`w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 ${BRAND_FOCUS_RING} focus:border-transparent transition-all text-sm`} value={user.email} onChange={(e) => setUser({...user, email: e.target.value})} />
                       </div>
+                      {authMode === 'signup' && user.role === 'seller' && (
+                        <div className="col-span-2 space-y-1">
+                          <label className="text-[10px] font-bold text-gray-500 ml-1 uppercase tracking-wide">You are</label>
+                          <select 
+                            required 
+                            className={`w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 ${BRAND_FOCUS_RING} focus:border-transparent transition-all text-sm`}
+                            value={user.sellerType} 
+                            onChange={(e) => setUser({...user, sellerType: e.target.value as 'agent' | 'owner' | 'builder'})}
+                          >
+                            <option value="">Select your type</option>
+                            <option value="agent">Agent</option>
+                            <option value="owner">Owner</option>
+                            <option value="builder">Builder</option>
+                          </select>
+                        </div>
+                      )}
                     </div>
                   )}
 

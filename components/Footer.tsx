@@ -245,7 +245,7 @@ const Footer = () => {
               <div>
                 <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-0.5">Visit Us</h4>
                 <p className="text-sm font-bold text-black group-hover:text-black">
-                  414 , Pramukh Square, Sargasan , Gandhinagar.
+                  Office 420, Fourth Floor, Block B, CBD Mall, SP Ring Road, Ahmedabad, Gujarat 382424
                 </p>
               </div>
             </div>

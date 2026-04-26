@@ -1,7 +1,8 @@
 // app/sell/subscription/page.tsx
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Header from "@/components/Header";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -131,12 +132,14 @@ const plans = [
   }
 ];
 
-export default function SubscriptionPage() {
+function SubscriptionPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [hoveredPlan, setHoveredPlan] = useState<string | null>(null);
   const [submittingPlan, setSubmittingPlan] = useState<string | null>(null);
   const [propertyId, setPropertyId] = useState<string | null>(null);
   const [viewerCount, setViewerCount] = useState(12);
+  const [autoPaymentTriggered, setAutoPaymentTriggered] = useState(false);
 
   useEffect(() => {
     // Generate dynamic viewer count between 11 and 20
@@ -151,7 +154,22 @@ export default function SubscriptionPage() {
     } catch {
       // ignore
     }
-  }, []);
+
+    // Check if payment is required and auto-trigger payment
+    const required = searchParams.get('required');
+    const tier = searchParams.get('tier');
+    
+    if (required === 'true' && tier && !autoPaymentTriggered) {
+      setAutoPaymentTriggered(true);
+      // Auto-select standard plan and trigger payment
+      setTimeout(() => {
+        const standardPlan = plans.find(p => p.id === 'standard');
+        if (standardPlan) {
+          handlePlanPay(standardPlan);
+        }
+      }, 1000);
+    }
+  }, [searchParams, autoPaymentTriggered]);
 
   const getAuthToken = () => {
     return (
@@ -469,5 +487,18 @@ export default function SubscriptionPage() {
 
       </div>
     </main>
+  );
+}
+
+export default function SubscriptionPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0b6b53] mx-auto"></div>
+        <p className="mt-4 text-gray-600">Loading subscription plans...</p>
+      </div>
+    </div>}>
+      <SubscriptionPageContent />
+    </Suspense>
   );
 }

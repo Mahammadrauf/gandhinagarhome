@@ -53,7 +53,16 @@ export default function ConfirmationPage() {
   const handleConfirmSubmit = async () => {
     if (!listing) return;
     setSubmitting(true);
-    router.push("/sell/subscription"); 
+    
+    // Check if payment is required
+    if (listing.paymentInfo?.required) {
+      // Redirect to payment page
+      router.push(`/sell/subscription?tier=${listing.paymentInfo.tier}&required=true`);
+    } else {
+      // Show thank you message for free submission
+      alert("Thank you! Your property has been submitted successfully and will be reviewed shortly.");
+      router.push("/");
+    }
   };
 
   const handleStartOver = () => {
@@ -320,9 +329,17 @@ export default function ConfirmationPage() {
                     disabled={submitting}
                     className="w-full h-14 rounded-2xl bg-[#0b6b53] text-white font-bold hover:bg-[#085341] transition-all shadow-lg shadow-[#0b6b53]/20 disabled:opacity-50 flex items-center justify-center gap-2 group"
                 >
-                    {submitting ? "Redirecting..." : (
+                    {submitting ? "Processing..." : (
                         <>
-                            Confirm & Select Plan <CreditCard size={18} className="group-hover:translate-x-1 transition-transform" />
+                            {listing.paymentInfo?.required ? (
+                                <>
+                                    Proceed to Payment <CreditCard size={18} className="group-hover:translate-x-1 transition-transform" />
+                                </>
+                            ) : (
+                                <>
+                                    Submit Listing <CheckCircle2 size={18} className="group-hover:scale-110 transition-transform" />
+                                </>
+                            )}
                         </>
                     )}
                 </button>
@@ -331,7 +348,10 @@ export default function ConfirmationPage() {
                 <div className="flex gap-3 px-1">
                     <AlertCircle size={14} className="text-gray-400 shrink-0 mt-0.5" />
                     <p className="text-[10px] font-medium text-gray-400 leading-relaxed">
-                        By clicking above, you confirm that all details are correct. You will be redirected to the subscription plan page.
+                        {listing.paymentInfo?.required 
+                            ? `Payment required for tier ${listing.paymentInfo.tier} subscription. You will be redirected to secure payment.`
+                            : "Your property will be submitted for review. No payment required for this submission."
+                        }
                     </p>
                 </div>
               </div>

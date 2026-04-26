@@ -43,7 +43,7 @@ import {
 } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { fetchPropertyDetail, fetchPropertyDetailBySlug, getMockPropertyDetail, PropertyDetail } from '@/lib/propertyDetailApi';
+import { fetchPropertyDetail, fetchPropertyDetailBySlug, PropertyDetail } from '@/lib/propertyDetailApi';
 import { fetchSimilarProperties, FrontendProperty, addToFavorites, removeFromFavorites, checkFavorite } from '@/lib/api';
 import { parsePropertyUrl, generateShareUrl } from '@/lib/propertyUrl';
 
@@ -95,14 +95,63 @@ const getTheme = (type: string) => {
   return themes[type as keyof typeof themes] || themes.normal;
 };
 
-const DirectOwnerBadge = () => (
+const DynamicSellerBadge = ({ sellerType }: { sellerType?: 'agent' | 'owner' | 'builder' }) => {
+  const getBadgeInfo = () => {
+    switch (sellerType) {
+      case 'agent':
+        return {
+          text: 'Agent',
+          color: '#0F7F9C',
+          bgColor: '#e0f2ff',
+          textColor: '#022F5A'
+        };
+      case 'owner':
+        return {
+          text: 'Direct Owner',
+          color: '#166534',
+          bgColor: '#dcfce7',
+          textColor: '#166534'
+        };
+      case 'builder':
+        return {
+          text: 'Builder',
+          color: '#B59E78',
+          bgColor: '#F5F2EB',
+          textColor: '#5C5042'
+        };
+      default:
+        return {
+          text: 'Direct Owner',
+          color: '#166534',
+          bgColor: '#dcfce7',
+          textColor: '#166534'
+        };
+    }
+  };
+
+  const badgeInfo = getBadgeInfo();
+
+  return (
     <div className="inline-flex items-center gap-1.5 bg-white border border-gray-200 px-3 py-1.5 rounded-lg shadow-sm">
-        <div className="relative w-4 h-4 flex items-center justify-center">
-             <ShieldCheck className="w-4 h-4 text-[#166534] fill-none stroke-[2.5px]" /> 
-        </div>
-        <span className="text-[11px] font-bold text-[#166534] tracking-wide">Direct Owner</span>
+      <div className="relative w-4 h-4 flex items-center justify-center">
+        <ShieldCheck 
+          className="w-4 h-4" 
+          style={{ 
+            color: badgeInfo.color,
+            stroke: badgeInfo.color,
+            strokeWidth: '2.5px'
+          }} 
+        />
+      </div>
+      <span 
+        className="text-[11px] font-bold tracking-wide"
+        style={{ color: badgeInfo.textColor }}
+      >
+        {badgeInfo.text}
+      </span>
     </div>
-);
+  );
+};
 
 export default function PropertyDetailsPage({ params }: { params: { slug: string } }) {
   const [mediaMode, setMediaMode] = useState('photos');
@@ -145,15 +194,13 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
         if (propertyData) {
           setProperty(propertyData);
         } else {
-          // Use mock data as fallback
-          console.log('Using mock data as fallback');
-          setProperty(getMockPropertyDetail());
+          // No property found
+          console.log('No property found');
+          setError('Property not found');
         }
       } catch (err) {
         console.error('Error loading property:', err);
         setError('Failed to load property details');
-        // Use mock data as fallback
-        setProperty(getMockPropertyDetail());
       } finally {
         setLoading(false);
       }
@@ -734,10 +781,8 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
                                 <p className="text-[10px] text-gray-400 font-medium">Verified Seller</p>
                             </div>
                         </div>
-                        {/* --- DIRECT OWNER BADGE --- */}
-                        {property.seller.isDirectOwner && (
-                            <DirectOwnerBadge />
-                        )}
+                        {/* --- DYNAMIC SELLER BADGE --- */}
+                        <DynamicSellerBadge sellerType={property.seller.sellerType} />
                     </div>
 
                     <div className="space-y-4">

@@ -53,6 +53,7 @@ export interface PropertyDetail {
     verification: string;
     isVerified: boolean;
     isDirectOwner: boolean;
+    sellerType?: 'agent' | 'owner' | 'builder';
   };
   // Add badges and overview for compatibility
   badges: Array<{
@@ -357,7 +358,8 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
       //email: '', // Add email field to backend if needed
       verification: 'OTP verified',
       isVerified: true,
-      isDirectOwner: true
+      isDirectOwner: userId.sellerType === 'owner',
+      sellerType: userId.sellerType || 'owner'
     },
     badges: createBadges(),
     overview: createOverview(),
@@ -494,7 +496,8 @@ export const getMockPropertyDetail = (): PropertyDetail => {
       //email: 'rajesh.patel@example.com',
       verification: 'OTP verified',
       isVerified: true,
-      isDirectOwner: true
+      isDirectOwner: true,
+      sellerType: 'owner'
     },
     badges: createBadges(),
     overview: createOverview(),
