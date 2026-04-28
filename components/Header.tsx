@@ -42,6 +42,146 @@ const NavLink: React.FC<NavLinkProps> = ({ href, children, onClick, mobile }) =>
   );
 };
 
+// --- SELLER TYPE DROPDOWN COMPONENT ---
+interface SellerTypeDropdownProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+const SellerTypeDropdown: React.FC<SellerTypeDropdownProps> = ({ value, onChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [coords, setCoords] = useState<{ left: number; top: number; width: number } | null>(null);
+
+  const options = [
+    { value: "", label: "Select your type" },
+    { value: "agent", label: "Agent" },
+    { value: "owner", label: "Owner" },
+    { value: "builder", label: "Builder" }
+  ];
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      const target = event.target as Node;
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(target) &&
+        !(dropdownRef.current && dropdownRef.current.contains(target))
+      ) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    function updateCoords() {
+      const btn = buttonRef.current;
+      if (btn) {
+        const rect = btn.getBoundingClientRect();
+        // Add a small offset so dropdown doesn't stick to the button
+        setCoords({ left: Math.max(8, rect.left), top: rect.bottom + 6, width: rect.width });
+      }
+    }
+
+    if (isOpen) {
+      updateCoords();
+      window.addEventListener("resize", updateCoords);
+      window.addEventListener("scroll", updateCoords, true);
+      return () => {
+        window.removeEventListener("resize", updateCoords);
+        window.removeEventListener("scroll", updateCoords, true);
+      };
+    }
+    return;
+  }, [isOpen]);
+
+  const selectedOption = options.find((opt) => opt.value === value);
+  const displayLabel = selectedOption ? selectedOption.label : "Select your type";
+  const isActive = value !== "";
+
+  return (
+    <div className="relative w-full" ref={wrapperRef}>
+      <button 
+        ref={buttonRef} 
+        onClick={() => setIsOpen(!isOpen)} 
+        type="button"
+        className={`group flex h-8 w-full items-center justify-between rounded-full border px-3 transition-all duration-200 ${
+          isOpen 
+            ? "border-emerald-500 ring-1 ring-emerald-500 bg-white" 
+            : isActive 
+              ? "border-emerald-200 bg-emerald-50/30 hover:border-emerald-300" 
+              : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+        }`}
+      >
+        <div className="flex items-center gap-2 overflow-hidden">
+          <span className="shrink-0 text-[10px] md:text-xs font-medium text-slate-500">Type</span>
+          <span className="h-3 w-px bg-slate-200"></span>
+          <span className={`truncate text-xs md:text-sm ${isActive ? "font-semibold text-emerald-900" : "text-slate-700"}`}>
+            {displayLabel}
+          </span>
+        </div>
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          width="14" 
+          height="14" 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="currentColor" 
+          strokeWidth="2" 
+          strokeLinecap="round" 
+          strokeLinejoin="round" 
+          className={`ml-1 h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${
+            isOpen ? "rotate-180 text-emerald-600" : ""
+          }`}
+        > 
+          <path d="m6 9 6 6 6-6" /> 
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div
+          ref={dropdownRef}
+          style={{
+            position: "fixed",
+            left: coords ? `${coords.left}px` : undefined,
+            top: coords ? `${coords.top}px` : undefined,
+            width: coords ? `${coords.width}px` : undefined,
+            zIndex: 9999,
+          }}
+          className="origin-top-left animate-in fade-in zoom-in-95 duration-100 rounded-xl border border-slate-100 bg-white p-1 shadow-xl shadow-slate-200/50"
+        >
+          <div className="flex flex-col max-h-60 overflow-y-auto">
+            {options.map((option) => (
+              <button 
+                key={option.value} 
+                onClick={() => { 
+                  onChange(option.value); 
+                  setIsOpen(false); 
+                }}
+                type="button"
+                className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs md:text-sm transition-colors ${
+                  value === option.value 
+                    ? "bg-emerald-50 text-emerald-700 font-medium" 
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                }`}
+              >
+                {option.label}
+                {value === option.value && (
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // --- MAIN HEADER COMPONENT ---
 const Header = () => {
   const router = useRouter();
@@ -561,17 +701,7 @@ const Header = () => {
                       {authMode === 'signup' && user.role === 'seller' && (
                         <div className="col-span-2 space-y-1">
                           <label className="text-[10px] font-bold text-gray-500 ml-1 uppercase tracking-wide">You are</label>
-                          <select 
-                            required 
-                            className={`w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 ${BRAND_FOCUS_RING} focus:border-transparent transition-all text-sm`}
-                            value={user.sellerType} 
-                            onChange={(e) => setUser({...user, sellerType: e.target.value as 'agent' | 'owner' | 'builder'})}
-                          >
-                            <option value="">Select your type</option>
-                            <option value="agent">Agent</option>
-                            <option value="owner">Owner</option>
-                            <option value="builder">Builder</option>
-                          </select>
+                          <SellerTypeDropdown value={user.sellerType} onChange={(value) => setUser({...user, sellerType: value as 'agent' | 'owner' | 'builder'})} />
                         </div>
                       )}
                     </div>
