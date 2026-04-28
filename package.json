@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@googlemaps/js-api-loader": "^2.0.2",
+    "@googlemaps/react-wrapper": "^1.2.0",
     "@headlessui/react": "^2.2.9",
     "@radix-ui/react-select": "^2.2.6",
     "axios": "^1.13.2",

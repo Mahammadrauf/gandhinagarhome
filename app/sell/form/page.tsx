@@ -9,7 +9,7 @@ import React, { Fragment, useRef, useState, KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import axios from 'axios';
 import API_URL from '@/app/config/config';
-import LocationPicker from "@/components/LocationPicker";
+import GoogleLocationPicker from "@/components/GoogleLocationPicker";
 import { fetchUserProfile } from '@/lib/api';
 
 type Step = 0 | 1 | 2 | 3;
@@ -1559,7 +1559,7 @@ Can’t find your area? Select the nearest major locality.            </p>
       <p className="text-sm text-gray-600 mb-3 px-1">
         Click on the map to open the location picker, search your address and drop a pin so buyers can see your exact location.
       </p>
-      <LocationPicker
+      <GoogleLocationPicker
         value={{ lat: latitude, lng: longitude, displayAddress: pickedDisplayAddress }}
         onChange={(next) => {
           setLatitude(next.lat);
