@@ -254,6 +254,32 @@ export default function BuyerProfile() {
                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg>
                 </span>
               </h2>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {user?.role && (
+                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+                    user.role === 'buyer' 
+                      ? 'bg-blue-100 text-blue-700' 
+                      : user.role === 'seller'
+                      ? 'bg-purple-100 text-purple-700'
+                      : 'bg-gray-100 text-gray-700'
+                  }`}>
+                    {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                  </span>
+                )}
+                {user?.sellerType && (
+                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+                    user.sellerType === 'agent' 
+                      ? 'bg-orange-100 text-orange-700'
+                      : user.sellerType === 'owner'
+                      ? 'bg-green-100 text-green-700'
+                      : user.sellerType === 'builder'
+                      ? 'bg-indigo-100 text-indigo-700'
+                      : 'bg-gray-100 text-gray-700'
+                  }`}>
+                    {user.sellerType.charAt(0).toUpperCase() + user.sellerType.slice(1)}
+                  </span>
+                )}
+              </div>
               <p className="text-sm text-gray-500 mt-1">{formData.email}</p>
               <div className="mt-3 pt-3 border-t border-gray-100 w-full">
                 <span className="inline-block bg-green-50 text-[#006A58] text-xs px-3 py-1.5 rounded-full font-medium">Current Plan: Starter Pack</span>

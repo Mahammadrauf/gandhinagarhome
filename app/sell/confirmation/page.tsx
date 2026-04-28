@@ -54,15 +54,9 @@ export default function ConfirmationPage() {
     if (!listing) return;
     setSubmitting(true);
     
-    // Check if payment is required
-    if (listing.paymentInfo?.required) {
-      // Redirect to payment page
-      router.push(`/sell/subscription?tier=${listing.paymentInfo.tier}&required=true`);
-    } else {
-      // Show thank you message for free submission
-      alert("Thank you! Your property has been submitted successfully and will be reviewed shortly.");
-      router.push("/");
-    }
+    // Always show thank you message and redirect to home
+    alert("Thank you! Your property has been submitted successfully and will be reviewed shortly.");
+    router.push("/");
   };
 
   const handleStartOver = () => {
@@ -331,15 +325,7 @@ export default function ConfirmationPage() {
                 >
                     {submitting ? "Processing..." : (
                         <>
-                            {listing.paymentInfo?.required ? (
-                                <>
-                                    Proceed to Payment <CreditCard size={18} className="group-hover:translate-x-1 transition-transform" />
-                                </>
-                            ) : (
-                                <>
-                                    Submit Listing <CheckCircle2 size={18} className="group-hover:scale-110 transition-transform" />
-                                </>
-                            )}
+                            Submit Listing <CheckCircle2 size={18} className="group-hover:scale-110 transition-transform" />
                         </>
                     )}
                 </button>
@@ -348,10 +334,7 @@ export default function ConfirmationPage() {
                 <div className="flex gap-3 px-1">
                     <AlertCircle size={14} className="text-gray-400 shrink-0 mt-0.5" />
                     <p className="text-[10px] font-medium text-gray-400 leading-relaxed">
-                        {listing.paymentInfo?.required 
-                            ? `Payment required for tier ${listing.paymentInfo.tier} subscription. You will be redirected to secure payment.`
-                            : "Your property will be submitted for review. No payment required for this submission."
-                        }
+                        Your property will be submitted for review. You will see a thank you message upon successful submission.
                     </p>
                 </div>
               </div>

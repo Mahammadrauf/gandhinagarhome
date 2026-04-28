@@ -462,6 +462,7 @@ const Header = () => {
           email: apiUser?.email || '',
           mobile: apiUser?.mobile || mobile,
           role: (apiUser?.role as 'buyer' | 'seller' | '') || '',
+          sellerType: (apiUser?.sellerType as 'agent' | 'owner' | 'builder' | '') || '',
           token,
           isLoggedIn: true
         };
@@ -470,7 +471,7 @@ const Header = () => {
         if (token) localStorage.setItem('gh_token', token);
 
         setIsLoggedIn(true);
-        setUser({ firstName, lastName, email: updatedUser.email, mobile: updatedUser.mobile, role: updatedUser.role as '' | 'buyer' | 'seller', sellerType: '' });
+        setUser({ firstName, lastName, email: updatedUser.email, mobile: updatedUser.mobile, role: updatedUser.role as '' | 'buyer' | 'seller', sellerType: updatedUser.sellerType });
         setIsAuthOpen(false);
         router.push('/profile');
       } else {
@@ -509,6 +510,7 @@ const Header = () => {
           email: apiUser?.email || user.email,
           mobile: apiUser?.mobile || user.mobile,
           role: (apiUser?.role as 'buyer' | 'seller' | '') || user.role,
+          sellerType: (apiUser?.sellerType as 'agent' | 'owner' | 'builder' | '') || user.sellerType,
           token,
           isLoggedIn: true
         };
@@ -517,7 +519,7 @@ const Header = () => {
         if (token) localStorage.setItem('gh_token', token);
 
         setIsLoggedIn(true);
-        setUser({ firstName, lastName, email: updatedUser.email, mobile: updatedUser.mobile, role: updatedUser.role as '' | 'buyer' | 'seller', sellerType: '' });
+        setUser({ firstName, lastName, email: updatedUser.email, mobile: updatedUser.mobile, role: updatedUser.role as '' | 'buyer' | 'seller', sellerType: updatedUser.sellerType });
         setIsAuthOpen(false);
         router.push('/profile');
       }
