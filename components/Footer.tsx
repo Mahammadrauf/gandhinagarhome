@@ -269,7 +269,7 @@ const Footer = () => {
               <div>
                 <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-0.5">Call Us</h4>
                 <p className="text-sm font-bold text-black group-hover:text-[#006B5B] transition-colors">
-                  +91 99982 74454
+                  +91 99980 66469
                 </p>
               </div>
             </a>

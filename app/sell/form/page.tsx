@@ -290,7 +290,7 @@ useEffect(() => {
   const isLastNameValid = lastName.trim().length >= 2;
   const isEmailValid = validateEmail(email);
   const isWhatsappValid = whatsappNumber.length === 10;
-  const canContinueStep1 = isFirstNameValid && isLastNameValid && isEmailValid && (isEditMode ? true : (isWhatsappValid && isOtpVerified));
+  const canContinueStep1 = isFirstNameValid && isLastNameValid && isEmailValid && (isEditMode ? true : isWhatsappValid);
 
   // Step 2 Validation
   const isTitleValid = title.trim().length >= 3;
@@ -846,8 +846,9 @@ const handleEditMediaSubmit = () => {
                       </div>
                     </div>
 
-                    {/* OTP Section */}
-                    {!isEditMode && (
+                    {/* OTP Section - COMMENTED OUT AS NOT REQUIRED */}
+                    {/* 
+                    !isEditMode && (
                       <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
@@ -905,7 +906,8 @@ const handleEditMediaSubmit = () => {
                           )}
                         </div>
                       </div>
-                    )}
+                    )
+                    */}
                   </div>
 
                   <p className="text-sm text-gray-500">Your contact is partially visible to buyers. Full details require buyer subscription.</p>

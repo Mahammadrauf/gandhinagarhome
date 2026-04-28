@@ -273,7 +273,9 @@ const Header = () => {
     setIsAuthOpen(false);
     setUser({ firstName: '', lastName: '', email: '', mobile: '', role: '', sellerType: '' });
     setWhatsappOtp(['', '', '', '', '', '']);
-    setEmailOtp(['', '', '', '', '', '']);
+    // ===== COMMENTED: Email OTP reset removed - only WhatsApp OTP now =====
+    // setEmailOtp(['', '', '', '', '', '']);
+    // ===== END OF COMMENT =====
     setStep('details');
     setAuthMode('login');
     setIsLoading(false);
@@ -368,33 +370,35 @@ const Header = () => {
 
       const sendMobileOtpJson = await sendMobileOtpRes.json();
       
-      if (authMode === 'signup') {
-        const sendEmailOtpRes = await fetch(`${API_BASE_URL}/auth/send-email-otp`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, role })
-        });
+      // ===== COMMENTED: Email OTP logic removed - only WhatsApp OTP now =====
+      // if (authMode === 'signup') {
+      //   const sendEmailOtpRes = await fetch(`${API_BASE_URL}/auth/send-email-otp`, {
+      //     method: 'POST',
+      //     headers: { 'Content-Type': 'application/json' },
+      //     body: JSON.stringify({ email, role })
+      //   });
 
-        const sendEmailOtpJson = await sendEmailOtpRes.json();
-        if (!sendEmailOtpRes.ok || !sendEmailOtpJson?.success) {
-          const msg = sendEmailOtpJson?.message || 'Failed to send email OTP';
-          
-          // Check if user is already registered
-          if (sendEmailOtpJson?.errorCode === 'ALREADY_REGISTERED_DIFFERENT_ROLE') {
-            const existingRole = sendEmailOtpJson?.existingRole;
-            alert(`This email address is already registered as a ${existingRole}. Please log in instead of registering again.`);
-            return;
-          }
-          
-          if (sendEmailOtpJson?.errorCode === 'ALREADY_REGISTERED_SAME_ROLE') {
-            const existingRole = sendEmailOtpJson?.existingRole;
-            alert(`You have already registered as a ${existingRole}. Please log in instead of registering again.`);
-            return;
-          }
-          
-          throw new Error(msg);
-        }
-      }
+      //   const sendEmailOtpJson = await sendEmailOtpRes.json();
+      //   if (!sendEmailOtpRes.ok || !sendEmailOtpJson?.success) {
+      //     const msg = sendEmailOtpJson?.message || 'Failed to send email OTP';
+      //     
+      //     // Check if user is already registered
+      //     if (sendEmailOtpJson?.errorCode === 'ALREADY_REGISTERED_DIFFERENT_ROLE') {
+      //       const existingRole = sendEmailOtpJson?.existingRole;
+      //       alert(`This email address is already registered as a ${existingRole}. Please log in instead of registering again.`);
+      //       return;
+      //     }
+      //     
+      //     if (sendEmailOtpJson?.errorCode === 'ALREADY_REGISTERED_SAME_ROLE') {
+      //       const existingRole = sendEmailOtpJson?.existingRole;
+      //       alert(`You have already registered as a ${existingRole}. Please log in instead of registering again.`);
+      //       return;
+      //     }
+      //     
+      //     throw new Error(msg);
+      //   }
+      // }
+      // ===== END OF COMMENT =====
 
       setStep('otp');
       setTimeout(() => whatsappRefs.current[0]?.focus(), 100);
@@ -408,12 +412,11 @@ const Header = () => {
 
   const handleVerifyOtp = async () => {
     const isWaValid = whatsappOtp.join('').length === 6;
-    const isEmailValid = emailOtp.join('').length === 6;
 
     if (authMode === 'login') {
       if (!isWaValid) return;
     } else {
-      if (!isWaValid || !isEmailValid) return;
+      if (!isWaValid) return;
     }
     
     setIsLoading(true);
@@ -475,7 +478,6 @@ const Header = () => {
           mobile: user.mobile,
           mobileOtp: whatsappOtp.join(''),
           email: user.email,
-          emailOtp: emailOtp.join(''),
           firstName: user.firstName,
           lastName: user.lastName,
           role: user.role,
@@ -540,7 +542,6 @@ const Header = () => {
     setAuthMode(mode);
     setStep(mode === 'signup' ? 'role' : 'details');
     setWhatsappOtp(['', '', '', '', '', '']);
-    setEmailOtp(['', '', '', '', '', '']);
     setIsAuthOpen(true);
     setIsMobileMenuOpen(false);
   };
@@ -562,7 +563,7 @@ const Header = () => {
               <nav className="flex items-center gap-8">
                 <NavLink href="/">Home</NavLink>
                 <NavLink href="/buy">Buy</NavLink>
-                <NavLink href="/sell">Sell</NavLink>
+                <NavLink href="/sell/form">Sell</NavLink>
                 <NavLink href="/about">About Us</NavLink>
                 <NavLink href="/contact">Contact Us</NavLink>
               </nav>
@@ -620,7 +621,7 @@ const Header = () => {
             <nav className="mb-4">
               <NavLink mobile href="/" onClick={() => setIsMobileMenuOpen(false)}>Home</NavLink>
               <NavLink mobile href="/buy" onClick={() => setIsMobileMenuOpen(false)}>Buy</NavLink>
-              <NavLink mobile href="/sell" onClick={() => setIsMobileMenuOpen(false)}>Sell</NavLink>
+              <NavLink mobile href="/sell/form" onClick={() => setIsMobileMenuOpen(false)}>Sell</NavLink>
               <NavLink mobile href="/about" onClick={() => setIsMobileMenuOpen(false)}>About Us</NavLink>
               <NavLink mobile href="/contact" onClick={() => setIsMobileMenuOpen(false)}>Contact Us</NavLink>
             </nav>
@@ -654,10 +655,10 @@ const Header = () => {
               <button onClick={handleCloseLoop} className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors bg-white/10 p-1 rounded-full"><X className="w-4 h-4" /></button>
               
               <h2 className="text-xl font-bold text-white tracking-tight">
-                  {authMode === 'signup' && step === 'role' ? 'Sign Up' : step === 'otp' ? (authMode === 'login' ? 'Verify WhatsApp OTP' : 'Dual Verification') : (authMode === 'signup' ? `Create Account as ${user.role.charAt(0).toUpperCase() + user.role.slice(1)}` : 'Welcome Back')}
+                  {authMode === 'signup' && step === 'role' ? 'Sign Up' : step === 'otp' ? 'Verify WhatsApp OTP' : (authMode === 'signup' ? `Create Account as ${user.role.charAt(0).toUpperCase() + user.role.slice(1)}` : 'Welcome Back')}
               </h2>
               <p className="text-[#a3e0d5] text-xs mt-1 font-medium">
-                  {step === 'otp' ? (authMode === 'login' ? 'Enter the code sent to your WhatsApp number' : 'Enter WhatsApp and Email codes') : (authMode === 'signup' && step === 'role' ? 'Join GandhinagarHomes' : (authMode === 'signup' ? `Join GandhinagarHomes as ${user.role.charAt(0).toUpperCase() + user.role.slice(1)}` : 'Login to your account'))}
+                  {step === 'otp' ? 'Enter the code sent to your WhatsApp number' : (authMode === 'signup' && step === 'role' ? 'Join GandhinagarHomes' : (authMode === 'signup' ? `Join GandhinagarHomes as ${user.role.charAt(0).toUpperCase() + user.role.slice(1)}` : 'Login to your account'))}
               </p>
             </div>
 
@@ -716,7 +717,7 @@ const Header = () => {
                   </div>
 
                   <button type="submit" disabled={isLoading || user.mobile.length < 10} className={`w-full ${BRAND_BG} ${BRAND_HOVER_BG} text-white font-bold py-2.5 rounded-lg shadow-md shadow-[#006A58]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed mt-2 active:scale-[0.98] text-sm`}>
-                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (authMode === 'signup' ? 'Get OTP on Email & WhatsApp' : 'Get Login OTP')} <ArrowRight className="w-4 h-4" />
+                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (authMode === 'signup' ? 'Get OTP on WhatsApp' : 'Get Login OTP')} <ArrowRight className="w-4 h-4" />
                   </button>
 
                   <div className="text-center pt-1">
@@ -757,31 +758,8 @@ const Header = () => {
                       </div>
                   </div>
 
-                  {authMode === 'signup' && (
-                    <div className="w-full space-y-2">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase text-center block tracking-widest">Email OTP (6 Digits)</label>
-                        <div className="flex gap-2 w-full justify-center">
-                        {emailOtp.map((digit, i) => (
-                            <input
-                            key={`em-${i}`}
-                            ref={(el) => { emailRefs.current[i] = el }}
-                            type="tel"
-                            inputMode="numeric"
-                            pattern="[0-9]"
-                            maxLength={1}
-                            value={digit}
-                            onChange={(e) => handleOtpChange(i, e.target.value, 'email')}
-                            onKeyDown={(e) => handleOtpKeyDown(i, e, 'email')}
-                            className={`w-9 h-11 text-center text-lg font-bold bg-white border rounded-lg focus:outline-none focus:scale-105 transition-all caret-[#006A58] ${digit ? `border-[#006A58] text-[#006A58]` : 'border-gray-200 text-gray-800'} focus:border-[#006A58] focus:ring-2 focus:ring-[#006A58]/10 shadow-sm`}
-                            autoComplete="one-time-code"
-                            />
-                        ))}
-                        </div>
-                    </div>
-                  )}
-                  
-                  <button onClick={handleVerifyOtp} disabled={isLoading || whatsappOtp.join('').length < 6 || (authMode === 'signup' && emailOtp.join('').length < 6)} className={`w-full ${BRAND_BG} ${BRAND_HOVER_BG} text-white font-bold py-2.5 rounded-lg shadow-md shadow-[#006A58]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm`}>
-                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (authMode === 'login' ? 'Verify WhatsApp OTP' : 'Verify Email & WhatsApp OTP')}
+                  <button onClick={handleVerifyOtp} disabled={isLoading || whatsappOtp.join('').length < 6} className={`w-full ${BRAND_BG} ${BRAND_HOVER_BG} text-white font-bold py-2.5 rounded-lg shadow-md shadow-[#006A58]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm`}>
+                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify WhatsApp OTP'}
                   </button>
 
                   <div className="flex flex-col items-center gap-1 w-full text-xs">
