@@ -957,7 +957,7 @@ function ListingCard({ item, handleOpenDetails, handleUnlockSeller, isPropertyUn
         <div className="flex flex-wrap gap-2"> 
           <span className="px-2.5 py-1 bg-slate-50 rounded-lg text-xs font-semibold text-slate-700 border border-slate-100"> {item.bedrooms > 0 ? `${item.bedrooms} BHK` : item.type} • {item.bathrooms > 0 ? `${item.bathrooms} Bath` : ""} </span> 
           <span className="px-2.5 py-1 bg-slate-50 rounded-lg text-xs font-semibold text-slate-700 border border-slate-100"> 
-            {item.areaDisplay && item.areaDisplay.trim() !== '' ? item.areaDisplay : `${item.areaSqft.toLocaleString('en-IN')} sq ft`} 
+            {item.areaDisplay && item.areaDisplay.trim() !== '' ? item.areaDisplay : `${item.areaSqft.toLocaleString('en-IN')} sq ft`}
           </span> 
         </div>
         <div className="flex flex-wrap gap-2"> 

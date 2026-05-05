@@ -45,9 +45,9 @@ export const transformToBuyPageProperty = (
     return 0;
   };
 
-  // Extract area from sqft string
-  const extractArea = (sqftStr: string): number => {
-    return parseInt(sqftStr.replace(',', '').replace(' sq ft', '').trim()) || 0;
+  // Extract area number from area string
+  const extractArea = (areaStr: string): number => {
+    return parseInt(areaStr.replace(',', '').replace(/[^0-9]/g, '').trim()) || 0;
   };
 
   // Generate a title based on property details
@@ -156,7 +156,7 @@ export const transformToBuyPageProperty = (
     priceCr: priceInCr,
     priceLabel: property.price,
     media: "image", // Default
-    phoneMasked: "XXXXXX1234", // Default mask
+    phoneMasked: "+91 XXXXXXXXXX", // Default mask
     image: property.image,
     tags: [property.tag.text],
     amenities: property.features

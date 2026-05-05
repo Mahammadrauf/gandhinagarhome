@@ -164,14 +164,6 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
 
   // Process images
   const processImages = (images: any[]) => {
-    const fallbacks = [
-      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1600&q=80',
-      'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=800&q=80',
-      'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80',
-      'https://images.unsplash.com/photo-1631679706909-1844bbd07221?w=800&q=80',
-      'https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=800&q=80'
-    ];
-
     const normalized = (images || [])
       .map((img) => {
         const url = typeof img === 'string' ? img : img?.url;
@@ -182,13 +174,13 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
       })
       .filter(Boolean) as string[];
 
-    const merged = normalized.length > 0 ? normalized : fallbacks;
-
-    while (merged.length < 5) {
-      merged.push(fallbacks[merged.length % fallbacks.length]);
+    // If there are real images, return only those images
+    if (normalized.length > 0) {
+      return normalized;
     }
 
-    return merged;
+    // If no images, return a single "no image" placeholder
+    return ['https://via.placeholder.com/800x600?text=No+Image+Available'];
   };
 
   // Get theme colors based on property category
@@ -260,6 +252,19 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
   // Extract bedroom count from BHK field or bedrooms field
   const bedrooms = specs.bedrooms ?? parseBedroomsFromBhk((specs as any).bhk);
 
+  // Format area with proper units
+  const formatAreaWithUnits = (area: number, unit: string): string => {
+    if (!area || area === 0) return 'N/A';
+    
+    // For display, use the original unit
+    return `${area.toLocaleString('en-IN')} ${unit}`;
+  };
+
+  // Extract area information from specifications
+  const areaValue = (specs as any).totalArea ?? (specs as any).builtUpArea ?? 0;
+  const areaUnit = (specs as any).totalAreaUnit ?? (specs as any).builtUpAreaUnit ?? 'sq ft';
+  const formattedArea = formatAreaWithUnits(areaValue, areaUnit);
+
   // Generate a proper title with database title first, then add BHK info if not already included
   const generatePropertyTitle = (backendTitle: string, beds: number, propertyType: string, location: string): string => {
     // If backend title exists and has content, use it as is
@@ -275,7 +280,7 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
   const createOverview = () => [
     { label: 'Price', value: formatPrice(pricing.expectedPrice || 0), icon: 'FileText' },
     { label: 'Bedrooms', value: `${bedrooms} BHK`, icon: 'BedDouble' },
-    { label: 'Built-up Area', value: specs.builtUpArea ? `${specs.builtUpArea.toLocaleString('en-IN')} sq ft` : 'N/A', icon: 'Maximize2' },
+    { label: 'Built-up Area', value: formattedArea, icon: 'Maximize2' },
     { label: 'Furnishing', value: specs.furnishing || 'Unfurnished', icon: 'Home' },
     { label: 'Status', value: getReadyStatus(backendProp.status), icon: 'CheckCircle2' },
     { label: 'Parking', value: getParking(specs.balconies || 0), icon: 'Car' },
@@ -288,7 +293,7 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
     { label: 'Title', value: backendProp.title },
     { label: 'Type', value: backendProp.propertyType },
     { label: 'Price', value: formatPrice(pricing.expectedPrice || 0) },
-    { label: 'Built-up Area', value: specs.builtUpArea ? `${specs.builtUpArea.toLocaleString('en-IN')} sq ft` : 'N/A' },
+    { label: 'Built-up Area', value: formattedArea },
     { label: 'Bedrooms', value: `${bedrooms}` },
     { label: 'Bathrooms', value: `${specs.bathrooms || 0}` },
     { label: 'Balconies', value: `${specs.balconies || 0}` },
@@ -326,7 +331,7 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
     balconies: specs.balconies || 0,
     builtUpArea: specs.builtUpArea || 0,
     carpetArea: specs.carpetArea || 0,
-    areaDisplay: specs.builtUpArea ? `${specs.builtUpArea.toLocaleString('en-IN')} sq ft` : 'N/A',
+    areaDisplay: formattedArea,
     furnishing: specs.furnishing || 'Unfurnished',
     facing: specs.facing || 'N/A',
     age: specs.age || 0,

@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://gandhinagarhomes.com/api';
 
 // Debug logging
 console.log('API_BASE_URL:', API_BASE_URL);
@@ -211,6 +211,27 @@ export const transformProperty = (backendProp: BackendProperty): FrontendPropert
   const bedrooms = (specs as any).bedrooms ?? parseBedroomsFromBhk((specs as any).bhk);
   const bathrooms = (specs as any).bathrooms ?? 0;
   const areaValue = (specs as any).builtUpArea ?? (specs as any).totalArea ?? 0;
+  const areaUnit = (specs as any).totalAreaUnit ?? (specs as any).builtUpAreaUnit ?? 'sq ft';
+  
+  // Format area with proper units
+  const formatAreaWithUnits = (area: number, unit: string): string => {
+    if (!area || area === 0) return '0 sq ft';
+    
+    // Convert to sq ft if not already in sq ft
+    let areaInSqFt = area;
+    if (unit === 'sq yd' || unit === 'sq.yd') {
+      areaInSqFt = area * 9; // 1 sq yd = 9 sq ft
+    } else if (unit === 'sq m' || unit === 'sq.m') {
+      areaInSqFt = area * 10.764; // 1 sq m = 10.764 sq ft
+    }
+    
+    // For display, use the original unit if it's not sq ft
+    if (unit !== 'sq ft') {
+      return `${area.toLocaleString('en-IN')} ${unit}`;
+    }
+    
+    return `${area.toLocaleString('en-IN')} sq ft`;
+  };
   
   return {
     id: backendProp._id,
@@ -223,7 +244,7 @@ export const transformProperty = (backendProp: BackendProperty): FrontendPropert
     city: location.city,
     beds: bedrooms,
     baths: bathrooms,
-    sqft: Number(areaValue || 0).toLocaleString('en-IN'),
+    sqft: formatAreaWithUnits(areaValue, areaUnit),
     propertyType: backendProp.propertyType,
     features: getFeatures(backendProp.highlights || [], backendProp.amenities || [], backendProp.propertyType),
     tag: getTagStyle(backendProp.propertyCategory),
