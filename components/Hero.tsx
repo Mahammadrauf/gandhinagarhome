@@ -223,7 +223,7 @@ const Hero = () => {
               Buy Property
             </Link>
             
-            <Link href="/sell" className={`inline-block flex-shrink-0 ${BUTTON_BASE_CLASSES} !px-12 !py-4`}>
+            <Link href="/sell/form" className={`inline-block flex-shrink-0 ${BUTTON_BASE_CLASSES} !px-12 !py-4`}>
               Sell Property
             </Link>
 

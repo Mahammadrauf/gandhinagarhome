@@ -28,7 +28,7 @@ const render = (status: Status) => {
         <div className="text-red-600">Failed to load Google Maps. Please check your API key.</div>
       </div>;
     case Status.SUCCESS:
-      return <MapComponentWrapper />;
+      return <div className="w-full h-96" />;
   }
 };
 
@@ -101,7 +101,8 @@ const MapComponent: React.FC = () => {
         componentRestrictions: { country: "in" }
       });
 
-      autocompleteRef.current.addListener("place_changed", () => {
+      if (autocompleteRef.current) {
+        autocompleteRef.current.addListener("place_changed", () => {
         const place = autocompleteRef.current?.getPlace();
         if (place && place.geometry && place.geometry.location) {
           const lat = place.geometry.location.lat();
@@ -117,6 +118,7 @@ const MapComponent: React.FC = () => {
           }
         }
       });
+      }
     }
 
     // Set initial marker if coordinates exist

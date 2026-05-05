@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import MapComponent from "@/components/MapComponent";
+import GoogleMapComponent from "@/components/GoogleMapComponent";
 import axios from "axios";
 import API_URL from "@/app/config/config";
 import { 
@@ -724,7 +724,7 @@ function BuyIntroPage() {
             </div>
           </section>
         ) : (
-          <MapComponent listings={filteredListings} onBack={() => setIsMapView(false)} FilterSidebar={<FilterSidebarContent />} onSelectProperty={handleOpenDetails} />
+          <GoogleMapComponent listings={filteredListings} onBack={() => setIsMapView(false)} FilterSidebar={<FilterSidebarContent />} onSelectProperty={handleOpenDetails} />
         )}
 
         {/* Mobile Map Modal */}
@@ -741,7 +741,7 @@ function BuyIntroPage() {
                 </button>
               </div>
               <div className="h-[80vh] w-full">
-                <MapComponent 
+                <GoogleMapComponent 
                   listings={filteredListings} 
                   onBack={() => setShowMobileMap(false)} 
                   FilterSidebar={<FilterSidebarContent />} 
@@ -956,7 +956,9 @@ function ListingCard({ item, handleOpenDetails, handleUnlockSeller, isPropertyUn
         <div> <h3 className="text-base md:text-lg font-bold text-slate-900 leading-tight"> {item.title} </h3> </div>
         <div className="flex flex-wrap gap-2"> 
           <span className="px-2.5 py-1 bg-slate-50 rounded-lg text-xs font-semibold text-slate-700 border border-slate-100"> {item.bedrooms > 0 ? `${item.bedrooms} BHK` : item.type} • {item.bathrooms > 0 ? `${item.bathrooms} Bath` : ""} </span> 
-          <span className="px-2.5 py-1 bg-slate-50 rounded-lg text-xs font-semibold text-slate-700 border border-slate-100"> {item.areaDisplay || `${item.areaSqft.toLocaleString()} sq ft`} </span> 
+          <span className="px-2.5 py-1 bg-slate-50 rounded-lg text-xs font-semibold text-slate-700 border border-slate-100"> 
+            {item.areaDisplay && item.areaDisplay.trim() !== '' ? item.areaDisplay : `${item.areaSqft.toLocaleString('en-IN')} sq ft`} 
+          </span> 
         </div>
         <div className="flex flex-wrap gap-2"> 
           <span className="px-2.5 py-1 bg-white rounded-full text-[10px] md:text-xs font-medium text-slate-600 border border-slate-200"> {item.type} • {item.furnishing} </span> 

@@ -304,9 +304,8 @@ useEffect(() => {
   const isLocalityValid = locality.trim().length > 2;
   const isPincodeValid = pincode.length === 6;
   const isSocietyValid = title.trim().length >= 3;
-  const isUnitNoValid = unitNo.trim().length > 0;
   const isAddressValid = address.trim().length > 5;
-  const canContinueStep3 = isCityValid && isLocalityValid && isPincodeValid && isSocietyValid && isUnitNoValid && isAddressValid;
+  const canContinueStep3 = isCityValid && isLocalityValid && isPincodeValid && isSocietyValid && isAddressValid;
 
   // --- Helper arrays for ALL dropdowns ---
   const propertyTypeOptions = ["Apartment", "Tenement", "Bungalow", "Penthouse", "Plot", "Shop", "Office"];
@@ -1446,14 +1445,13 @@ const handleEditMediaSubmit = () => {
         </div>
 
         <div className="md:col-span-1">
-          <label className={fieldLabel}>Unit No <span className="text-[#0b6b53]">*</span></label>
+          <label className={fieldLabel}>Unit No</label>
           <input
             value={unitNo}
             onChange={(e) => setUnitNo(e.target.value)}
-            placeholder="e.g., B-701"
-            className={`${triedContinue && !isUnitNoValid ? inputError : inputNormal}`}
+            placeholder="e.g., B-701 (Optional)"
+            className={inputNormal}
           />
-          {triedContinue && !isUnitNoValid && <div className="text-xs text-red-600 mt-2">Required</div>}
         </div>
       </div>
 

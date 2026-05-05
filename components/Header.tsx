@@ -370,6 +370,25 @@ const Header = () => {
 
       const sendMobileOtpJson = await sendMobileOtpRes.json();
       
+      // Check if user is already registered with different role
+      if (!sendMobileOtpRes.ok || !sendMobileOtpJson?.success) {
+        const msg = sendMobileOtpJson?.message || 'Failed to send OTP';
+        
+        if (sendMobileOtpJson?.errorCode === 'ALREADY_REGISTERED_DIFFERENT_ROLE') {
+          const existingRole = sendMobileOtpJson?.existingRole;
+          alert(`This mobile number is already registered as a ${existingRole}. You cannot register again with a different role.`);
+          return;
+        }
+        
+        if (sendMobileOtpJson?.errorCode === 'ALREADY_REGISTERED_SAME_ROLE') {
+          const existingRole = sendMobileOtpJson?.existingRole;
+          alert(`You have already registered as a ${existingRole}. Please log in instead of registering again.`);
+          return;
+        }
+        
+        throw new Error(msg);
+      }
+      
       // ===== COMMENTED: Email OTP logic removed - only WhatsApp OTP now =====
       // if (authMode === 'signup') {
       //   const sendEmailOtpRes = await fetch(`${API_BASE_URL}/auth/send-email-otp`, {
@@ -471,7 +490,7 @@ const Header = () => {
         if (token) localStorage.setItem('gh_token', token);
 
         setIsLoggedIn(true);
-        setUser({ firstName, lastName, email: updatedUser.email, mobile: updatedUser.mobile, role: updatedUser.role as '' | 'buyer' | 'seller', sellerType: updatedUser.sellerType });
+        setUser({ firstName, lastName, email: updatedUser.email, mobile: updatedUser.mobile, role: updatedUser.role as '' | 'buyer' | 'seller', sellerType: updatedUser.sellerType as 'agent' | 'owner' | 'builder' | '' });
         setIsAuthOpen(false);
         router.push('/profile');
       } else {
@@ -519,7 +538,7 @@ const Header = () => {
         if (token) localStorage.setItem('gh_token', token);
 
         setIsLoggedIn(true);
-        setUser({ firstName, lastName, email: updatedUser.email, mobile: updatedUser.mobile, role: updatedUser.role as '' | 'buyer' | 'seller', sellerType: updatedUser.sellerType });
+        setUser({ firstName, lastName, email: updatedUser.email, mobile: updatedUser.mobile, role: updatedUser.role as '' | 'buyer' | 'seller', sellerType: updatedUser.sellerType as 'agent' | 'owner' | 'builder' | '' });
         setIsAuthOpen(false);
         router.push('/profile');
       }
