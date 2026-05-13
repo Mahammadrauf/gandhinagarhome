@@ -927,6 +927,26 @@ function tierLabel(tier: Tier) {
   return "";
 }
 
+// Show first 4 digits of a phone number and mask the rest as X's.
+// Accepts various input formats like '+919876543210', '9876543210', '919876543210'.
+function formatPhoneShowFirst4(phone?: string) {
+  if (!phone || typeof phone !== 'string') return '+91 XXXXXXXXXX';
+
+  // Extract only digits
+  const digits = phone.replace(/\D/g, '');
+  if (!digits) return '+91 XXXXXXXXXX';
+
+  // Use last 10 digits as local number if digits includes country code
+  const local = digits.length > 10 ? digits.slice(digits.length - 10) : digits;
+
+  // If we still don't have at least 4 digits, fallback to masked default
+  if (local.length < 4) return '+91 XXXXXXXXXX';
+
+  const first4 = local.slice(0, 4);
+  const restMasked = 'X'.repeat(Math.max(0, local.length - 4));
+  return `+91 ${first4}${restMasked}`;
+}
+
 function ListingCard({ item, handleOpenDetails, handleUnlockSeller, isPropertyUnlocked }: { 
   item: Listing; handleOpenDetails: (propertyId: string) => void; handleUnlockSeller: (e: React.MouseEvent, propertyId: string) => void; isPropertyUnlocked: (propertyId: string) => boolean;
 }) {
@@ -975,7 +995,7 @@ function ListingCard({ item, handleOpenDetails, handleUnlockSeller, isPropertyUn
         <div className="flex md:flex-col justify-between items-start md:items-start">
           <div> <div className="text-[10px] md:text-xs font-medium text-slate-500 uppercase">Price</div> <div className="text-lg md:text-xl font-extrabold text-slate-900 mt-0.5"> {item.priceLabel} </div> </div>
           <div className="md:mt-3 text-right md:text-left"> <div className="text-[10px] md:text-xs text-slate-500 uppercase">Seller</div> <div className="text-[11px] font-semibold text-slate-700 mt-0.5">
-            {isUnlocked ? ( <span className="text-green-600">Access Visible</span> ) : ( <span>{item.phoneMasked}</span> )}
+            {isUnlocked ? ( <span className="text-green-600">Access Visible</span> ) : ( <span>{formatPhoneShowFirst4(item.phoneMasked)}</span> )}
           </div> </div> 
         </div>
         <div className="flex flex-row md:flex-col gap-2 mt-4"> 

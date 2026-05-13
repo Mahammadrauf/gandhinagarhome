@@ -88,6 +88,7 @@ export interface FrontendProperty {
   location: string;
   address: string;
   city?: string;
+  phone?: string;
   beds: number;
   baths: number;
   sqft: string;
@@ -241,6 +242,7 @@ export const transformProperty = (backendProp: BackendProperty): FrontendPropert
     price: formatPrice(pricing.expectedPrice || 0),
     location: location.sector || location.address || 'Unknown Location',
     address: location.address || '',
+  phone: (backendProp.userId && (backendProp.userId.whatsappNumber || backendProp.userId.mobile || backendProp.userId.phone)) || undefined,
     city: location.city,
     beds: bedrooms,
     baths: bathrooms,

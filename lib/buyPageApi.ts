@@ -155,8 +155,8 @@ export const transformToBuyPageProperty = (
     ageLabel: mapAgeLabel((property as any).ageOfProperty || "New Property"),
     priceCr: priceInCr,
     priceLabel: property.price,
-    media: "image", // Default
-    phoneMasked: "+91 XXXXXXXXXX", // Default mask
+  media: "image", // Default
+  phoneMasked: property.phone || "+91 XXXXXXXXXX", // Pass through phone if available, otherwise default mask
     image: property.image,
     tags: [property.tag.text],
     amenities: property.features
