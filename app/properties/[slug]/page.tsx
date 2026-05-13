@@ -929,7 +929,12 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
                   {/* Enquire Button */}
                   <div className="mt-auto">
                     <button
-                      onClick={() => router.push(`/properties/${sim.slug || sim.id}`)}
+                      onClick={() => {
+                        if (typeof window !== 'undefined') {
+                          const w = window.open(`/properties/${sim.slug || sim.id}`, '_blank');
+                          if (w) w.opener = null;
+                        }
+                      }}
                       aria-label={`View details for ${sim.title}`}
                       className="w-full bg-[#1f5f5b] hover:bg-[#164542] text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-md hover:shadow-lg active:scale-95"
                     >

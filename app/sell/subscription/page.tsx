@@ -287,7 +287,10 @@ function SubscriptionPageContent() {
               if (verifyRes.data?.success) {
                 alert("Payment successful. Your plan is activated.");
                 if (propertyId) {
-                  router.push(`/properties/${propertyId}`);
+                  if (typeof window !== 'undefined') {
+                    const w = window.open(`/properties/${propertyId}`, '_blank');
+                    if (w) w.opener = null;
+                  }
                 } else {
                   router.push("/");
                 }

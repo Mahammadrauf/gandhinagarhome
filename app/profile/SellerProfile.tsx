@@ -92,8 +92,14 @@ export default function SellerProfile() {
     }
   }, []);
 
+  const openInNewTab = (url: string) => {
+    if (typeof window === 'undefined') return;
+    const w = window.open(url, '_blank');
+    if (w) w.opener = null;
+  };
+
   const handlePropertyClick = (propertySlug: string) => {
-    router.push(`/properties/${propertySlug}`);
+    openInNewTab(`/properties/${propertySlug}`);
   };
 
   const handleLogout = () => {

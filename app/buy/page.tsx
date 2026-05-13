@@ -567,8 +567,14 @@ function BuyIntroPage() {
     </div>
   );
 
+  const openInNewTab = (url: string) => {
+    if (typeof window === 'undefined') return;
+    const w = window.open(url, '_blank');
+    if (w) w.opener = null;
+  };
+
   const handleOpenDetails = (propertySlug: string) => {
-    router.push(`/properties/${propertySlug}`);
+    openInNewTab(`/properties/${propertySlug}`);
   };
 
   const handleUnlockSeller = async (e: React.MouseEvent, propertyId: string) => {

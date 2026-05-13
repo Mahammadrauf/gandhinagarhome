@@ -344,14 +344,19 @@ export default function BuyerProfile() {
                           <h4 className="font-bold text-gray-800 truncate">{item.title}</h4>
                           <p className="text-gray-500 text-sm mt-1 mb-3 flex items-center gap-1"><MapPin className="w-3 h-3" /> {item.location}</p>
                           <div className="flex items-center justify-between">
-                            <span className={`font-bold ${BRAND_COLOR}`}>{item.price}</span>
-                            <button 
-                              onClick={() => router.push(`/properties/${item.slug}`)}
-                              className={`text-xs border border-[#006A58] ${BRAND_COLOR} px-3 py-1.5 rounded-lg hover:bg-green-50 font-medium`}
-                            >
-                              View Details
-                            </button>
-                          </div>
+                                <span className={`font-bold ${BRAND_COLOR}`}>{item.price}</span>
+                                <button 
+                                  onClick={() => {
+                                    if (typeof window !== 'undefined') {
+                                      const w = window.open(`/properties/${item.slug}`, '_blank');
+                                      if (w) w.opener = null;
+                                    }
+                                  }}
+                                  className={`text-xs border border-[#006A58] ${BRAND_COLOR} px-3 py-1.5 rounded-lg hover:bg-green-50 font-medium`}
+                                >
+                                  View Details
+                                </button>
+                              </div>
                         </div>
                       </div>
                     ))}
@@ -460,7 +465,12 @@ export default function BuyerProfile() {
                         <div className="flex items-center justify-between">
                           <span className={`font-bold ${BRAND_COLOR}`}>{item.price}</span>
                           <button 
-                            onClick={() => router.push(`/properties/${item.slug}`)}
+                            onClick={() => {
+                              if (typeof window !== 'undefined') {
+                                const w = window.open(`/properties/${item.slug}`, '_blank');
+                                if (w) w.opener = null;
+                              }
+                            }}
                             className={`text-xs border border-[#006A58] ${BRAND_COLOR} px-3 py-1.5 rounded-lg hover:bg-green-50 font-medium`}
                           >
                             View Details
