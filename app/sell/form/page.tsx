@@ -422,7 +422,7 @@ const handleEditMediaSubmit = () => {
     })
   );
 
-  router.replace("/sell/confirmation");
+  router.replace("/sell-property-in-gandhinagar-gujarat/confirmation");
 };
 
 
@@ -525,10 +525,10 @@ const handleEditMediaSubmit = () => {
       // Check if payment is required
       if (response.data.payment?.required) {
         // Route to payment page with payment info
-        router.push(`/sell/subscription?tier=${response.data.payment.tier}&required=true`);
+  router.push(`/sell-property-in-gandhinagar-gujarat/subscription?tier=${response.data.payment.tier}&required=true`);
       } else {
         // Route to confirmation page for free submissions
-        router.push("/sell/confirmation");
+  router.push("/sell-property-in-gandhinagar-gujarat/confirmation");
       }
     } else {
       // Store data even on failure
@@ -537,7 +537,7 @@ const handleEditMediaSubmit = () => {
         submittedAt: new Date().toISOString(),
       }));
       alert("There was an issue submitting, but your data is saved. Please proceed to review.");
-      router.push("/sell/confirmation");
+  router.push("/sell-property-in-gandhinagar-gujarat/confirmation");
     }
 
   } catch (error: any) {
@@ -549,7 +549,7 @@ const handleEditMediaSubmit = () => {
       submittedAt: new Date().toISOString(),
     }));
     alert(`There was an issue submitting: ${errorMessage}. Your data is saved, please proceed to review.`);
-    router.push("/sell/confirmation");
+  router.push("/sell-property-in-gandhinagar-gujarat/confirmation");
   } finally {
     setSaving(false);
   }
@@ -593,7 +593,7 @@ const handleEditMediaSubmit = () => {
 
     if (isEditMode) {
       localStorage.setItem("pendingListing", JSON.stringify(buildPayload()));
-      router.push("/sell/confirmation");
+  router.push("/sell-property-in-gandhinagar-gujarat/confirmation");
       return;
     }
 
@@ -608,9 +608,9 @@ const handleEditMediaSubmit = () => {
     return;
   }
 
-  if (isEditMode) {
+    if (isEditMode) {
     localStorage.setItem("pendingListing", JSON.stringify(buildPayload()));
-    router.push("/sell/confirmation");
+    router.push("/sell-property-in-gandhinagar-gujarat/confirmation");
     return;
   }
 
@@ -626,7 +626,7 @@ const handleEditMediaSubmit = () => {
 
   if (isEditMode) {
     localStorage.setItem("pendingListing", JSON.stringify(buildPayload()));
-    router.push("/sell/confirmation");
+    router.push("/sell-property-in-gandhinagar-gujarat/confirmation");
     return;
   }
 

@@ -131,7 +131,7 @@ export default function BuyerProfile() {
 
   const handleLogout = () => {
     localStorage.removeItem('gh_user');
-    router.push('/');
+  router.push('/');
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -323,7 +323,7 @@ export default function BuyerProfile() {
                       <h3 className="text-xl font-bold text-gray-800 mb-2">No Unlocked Properties Yet</h3>
                       <p className="text-gray-500 text-sm mb-6">Unlock owner details to connect directly.</p>
                       <button 
-                        onClick={() => router.push('/buy')}
+                        onClick={() => router.push('/buy-property-in-gandhinagar-gujarat')}
                         className={`${BRAND_BG} text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition-opacity`}
                       >
                         Browse Properties
@@ -437,7 +437,7 @@ export default function BuyerProfile() {
                       <h3 className="text-xl font-bold text-gray-800 mb-2">No Favorites Yet</h3>
                       <p className="text-gray-500 text-sm mb-6">Start adding properties to your favorites to see them here.</p>
                       <button 
-                        onClick={() => router.push('/buy')}
+                        onClick={() => router.push('/buy-property-in-gandhinagar-gujarat')}
                         className={`${BRAND_BG} text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition-opacity`}
                       >
                         Browse Properties
@@ -543,7 +543,7 @@ export default function BuyerProfile() {
                     </div>
                     <div className="p-6">
                       <button 
-                        onClick={() => router.push('/buy/subscription')}
+                        onClick={() => router.push('/buy-property-in-gandhinagar-gujarat/subscription')}
                         className="w-full bg-gradient-to-r from-[#0F7F9C] to-[#022F5A] text-white py-2.5 rounded-lg font-semibold hover:shadow-lg transition-all"
                       >
                         Upgrade to Smart Pack
@@ -587,7 +587,7 @@ export default function BuyerProfile() {
                     </div>
                     <div className="p-6">
                       <button 
-                        onClick={() => router.push('/buy/subscription')}
+                        onClick={() => router.push('/buy-property-in-gandhinagar-gujarat/subscription')}
                         className="w-full bg-gradient-to-r from-[#B59E78] to-[#8C7A5B] text-white py-2.5 rounded-lg font-semibold hover:shadow-lg transition-all"
                       >
                         Upgrade to Investor Pack

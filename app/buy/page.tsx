@@ -624,7 +624,7 @@ function BuyIntroPage() {
           alert(errorData.message + `\n\nCurrent Status: ${stats.usedUnlocks}/${stats.totalLimit} unlocks used.\n\nPlease upgrade your plan to unlock more properties.`);
         } else {
           alert(errorData.message || 'Access denied. Please purchase a subscription.');
-          router.push('/buy/subscription');
+          router.push('/buy-property-in-gandhinagar-gujarat/subscription');
         }
       } else {
         alert('Failed to unlock seller details. Please try again.');

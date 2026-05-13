@@ -158,8 +158,8 @@ const Footer = () => {
             </button>
             <div className={`transition-all duration-300 overflow-hidden ${openSection === 'quick' ? 'max-h-96 opacity-100 mb-4' : 'max-h-0 opacity-0 md:max-h-none md:opacity-100'}`}>
               <ul className="space-y-1">
-                <LinkItem href="/buy" label="Buy Properties" />
-                <LinkItem href="/sell" label="List Your Property" />
+                <LinkItem href="/buy-property-in-gandhinagar-gujarat" label="Buy Properties" />
+                <LinkItem href="/sell-property-in-gandhinagar-gujarat" label="List Your Property" />
                 <LinkItem href="/about" label="About Us" />
                 <LinkItem href="/blog" label="Real Estate News" />
                 <LinkItem href="/contact" label="Contact Support" />

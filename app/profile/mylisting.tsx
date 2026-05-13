@@ -121,7 +121,7 @@ export default function MyListingPage() {
   }
 
   const handleEdit = () => {
-    router.push(`/sell/form?mode=edit&id=${id}`);
+    router.push(`/sell-property-in-gandhinagar-gujarat/form?mode=edit&id=${id}`);
   };
 
   const handleBoost = () => {

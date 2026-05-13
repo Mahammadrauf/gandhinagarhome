@@ -54,7 +54,7 @@ export default function SellIntroPage() {
             {/* RIGHT SIDE CTA */}
             <div className="flex-shrink-0 w-full sm:w-auto text-center lg:text-right">
               <Link
-                href="/sell/form"
+                href="/sell-property-in-gandhinagar-gujarat/form"
                 onClick={handleStartListing}
                 className="inline-flex items-center justify-center px-8 py-4 text-lg rounded-full bg-gradient-to-r from-[#0b6b53] to-[#085341] text-white font-bold shadow-xl hover:scale-[1.03] hover:shadow-2xl transition-all duration-300 ease-in-out animate-cta-in relative group overflow-hidden"
               >

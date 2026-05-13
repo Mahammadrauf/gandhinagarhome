@@ -41,13 +41,13 @@ export default function ConfirmationPage() {
     if (data) {
       setListing(JSON.parse(data));
     } else {
-      router.push("/sell/form");
+      router.push("/sell-property-in-gandhinagar-gujarat/form");
     }
     setLoading(false);
   }, [router]);
 
   const handleEditStep = (stepNumber: number) => {
-    router.push(`/sell/form?mode=edit&step=${stepNumber}`);
+  router.push(`/sell-property-in-gandhinagar-gujarat/form?mode=edit&step=${stepNumber}`);
   };
 
   const handleConfirmSubmit = async () => {
@@ -61,7 +61,7 @@ export default function ConfirmationPage() {
 
   const handleStartOver = () => {
     localStorage.removeItem("pendingListing");
-    router.push("/sell/form");
+  router.push("/sell-property-in-gandhinagar-gujarat/form");
   };
 
   if (loading || !listing) return null;

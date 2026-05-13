@@ -109,7 +109,7 @@ const Hero = () => {
     if (age) params.append("ageOfProperty", age);
     
     const queryString = params.toString();
-    return queryString ? `/buy?${queryString}` : '/buy';
+  return queryString ? `/buy-property-in-gandhinagar-gujarat?${queryString}` : '/buy-property-in-gandhinagar-gujarat';
   };
 
   return (
@@ -219,11 +219,11 @@ const Hero = () => {
         <div className="bg-white rounded-[2.5rem] px-8 py-5 border border-gray-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] transition-shadow hover:shadow-[0_20px_50px_-10px_rgba(5,111,94,0.15)] inline-flex">
           <div className="flex flex-col md:flex-row gap-6 flex-gap-6-fallback flex-no-shrink items-center">
             
-            <Link href="/buy" className={`inline-block flex-shrink-0 ${BUTTON_BASE_CLASSES} !px-12 !py-4`}>
+            <Link href="/buy-property-in-gandhinagar-gujarat" className={`inline-block flex-shrink-0 ${BUTTON_BASE_CLASSES} !px-12 !py-4`}>
               Buy Property
             </Link>
             
-            <Link href="/sell/form" className={`inline-block flex-shrink-0 ${BUTTON_BASE_CLASSES} !px-12 !py-4`}>
+            <Link href="/sell-property-in-gandhinagar-gujarat/form" className={`inline-block flex-shrink-0 ${BUTTON_BASE_CLASSES} !px-12 !py-4`}>
               Sell Property
             </Link>
 

@@ -583,8 +583,8 @@ const Header = () => {
             <div className="hidden md:flex items-center gap-8">
               <nav className="flex items-center gap-8">
                 <NavLink href="/">Home</NavLink>
-                <NavLink href="/buy">Buy</NavLink>
-                <NavLink href="/sell/form">Sell</NavLink>
+                <NavLink href="/buy-property-in-gandhinagar-gujarat">Buy</NavLink>
+                <NavLink href="/sell-property-in-gandhinagar-gujarat/form">Sell</NavLink>
                 <NavLink href="/about">About Us</NavLink>
                 <NavLink href="/contact">Contact Us</NavLink>
               </nav>
@@ -641,8 +641,8 @@ const Header = () => {
           <div className="flex flex-col p-4 space-y-1">
             <nav className="mb-4">
               <NavLink mobile href="/" onClick={() => setIsMobileMenuOpen(false)}>Home</NavLink>
-              <NavLink mobile href="/buy" onClick={() => setIsMobileMenuOpen(false)}>Buy</NavLink>
-              <NavLink mobile href="/sell/form" onClick={() => setIsMobileMenuOpen(false)}>Sell</NavLink>
+              <NavLink mobile href="/buy-property-in-gandhinagar-gujarat" onClick={() => setIsMobileMenuOpen(false)}>Buy</NavLink>
+              <NavLink mobile href="/sell-property-in-gandhinagar-gujarat/form" onClick={() => setIsMobileMenuOpen(false)}>Sell</NavLink>
               <NavLink mobile href="/about" onClick={() => setIsMobileMenuOpen(false)}>About Us</NavLink>
               <NavLink mobile href="/contact" onClick={() => setIsMobileMenuOpen(false)}>Contact Us</NavLink>
             </nav>

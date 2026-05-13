@@ -251,7 +251,7 @@ export default function BuyerSubscriptionPage() {
 
               if (verifyRes.data?.success) {
                 alert("Payment successful. Your plan is activated.");
-                router.push("/buy");
+                router.push("/buy-property-in-gandhinagar-gujarat");
                 return;
               }
 

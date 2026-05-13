@@ -104,7 +104,7 @@ export default function SellerProfile() {
 
   const handleUpgrade = () => {
     // Redirect to subscription page
-    router.push('/sell/subscription');
+    router.push('/sell-property-in-gandhinagar-gujarat/subscription');
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -301,7 +301,7 @@ export default function SellerProfile() {
                     <h4 className="text-lg font-semibold text-gray-800 mb-2">No Properties Listed</h4>
                     <p className="text-gray-500 text-sm mb-6">You haven't listed any properties yet. Start by posting your first property.</p>
                     <button 
-                      onClick={() => router.push('/sell')}
+                      onClick={() => router.push('/sell-property-in-gandhinagar-gujarat')}
                       className={`${BRAND_BG} ${BRAND_HOVER_BG} text-white px-6 py-3 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all mx-auto`}
                     >
                       <Plus className="w-4 h-4" /> Post Your First Property

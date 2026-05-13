@@ -313,8 +313,8 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
           <div className="text-center">
             <h1 className="text-2xl font-bold text-red-600 mb-4">Error</h1>
             <p className="text-gray-600 mb-4">{error}</p>
-            <Link href="/buy" className="text-blue-600 hover:underline">
-              ← Back to Properties
+            <Link href="/buy-property-in-gandhinagar-gujarat" className="text-blue-600 hover:underline">
+               Back to Properties
             </Link>
           </div>
         </div>
@@ -332,8 +332,8 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-600 mb-4">Property Not Found</h1>
             <p className="text-gray-600 mb-4">The property you're looking for doesn't exist.</p>
-            <Link href="/buy" className="text-blue-600 hover:underline">
-              ← Back to Properties
+            <Link href="/buy-property-in-gandhinagar-gujarat" className="text-blue-600 hover:underline">
+               Back to Properties
             </Link>
           </div>
         </div>
@@ -442,7 +442,7 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
           alert(errorData.message + `\n\nCurrent Status: ${stats.usedUnlocks}/${stats.totalLimit} unlocks used.\n\nPlease upgrade your plan to unlock more properties.`);
         } else {
           alert(errorData.message || 'Access denied. Please purchase a subscription.');
-          router.push('/buy/subscription');
+          router.push('/buy-property-in-gandhinagar-gujarat/subscription');
         }
       } else {
         alert('Failed to unlock contact details. Please try again.');
@@ -475,7 +475,7 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
               href="#"
               onClick={(e) => {
                 e.preventDefault();
-                router.push('/buy');
+                router.push('/buy-property-in-gandhinagar-gujarat');
               }}
               className="group inline-flex items-center gap-2 text-sm font-medium text-gray-500 transition-colors"
             >

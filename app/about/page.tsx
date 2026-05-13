@@ -73,10 +73,10 @@ export default function AboutPage() {
             </motion.p>
 
             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href="/buy" className="group bg-[#8ee3d4] text-[#0A2E2A] px-10 py-3.5 rounded-xl font-bold hover:bg-white hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 shadow-xl shadow-emerald-900/20">
+              <a href="/buy-property-in-gandhinagar-gujarat" className="group bg-[#8ee3d4] text-[#0A2E2A] px-10 py-3.5 rounded-xl font-bold hover:bg-white hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 shadow-xl shadow-emerald-900/20">
                 Start Your Search <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </a>
-              <a href="/sell" className="bg-white/5 backdrop-blur-sm border border-white/20 text-white px-10 py-3.5 rounded-xl font-semibold hover:bg-white/10 hover:border-white/40 hover:scale-105 active:scale-95 transition-all">
+              <a href="/sell-property-in-gandhinagar-gujarat" className="bg-white/5 backdrop-blur-sm border border-white/20 text-white px-10 py-3.5 rounded-xl font-semibold hover:bg-white/10 hover:border-white/40 hover:scale-105 active:scale-95 transition-all">
                 List Your Property
               </a>
             </motion.div>
@@ -224,7 +224,7 @@ export default function AboutPage() {
                   <motion.a 
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    href="/buy" 
+                    href="/buy-property-in-gandhinagar-gujarat" 
                     className="bg-white text-[#0A2E2A] px-12 py-4 rounded-xl font-bold hover:shadow-2xl transition shadow-lg"
                   >
                     Find My Home

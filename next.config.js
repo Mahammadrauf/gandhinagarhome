@@ -42,6 +42,24 @@ const nextConfig = {
       
     ],
   },
+  // Minimal rewrites to provide SEO-friendly public URLs
+  async rewrites() {
+    return [
+      // map /buy-property-in-gandhinagar-gujarat -> /buy
+      { source: '/buy-property-in-gandhinagar-gujarat', destination: '/buy' },
+      // map /sell-property-in-gandhinagar-gujarat/* -> /sell/* (e.g. /form)
+      { source: '/sell-property-in-gandhinagar-gujarat/:path*', destination: '/sell/:path*' },
+    ]
+  },
+  // Redirect the original routes to the SEO-friendly public URLs so links to
+  // /buy and /sell/* automatically become the SEO path in the browser.
+  async redirects() {
+    return [
+      { source: '/buy', destination: '/buy-property-in-gandhinagar-gujarat', permanent: true },
+      { source: '/buy/subscription', destination: '/buy-property-in-gandhinagar-gujarat/subscription', permanent: true },
+      { source: '/sell/:path*', destination: '/sell-property-in-gandhinagar-gujarat/:path*', permanent: true },
+    ]
+  },
 }
 
 module.exports = nextConfig;
