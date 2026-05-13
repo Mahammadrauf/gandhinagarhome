@@ -125,7 +125,7 @@ function InteractiveGoogleMap({
       fillOpacity: 1,
       strokeWeight: 1,
       strokeColor: '#ffffff',
-      scale: 0.1,
+  scale: 0.06,
       anchor: new google.maps.Point(192, 512),
       labelOrigin: new google.maps.Point(192, 200)
     };
