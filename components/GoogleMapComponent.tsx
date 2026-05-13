@@ -167,84 +167,109 @@ function InteractiveGoogleMap({
 
     const addMarkers = async () => {
       const toGeocode = listings.slice(0, 100);
-      
+
+      // First, geocode all listings and group them by rounded coordinates
+      const groups = new Map<string, Array<{ listing: Listing; coords: LatLng }>>();
+
       for (const listing of toGeocode) {
         const query = `${listing.locality}, ${listing.city}, Gujarat, India`;
         let coords = geocodeCacheRef.current.get(query);
-        
+
         if (coords === undefined) {
           coords = await geocodeAddress(query);
           geocodeCacheRef.current.set(query, coords);
-          await new Promise(resolve => setTimeout(resolve, 200));
+          await new Promise((resolve) => setTimeout(resolve, 200));
         }
 
         if (!coords) continue;
 
-        const color = getPinColor(listing.tier);
-        const marker = new window.google.maps.Marker({
-          position: coords,
-          map: mapRef.current,
-          icon: createMarkerIcon(color),
-          title: listing.title,
-          label: {
-            text: listing.priceLabel,
-            color: '#ffffff',
-            fontSize: '12px',
-            fontWeight: 'bold'
-          }
-        });
+        // Use a fixed precision key so nearby identical geocode results group together
+        const key = `${coords.lat.toFixed(6)}_${coords.lng.toFixed(6)}`;
+        const arr = groups.get(key) || [];
+        arr.push({ listing, coords });
+        groups.set(key, arr);
+      }
 
-        const infoContent = `
-          <div style="width:260px; padding:0; overflow:hidden; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
-            <div style="width:100%; height:120px; overflow:hidden;">
-              <img src="${listing.image}" alt="${listing.title.replace(/</g, "&lt;")}" style="width:100%; height:100%; object-cover;" />
-            </div>
-            <div style="padding:12px;">
-              <div style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:4px; line-height:1.2;">${listing.title.replace(/</g, "&lt;")}</div>
-              <div style="font-size:11px; color:#64748b; margin-bottom:8px;">${listing.locality.replace(/</g, "&lt;")}, ${listing.city.replace(/</g, "&lt;")}</div>
-              <div style="display:flex; align-items:center; justify-content:space-between; border-top:1px solid #f1f5f9; padding-top:8px;">
-                <div style="font-weight:800; font-size:14px; color:#0f172a;">${listing.priceLabel.replace(/</g, "&lt;")}</div>
-                <div style="font-size:11px; color:#64748b;">${listing.bedrooms} Bed ${listing.areaSqft} sqft</div>
+      // Place markers. For groups with multiple listings, offset them slightly in a circle
+      const offsetRadius = 0.00006; // ~6-7 meters; tweak if needed
+
+      groups.forEach((items) => {
+        for (let i = 0; i < items.length; i++) {
+          const { listing, coords } = items[i];
+
+          let position = coords;
+          if (items.length > 1) {
+            const angle = (i * (360 / items.length)) * (Math.PI / 180);
+            position = {
+              lat: coords.lat + Math.cos(angle) * offsetRadius,
+              lng: coords.lng + Math.sin(angle) * offsetRadius,
+            };
+          }
+
+          const color = getPinColor(listing.tier);
+          const icon = createMarkerIcon(color);
+
+          const marker: any = new window.google.maps.Marker({
+            position,
+            map: mapRef.current,
+            icon,
+            title: listing.title,
+            // removed label (price) so the pin won't show price text
+          });
+          // store color on marker for later icon updates
+          (marker as any).__pinColor = color;
+
+          const infoContent = `
+            <div style="width:260px; padding:0; overflow:hidden; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+              <div style="width:100%; height:120px; overflow:hidden;">
+                <img src="${listing.image}" alt="${listing.title.replace(/</g, "&lt;")}" style="width:100%; height:100%; object-fit:cover;" />
+              </div>
+              <div style="padding:12px;">
+                <div style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:4px; line-height:1.2;">${listing.title.replace(/</g, "&lt;")}</div>
+                <div style="font-size:11px; color:#64748b; margin-bottom:8px;">${listing.locality.replace(/</g, "&lt;")}, ${listing.city.replace(/</g, "&lt;")}</div>
+                <div style="display:flex; align-items:center; justify-content:space-between; border-top:1px solid #f1f5f9; padding-top:8px;">
+                  <div style="font-weight:800; font-size:14px; color:#0f172a;">${listing.priceLabel.replace(/</g, "&lt;")}</div>
+                  <div style="font-size:11px; color:#64748b;">${listing.bedrooms} Bed ${listing.areaSqft} sqft</div>
+                </div>
               </div>
             </div>
-          </div>
-        `;
+          `;
 
-        // Add hover listeners with delay to prevent flickering
-        marker.addListener('mouseover', () => {
-          // Clear any existing timeout
-          if (hoverTimeoutRef.current) {
-            clearTimeout(hoverTimeoutRef.current);
-            hoverTimeoutRef.current = null;
-          }
-          
-          if (infoWindowRef.current) {
-            infoWindowRef.current.setContent(infoContent);
-            // Position info window to avoid scroll and allow hover
-            infoWindowRef.current.setOptions({
-              pixelOffset: new google.maps.Size(0, -20),
-              maxWidth: 260
-            });
-            infoWindowRef.current.open(mapRef.current, marker);
-          }
-        });
-
-        marker.addListener('mouseout', () => {
-          // Add longer delay before closing to allow cursor to move to info box
-          hoverTimeoutRef.current = setTimeout(() => {
-            if (infoWindowRef.current) {
-              infoWindowRef.current.close();
+          // Add hover listeners with delay to prevent flickering
+          marker.addListener("mouseover", () => {
+            if (hoverTimeoutRef.current) {
+              clearTimeout(hoverTimeoutRef.current);
+              hoverTimeoutRef.current = null;
             }
-          }, 500);
-        });
 
-        marker.addListener('click', () => {
-          const targetId = listing.slug || listing.propertyId || String(listing.id);
-          onSelectProperty?.(targetId);
-        });
+            if (infoWindowRef.current) {
+              infoWindowRef.current.setContent(infoContent);
+              infoWindowRef.current.setOptions({
+                pixelOffset: new google.maps.Size(0, -20),
+                maxWidth: 260,
+              });
+              infoWindowRef.current.open(mapRef.current, marker);
+            }
+          });
 
-        markersRef.current.push(marker);
-      }
+          marker.addListener("mouseout", () => {
+            hoverTimeoutRef.current = setTimeout(() => {
+              if (infoWindowRef.current) {
+                infoWindowRef.current.close();
+              }
+            }, 500);
+          });
+
+          marker.addListener("click", () => {
+            const targetId = listing.slug || listing.propertyId || String(listing.id);
+            onSelectProperty?.(targetId);
+          });
+
+          markersRef.current.push(marker);
+        }
+      });
+
+  // No dynamic zoom-based icon updates: icons use a fixed small scale
     };
 
     addMarkers();
