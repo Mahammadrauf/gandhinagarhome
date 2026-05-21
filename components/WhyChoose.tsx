@@ -12,46 +12,39 @@ const WhyChoose = () => {
 
   const testimonials = [
     {
-      name: 'Aarav Shah',
-      location: 'Ahmedabad',
+      name: 'Rutvik Bhatt',
+      location: 'Gandhinagar',
       role: 'Seller',
       image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&q=80',
-      testimonial: 'I was skeptical about selling my pre-owned flat in North Ahmedabad because other portals only brought window shoppers. GandhinagarHomes connected me with three serious buyers within a week, all of whom were specifically looking for resale properties. The paperwork was surprisingly smooth, and I didn\'t have to deal with endless spam calls. It felt like dealing with experts who actually understand the local resale market.',
+      testimonial: 'With one click, I got access to the direct house owner. I talked and purchased the apartment directly from the owner with no hidden costs or brokerage involved, as they have already filtered properties from different people. I had many options to decide from whom I wanted to purchase the property — direct owner, builder, or broker. Overall, it was a very easy and transparent experience of buying a house from this platform. Happily moved to my new home in Gandhinagar. Overall, satisfied with the support.',
     },
     {
       name: 'Darsh Trivedi',
-      location: 'Gandhinagar',
+      location: 'Ahmedabad',
       role: 'Buyer',
       image: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&q=80',
-      testimonial: 'Finding a verified resale home in Kudasan was proving impossible until I used this platform. Most listings elsewhere are outdated or fake, but here, the transparency regarding the property\'s history and current condition was refreshing. I finally closed a deal on a 3BHK without the usual headache of hidden costs or uncertain documentation. It really is the most reliable way to find a pre-owned home in Gandhinagar.',
+      testimonial: 'Seamless experience with gandhinagarhomes.com. Easy property listing, and whenever I needed support from them, they were just one call away. Overall, a nice property selling experience with them. Highly recommended.',
     },
     {
       name: 'Keval Sheth',
       location: 'Gandhinagar',
       role: 'Buyer',
       image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80',
-      testimonial: 'I was specifically looking for a resale apartment near Infocity but was tired of dealing with agents who didn\'t know the property details. These guys had every document verified before I even visited the site. The negotiation process was handled with total transparency, making the whole transition into my new home very stress-free. If you\'re looking for a serious resale listing in Sector 7 or nearby, don\'t waste time elsewhere.',
+      testimonial: 'Best listing platform dedicated to Gandhinagar. The resale property selling process is easy and transparent. My resale property got sold within a month after listing on this platform, and they don’t charge any brokerage at all. A very smooth experience with them.',
     },
     {
       name: 'Mansi Gadhvi',
-      location: 'Ahmedabad',
+      location: 'Gandhinagar',
       role: 'Seller',
       image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80',
-      testimonial: 'Selling my commercial resale property was a breeze because the platform filters out everyone except high-intent buyers. I didn\'t have to explain the property value repeatedly; the leads coming in already knew the local market rates and were ready to talk numbers. The speed of closure was impressive, taking only three weeks from listing to the final handshake. It’s definitely the most efficient resale ecosystem I\'ve encountered.',
+      testimonial: 'I am very happy to get the home of my liking in Gandhinagar. Very good properties from Gandhinagar, GIFT City, and the north part of Ahmedabad are listed on this platform. I purchased the property with zero brokerage. I just had to pay the subscription fee, and the property I liked got unlocked. Thanks to the team of gandhinagarhomes.com for creating a dedicated platform for resale home buyers and sellers.',
     },
     {
-      name: 'Bhakti Raval',
+      name: 'Rudra Ramanuj',
       location: 'Gandhinagar',
       role: 'Seller',
       image: 'https://images.unsplash.com/photo-1614283233556-f35b0c801ef1?w=100&q=80',
-      testimonial: 'We needed to sell our Raysan bungalow quickly as we were relocating, and the resale focus of this site made all the difference. Their local expertise helped us price the property competitively, attracting genuine families instead of just bargain hunters. Every step, from the initial valuation to the final legal paperwork, was handled with professional care. We sold our home confidently and at a price we were very happy with.',
-    },
-    {
-      name: 'Tapan Vyas',
-      location: 'Gift City',
-      role: 'Buyer',
-      image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80',
-      testimonial: 'I was looking for a pre-owned investment near GIFT City but was worried about the legal complexities of resale transfers. The team provided end-to-end support, ensuring all previous dues and titles were clear before we moved forward. It’s a much more personal experience than the giant property portals where you\'re just a number. For anyone serious about buying a resale property in Sargasan or GIFT City, this is the gold standard.',
+      testimonial: 'I wanted to sell my resale property in the Gandhinagar sector. After listing my property, I got genuine buyer calls. No non-serious people called me. Their team support is fabulous, and the listing process is very easy and convenient. If you want to sell your resale property in Gandhinagar, then gandhinagarhomes.com is the best platform for that.',
     },
   ];
 
