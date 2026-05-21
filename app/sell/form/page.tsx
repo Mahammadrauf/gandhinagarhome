@@ -101,6 +101,30 @@ function SellFormPageContent() {
   const isEditMode = searchParams.get("mode") === "edit";
   const [step, setStep] = useState<Step>(0);
 
+  // Protect this route: only allow logged-in sellers
+  const guardRef = React.useRef(false);
+  useEffect(() => {
+    if (guardRef.current) return;
+    guardRef.current = true;
+    const savedUser = localStorage.getItem('gh_user');
+    if (!savedUser) {
+      alert('Only sellers can access the listing form. Please login as a seller.');
+      router.replace('/');
+      return;
+    }
+    try {
+      const parsed = JSON.parse(savedUser);
+      if (!(parsed.isLoggedIn && parsed.role === 'seller')) {
+        alert('Only sellers can access the listing form. Please login as a seller.');
+        router.replace('/');
+        return;
+      }
+    } catch (err) {
+      console.error('Error parsing gh_user for route guard', err);
+      router.replace('/');
+    }
+  }, []);
+
   // Basic Info
   const [firstName, setFirstName] = useState("");
   const [middleName, setMiddleName] = useState("");

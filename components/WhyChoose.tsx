@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
+import Image from 'next/image';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import { motion, Variants } from 'framer-motion';
 
@@ -15,35 +16,35 @@ const WhyChoose = () => {
       name: 'Rutvik Bhatt',
       location: 'Gandhinagar',
       role: 'Seller',
-      image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&q=80',
+      image: '/images/testimonials/rutvik1.jpeg',
       testimonial: 'With one click, I got access to the direct house owner. I talked and purchased the apartment directly from the owner with no hidden costs or brokerage involved, as they have already filtered properties from different people. I had many options to decide from whom I wanted to purchase the property — direct owner, builder, or broker. Overall, it was a very easy and transparent experience of buying a house from this platform. Happily moved to my new home in Gandhinagar. Overall, satisfied with the support.',
     },
     {
-      name: 'Darsh Trivedi',
+      name: 'Vineet Upadhyay',
       location: 'Ahmedabad',
       role: 'Buyer',
-      image: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&q=80',
+      image: '/images/testimonials/rutvik2.jpeg',
       testimonial: 'Seamless experience with gandhinagarhomes.com. Easy property listing, and whenever I needed support from them, they were just one call away. Overall, a nice property selling experience with them. Highly recommended.',
     },
     {
-      name: 'Keval Sheth',
+      name: 'Ronak Shrivastav',
       location: 'Gandhinagar',
       role: 'Buyer',
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80',
+      image: '/images/testimonials/rutvik3.jpeg',
       testimonial: 'Best listing platform dedicated to Gandhinagar. The resale property selling process is easy and transparent. My resale property got sold within a month after listing on this platform, and they don’t charge any brokerage at all. A very smooth experience with them.',
     },
     {
-      name: 'Mansi Gadhvi',
+      name: 'Vidish Raval',
       location: 'Gandhinagar',
       role: 'Seller',
-      image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80',
+      image: '/images/testimonials/rutvik.jpeg',
       testimonial: 'I am very happy to get the home of my liking in Gandhinagar. Very good properties from Gandhinagar, GIFT City, and the north part of Ahmedabad are listed on this platform. I purchased the property with zero brokerage. I just had to pay the subscription fee, and the property I liked got unlocked. Thanks to the team of gandhinagarhomes.com for creating a dedicated platform for resale home buyers and sellers.',
     },
     {
       name: 'Rudra Ramanuj',
       location: 'Gandhinagar',
       role: 'Seller',
-      image: 'https://images.unsplash.com/photo-1614283233556-f35b0c801ef1?w=100&q=80',
+      image: '/images/testimonials/rutvik4.jpg',
       testimonial: 'I wanted to sell my resale property in the Gandhinagar sector. After listing my property, I got genuine buyer calls. No non-serious people called me. Their team support is fabulous, and the listing process is very easy and convenient. If you want to sell your resale property in Gandhinagar, then gandhinagarhomes.com is the best platform for that.',
     },
   ];
@@ -188,9 +189,19 @@ const WhyChoose = () => {
                     <div className="flex items-start gap-4 relative z-10">
                       <div className="relative w-14 h-14 flex-shrink-0">
                         <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary-dark rounded-full opacity-20"></div>
-                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white font-bold text-lg ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all">
-                          {initials}
-                        </div>
+                        {testimonial.image ? (
+                          <Image
+                            src={testimonial.image}
+                            alt={testimonial.name}
+                            width={56}
+                            height={56}
+                            className="rounded-full object-cover ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all"
+                          />
+                        ) : (
+                          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white font-bold text-lg ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all">
+                            {initials}
+                          </div>
+                        )}
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-3 flex-wrap">

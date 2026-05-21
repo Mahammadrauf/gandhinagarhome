@@ -3,22 +3,32 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from 'next/navigation';
 import Header from "@/components/Header";
 
 export default function SellIntroPage() {
   const [userRole, setUserRole] = useState<'buyer' | 'seller' | ''>('');
+  const router = useRouter();
 
   useEffect(() => {
     const savedUser = localStorage.getItem('gh_user');
     if (savedUser) {
       try {
         const parsedUser = JSON.parse(savedUser);
-        if (parsedUser.isLoggedIn) {
-          setUserRole(parsedUser.role || '');
+        const isLoggedIn = parsedUser.isLoggedIn;
+        const role = parsedUser.role || '';
+        if (isLoggedIn && role === 'seller') {
+          setUserRole(role);
+        } else {
+          alert('Only sellers can access this page. Please login as a seller.');
+          router.replace('/');
         }
       } catch (e) {
         console.error("Failed to parse user data", e);
       }
+    } else {
+      alert('Only sellers can access this page. Please login as a seller.');
+      router.replace('/');
     }
   }, []);
 
