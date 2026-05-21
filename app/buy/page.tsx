@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import GoogleMapComponent from "@/components/GoogleMapComponent";
+import GoogleMapPreview from "@/components/GoogleMapPreview";
 import axios from "axios";
 import API_URL from "@/app/config/config";
 import { 
@@ -659,19 +660,18 @@ function BuyIntroPage() {
 
             <div className="mt-4 flex flex-col md:grid md:gap-3 md:grid-cols-[270px,1fr]">
                 <aside className="h-fit flex flex-col gap-3 order-1 md:order-none">
-                    <div onClick={() => setIsMapView(true)} className="hidden md:block w-full h-80 md:aspect-square rounded-2xl border border-slate-200 bg-slate-100 overflow-hidden relative group cursor-pointer shadow-sm">
-                        <img 
-                            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScDLQeIDVShuT2tL3g-BkmQUdq0tId_aQP9g&s"
-                            alt="Map view"
-                            className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500"
-                        />
-                        <div className="absolute inset-0 bg-slate-900/10 flex items-center justify-center">
-                            <button className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-full shadow-lg text-slate-800 text-xs font-bold hover:bg-white transition-all">
-                                <MapIcon className="w-3 h-3" />
-                                View on Map
-                            </button>
-                        </div>
+                    <div className="hidden md:block w-full h-80 md:aspect-square rounded-2xl border border-slate-200 overflow-hidden relative group shadow-sm">
+                    <GoogleMapPreview />
+                    <div className="absolute inset-0 bg-slate-900/10 flex items-center justify-center">
+                        <button
+                            onClick={() => setIsMapView(true)}
+                            className="flex items-center gap-2 bg-white/95 backdrop-blur-sm px-3 py-2 rounded-full shadow-lg text-slate-800 text-xs font-bold hover:bg-white transition-all"
+                        >
+                            <MapIcon className="w-3 h-3" />
+                            View on Map
+                        </button>
                     </div>
+                </div>
 
                     <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
                         <FilterSidebarContent />

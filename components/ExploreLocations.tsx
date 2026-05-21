@@ -123,10 +123,10 @@ const ExploreLocation = () => {
                              group-hover:text-primary transition-colors duration-300">
                     {location.name}
                   </h3>
-                  <p className="text-sm md:text-base text-gray-500 
+                  {/* <p className="text-sm md:text-base text-gray-500 
                               group-hover:text-gray-700 transition-colors duration-300">
                     {location.properties} Properties
-                  </p>
+                  </p> */}
                 </div>
 
                 <div
