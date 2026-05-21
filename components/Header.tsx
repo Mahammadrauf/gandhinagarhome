@@ -11,7 +11,7 @@ const BRAND_BG = "bg-[#006A58]";
 const BRAND_HOVER_BG = "hover:bg-[#005445]";
 const BRAND_FOCUS_RING = "focus:ring-[#006A58]";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://gandhinagarhomes.com/api';
 
 // --- TYPES ---
 interface NavLinkProps {
@@ -337,6 +337,7 @@ const Header = () => {
           const checkUserRes = await fetch(`${API_BASE_URL}/auth/check-user`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ mobile })
           });
           
@@ -365,6 +366,7 @@ const Header = () => {
       const sendMobileOtpRes = await fetch(`${API_BASE_URL}/auth/send-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(authMode === 'signup' ? { mobile, role } : { mobile })
       });
 

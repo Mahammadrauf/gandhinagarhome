@@ -99,7 +99,7 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
   const media = backendProp.media || {};
   const userId = backendProp.userId || {};
 
-  const baseUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api').replace('/api', '');
+  const baseUrl = (process.env.NEXT_PUBLIC_API_URL || 'https://gandhinagarhomes.com/api').replace('/api', '');
   const toAbsoluteUrl = (url?: string) => {
     if (!url) return undefined;
     if (url.startsWith('http://') || url.startsWith('https://')) return url;
