@@ -153,6 +153,22 @@ const DynamicSellerBadge = ({ sellerType }: { sellerType?: 'agent' | 'owner' | '
   );
 };
 
+const maskPhoneNumber = (phone?: string) => {
+  if (!phone || typeof phone !== 'string') return '**********';
+  const digits = phone.replace(/\D/g, '');
+  if (digits.length < 4) return '**********';
+
+  const normalized = digits.length >= 10
+    ? digits.length > 10 && digits.startsWith('91')
+      ? digits.slice(2)
+      : digits.slice(-10)
+    : digits;
+
+  const visible = normalized.slice(0, 4);
+  const masked = 'x'.repeat(Math.max(0, normalized.length - 4));
+  return `+91 ${visible}${masked}`;
+};
+
 export default function PropertyDetailsPage({ params }: { params: { slug: string } }) {
   const [mediaMode, setMediaMode] = useState('photos');
   const [galleryIndex, setGalleryIndex] = useState(0);
@@ -794,7 +810,7 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
                                 </span>
                             ) : (
                                 <span className="text-sm text-gray-400 italic bg-gray-100 px-2 py-0.5 rounded select-none cursor-pointer hover:bg-gray-200 transition-colors" title="Unlock to view">
-                                    **********
+                                    {maskPhoneNumber(property.seller.phone)}
                                 </span>
                             )}
                         </div>
@@ -812,7 +828,7 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
                                 </span>
                             ) : (
                                 <span className="text-sm text-gray-400 italic bg-gray-100 px-2 py-0.5 rounded select-none cursor-pointer hover:bg-gray-200 transition-colors" title="Unlock to view">
-                                    **********
+                                    {maskPhoneNumber(property.seller.whatsapp || property.seller.phone)}
                                 </span>
                             )}
                         </div>
