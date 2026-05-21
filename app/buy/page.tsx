@@ -1000,13 +1000,13 @@ function ListingCard({ item, handleOpenDetails, handleUnlockSeller, isPropertyUn
       <div className="w-full md:w-48 shrink-0 flex flex-col justify-between md:border-l md:border-slate-100 md:pl-4 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100">
         <div className="flex md:flex-col justify-between items-start md:items-start">
           <div> <div className="text-[10px] md:text-xs font-medium text-slate-500 uppercase">Price</div> <div className="text-lg md:text-xl font-extrabold text-slate-900 mt-0.5"> {item.priceLabel} </div> </div>
-          <div className="md:mt-3 text-right md:text-left"> <div className="text-[10px] md:text-xs text-slate-500 uppercase">Seller</div> <div className="text-[11px] font-semibold text-slate-700 mt-0.5">
+          <div className="md:mt-3 text-right md:text-left"> <div className="text-[10px] md:text-xs text-slate-500 uppercase">{sourceInfo.text}</div> <div className="text-[11px] font-semibold text-slate-700 mt-0.5">
             {isUnlocked ? ( <span className="text-green-600">Access Visible</span> ) : ( <span>{formatPhoneShowFirst4(item.phoneMasked)}</span> )}
           </div> </div> 
         </div>
         <div className="flex flex-row md:flex-col gap-2 mt-4"> 
           <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleOpenDetails(item.slug || item.propertyId || String(item.id)); }} className={`flex-1 md:w-full py-2 rounded-full text-white text-xs md:text-sm font-bold shadow-sm transition-all active:scale-95 ${theme.viewBtn}`}> Details </button> 
-          <button onClick={(e) => handleUnlockSeller(e, item.propertyId || String(item.id))} className={`flex-1 md:w-full py-2 rounded-full text-xs md:text-sm font-bold transition-all active:scale-95 ${isUnlocked ? 'bg-green-100 text-green-700 border border-green-200' : 'border border-slate-300 bg-white hover:border-slate-400 text-slate-800'}`}> {isUnlocked ? 'Unlocked' : 'Unlock Seller'} </button> 
+          <button onClick={(e) => handleUnlockSeller(e, item.propertyId || String(item.id))} className={`flex-1 md:w-full py-2 rounded-full text-xs md:text-sm font-bold transition-all active:scale-95 ${isUnlocked ? 'bg-green-100 text-green-700 border border-green-200' : 'border border-slate-300 bg-white hover:border-slate-400 text-slate-800'}`}> {isUnlocked ? 'Unlocked' : 'Unlock Contact'} </button> 
         </div>
       </div>
     </article>

@@ -134,12 +134,18 @@ export const transformToBuyPageProperty = (
   const area = extractArea(property.sqft);
   const propertyType = mapPropertyType(property.propertyType || 'Apartment');
 
+  const source = property.sellerType === 'agent'
+    ? 'partner'
+    : property.sellerType === 'builder'
+      ? 'builder'
+      : 'owner';
+
   return {
     id: parseInt(property.id) || Math.floor(Math.random() * 1000000), // Convert string ID to number, fallback to random
     propertyId: property.id,
     slug: property.slug,
     tier,
-    source: "owner", // Default, can be updated based on backend data
+    source,
     title: generateTitle(property.location, property.beds, propertyType, property.title, property.address),
     locality: property.location,
     address: property.address,

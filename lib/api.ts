@@ -98,6 +98,7 @@ export interface FrontendProperty {
   furnishing?: string;
   parking?: number;
   ageOfProperty?: number | string;
+  sellerType?: 'agent' | 'owner' | 'builder';
 }
 
 // Transform backend property to frontend format
@@ -252,7 +253,8 @@ export const transformProperty = (backendProp: BackendProperty): FrontendPropert
     tag: getTagStyle(backendProp.propertyCategory),
     furnishing: specs.furnishing,
     parking: (specs as any).parking || 1,
-    ageOfProperty: specs.age
+    ageOfProperty: specs.age,
+    sellerType: backendProp.userId?.sellerType || 'owner'
   };
 };
 
