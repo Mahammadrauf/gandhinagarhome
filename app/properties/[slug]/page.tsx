@@ -638,7 +638,9 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
                         <ImageIcon className="w-4 h-4" /> Gallery
                       </button>
                    </div>
-                   <span className="text-xs font-medium text-gray-500">9 photos • 1 video</span>
+                   <span className="text-xs font-medium text-gray-500">
+                      {property.images.length} photo{property.images.length === 1 ? '' : 's'} • {property.videoUrl ? '1 video' : '0 videos'}
+                   </span>
                 </div>
               </div> 
 

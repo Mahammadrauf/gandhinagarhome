@@ -140,9 +140,9 @@ const Footer = () => {
             
             <div className="flex gap-2">
               <SocialIcon Icon={Instagram} label="Instagram" href="https://www.instagram.com/buymyghar?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" />
-              <SocialIcon Icon={Facebook} label="Facebook" />
-              <SocialIcon Icon={Twitter} label="Twitter" />
-              <SocialIcon Icon={Youtube} label="YouTube" />
+              <SocialIcon Icon={Facebook} label="Facebook" href="https://www.facebook.com/buymyghar.co" />
+              {/* <SocialIcon Icon={Twitter} label="Twitter" />
+              <SocialIcon Icon={Youtube} label="YouTube" /> */}
             </div>
           </div>
 
