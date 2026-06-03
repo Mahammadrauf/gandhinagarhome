@@ -70,7 +70,7 @@ const plans = [
       featureText: "text-[#0b6b53]" 
     },
     features: [
-      "Publish 1 property listing",
+      "Listing for 180 Days",
       "Visible to buyers after approval",
       "Standard inquiry form",
       "Email support"
