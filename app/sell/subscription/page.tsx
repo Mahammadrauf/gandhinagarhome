@@ -54,9 +54,10 @@ const plans = [
   {
     id: "standard",
     name: "Standard",
-    tagline: "Basic Visibility",
-    price: "9,997", 
-    fullPrice: "12,500",
+    tagline: "List 1 Property",
+    price: "499",
+    fullPrice: "999",
+    comingSoon: false,
     icon: Zap,
     styles: {
       card: "bg-[#e7fcf7] border-2 border-[#0b6b53] shadow-xl shadow-[#0b6b53]/5 z-0 transform hover:-translate-y-1",
@@ -69,10 +70,10 @@ const plans = [
       featureText: "text-[#0b6b53]" 
     },
     features: [
-      "Listing for 180 Days", 
-      "Visible",
-      "Standard Inquiry Form",
-      "Email Support"
+      "Publish 1 property listing",
+      "Visible to buyers after approval",
+      "Standard inquiry form",
+      "Email support"
     ],
     highlight: false
   },
@@ -80,8 +81,9 @@ const plans = [
     id: "featured",
     name: "Featured",
     tagline: "High Velocity",
-    price: "14,997", 
+    price: "14,997",
     fullPrice: "18,000",
+    comingSoon: true,
     icon: Star,
     styles: {
       card: "bg-[#f4fbff] border-2 border-[#0F7F9C]/30 hover:border-[#0F7F9C] shadow-xl shadow-[#0F7F9C]/10 z-10 transform hover:-translate-y-1",
@@ -106,8 +108,9 @@ const plans = [
     id: "exclusive",
     name: "Exclusive",
     tagline: "Maximum Exposure",
-    price: "19,997", 
+    price: "19,997",
     fullPrice: "28,000",
+    comingSoon: true,
     icon: Crown,
     styles: {
       card: "bg-gradient-to-b from-[#FDFBF7] to-[#fcf8f0] border-2 border-[#B59E78] ring-4 ring-[#B59E78]/10 shadow-2xl shadow-[#B59E78]/25 scale-[1.03] z-20 transform hover:-translate-y-1",
@@ -139,37 +142,22 @@ function SubscriptionPageContent() {
   const [submittingPlan, setSubmittingPlan] = useState<string | null>(null);
   const [propertyId, setPropertyId] = useState<string | null>(null);
   const [viewerCount, setViewerCount] = useState(12);
-  const [autoPaymentTriggered, setAutoPaymentTriggered] = useState(false);
-
   useEffect(() => {
-    // Generate dynamic viewer count between 11 and 20
     setViewerCount(Math.floor(Math.random() * (20 - 11 + 1)) + 11);
 
     const raw = localStorage.getItem("pendingListing");
     if (!raw) return;
     try {
       const parsed = JSON.parse(raw);
-      const id = parsed?.apiResponse?._id || parsed?.apiResponse?.data?._id;
+      const id =
+        parsed?.propertyId ||
+        parsed?.apiResponse?._id ||
+        parsed?.apiResponse?.data?._id;
       if (id) setPropertyId(id);
     } catch {
       // ignore
     }
-
-    // Check if payment is required and auto-trigger payment
-    const required = searchParams.get('required');
-    const tier = searchParams.get('tier');
-    
-    if (required === 'true' && tier && !autoPaymentTriggered) {
-      setAutoPaymentTriggered(true);
-      // Auto-select standard plan and trigger payment
-      setTimeout(() => {
-        const standardPlan = plans.find(p => p.id === 'standard');
-        if (standardPlan) {
-          handlePlanPay(standardPlan);
-        }
-      }, 1000);
-    }
-  }, [searchParams, autoPaymentTriggered]);
+  }, [searchParams]);
 
   const getAuthToken = () => {
     return (
@@ -205,13 +193,21 @@ function SubscriptionPageContent() {
     });
   };
 
-  const handlePlanPay = async (plan: { id: string; name: string; price: string }) => {
+  const handlePlanPay = async (plan: { id: string; name: string; price: string; comingSoon?: boolean }) => {
     try {
+      if (plan.comingSoon) return;
+
       setSubmittingPlan(plan.id);
 
       const token = getAuthToken();
       if (!token) {
         alert("Login token not found. Please login first to continue payment.");
+        return;
+      }
+
+      if (!propertyId) {
+        alert("No property found for payment. Please submit your listing from the sell form first.");
+        router.push("/sell-property-in-gandhinagar-gujarat/form");
         return;
       }
 
@@ -285,15 +281,10 @@ function SubscriptionPageContent() {
               );
 
               if (verifyRes.data?.success) {
-                alert("Payment successful. Your plan is activated.");
-                if (propertyId) {
-                  if (typeof window !== 'undefined') {
-                    const w = window.open(`/properties/${propertyId}`, '_blank');
-                    if (w) w.opener = null;
-                  }
-                } else {
-                  router.push("/");
-                }
+                localStorage.removeItem("pendingListing");
+                localStorage.removeItem("pendingPayment");
+                alert("Payment successful! Your property has been submitted for review.");
+                router.push("/profile");
                 return;
               }
 
@@ -345,9 +336,8 @@ function SubscriptionPageContent() {
           </h1>
           
           <p className="text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed">
-            Sellers on the <span className="text-[#B59E78] font-bold bg-[#B59E78]/10 px-2 rounded">Exclusive Plan</span> sell 
-            <span className="font-bold text-slate-800"> 3x faster</span>. 
-            Select a plan to unlock Gandhinagar's top buyers.
+            Pay <span className="font-bold text-[#0b6b53]">₹499</span> to publish one property listing.
+            To add another property later, complete this payment flow again for each listing.
           </p>
         </div>
 
@@ -355,16 +345,25 @@ function SubscriptionPageContent() {
         <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto items-end pt-10">
           {plans.map((plan) => {
             const Icon = plan.icon;
+            const isComingSoon = !!plan.comingSoon;
             
             return (
               <div
                 key={plan.id}
-                onMouseEnter={() => setHoveredPlan(plan.id)}
+                onMouseEnter={() => !isComingSoon && setHoveredPlan(plan.id)}
                 onMouseLeave={() => setHoveredPlan(null)}
-                className={`relative rounded-3xl p-6 transition-all duration-300 cursor-pointer flex flex-col h-full ${plan.styles.card}`}
+                className={`relative rounded-3xl p-6 transition-all duration-300 flex flex-col h-full ${plan.styles.card} ${isComingSoon ? 'opacity-75 cursor-not-allowed' : 'cursor-pointer'}`}
               >
                 {/* Best Value Badge */}
-                {plan.highlight && (
+                {isComingSoon && (
+                  <div className="absolute -top-5 left-0 right-0 flex justify-center z-30">
+                    <span className="bg-slate-600 text-white px-5 py-2 rounded-full text-xs font-black tracking-widest shadow-lg uppercase border-2 border-white">
+                      Coming Soon
+                    </span>
+                  </div>
+                )}
+
+                {plan.highlight && !isComingSoon && (
                   <div className="absolute -top-5 left-0 right-0 flex justify-center z-30">
                     <span className="bg-gradient-to-r from-[#B59E78] to-[#8C7A5B] text-white px-5 py-2 rounded-full text-xs font-black tracking-widest shadow-lg shadow-[#B59E78]/30 uppercase flex items-center gap-2 border-2 border-white">
                       <Crown size={14} fill="currentColor" />
@@ -427,11 +426,15 @@ function SubscriptionPageContent() {
                 {/* CTA Button */}
                 <button
                   onClick={() => handlePlanPay(plan)}
-                  disabled={submittingPlan !== null}
-                  className={`w-full py-4 rounded-2xl font-bold text-base transition-all duration-300 flex items-center justify-center gap-2 ${plan.styles.button} active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed`}
+                  disabled={submittingPlan !== null || isComingSoon}
+                  className={`w-full py-4 rounded-2xl font-bold text-base transition-all duration-300 flex items-center justify-center gap-2 ${isComingSoon ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : plan.styles.button} active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed`}
                 >
-                  {submittingPlan === plan.id ? "Processing..." : `Pay for ${plan.name} Plan`}
-                  {plan.highlight ? <ArrowRight size={18} strokeWidth={2.5} /> : null}
+                  {isComingSoon
+                    ? "Coming Soon"
+                    : submittingPlan === plan.id
+                      ? "Processing..."
+                      : `Pay ₹${plan.price} — ${plan.name}`}
+                  {!isComingSoon && plan.highlight ? <ArrowRight size={18} strokeWidth={2.5} /> : null}
                 </button>
                 
                 
@@ -450,7 +453,9 @@ function SubscriptionPageContent() {
                     Flexible Upgrades Available
                 </h4>
                 <p className="text-xs md:text-sm text-slate-500 leading-relaxed">
-                    Not sure which plan to choose? Your property stays active for <strong>60 days</strong> across all plans. If you choose the <strong>Featured</strong> or <strong>Exclusive</strong> plan, your property will enjoy premium placement for the first <strong>30 days</strong>, and then continue as a normal standard property for the remaining <strong>30 days</strong>.
+                    The <strong>Standard (₹499)</strong> plan publishes one property for buyer review after payment.
+                    <strong> Featured</strong> and <strong>Exclusive</strong> plans are coming soon.
+                    Want to list another property? Submit a new listing and pay ₹499 again.
                 </p>
             </div>
         </div>

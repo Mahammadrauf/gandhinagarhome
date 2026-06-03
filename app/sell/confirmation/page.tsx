@@ -53,10 +53,19 @@ export default function ConfirmationPage() {
   const handleConfirmSubmit = async () => {
     if (!listing) return;
     setSubmitting(true);
-    
-    // Always show thank you message and redirect to home
-    alert("Thank you! Your property has been submitted successfully and will be reviewed shortly.");
-    router.push("/");
+
+    const propertyId =
+      listing.propertyId ||
+      listing.apiResponse?._id ||
+      listing.apiResponse?.data?._id;
+
+    if (!propertyId) {
+      alert("Listing data is incomplete. Please go back to the form and submit again.");
+      setSubmitting(false);
+      return;
+    }
+
+    router.push("/sell-property-in-gandhinagar-gujarat/subscription");
   };
 
   const handleStartOver = () => {
@@ -323,9 +332,9 @@ export default function ConfirmationPage() {
                     disabled={submitting}
                     className="w-full h-14 rounded-2xl bg-[#0b6b53] text-white font-bold hover:bg-[#085341] transition-all shadow-lg shadow-[#0b6b53]/20 disabled:opacity-50 flex items-center justify-center gap-2 group"
                 >
-                    {submitting ? "Processing..." : (
+                    {submitting ? "Redirecting..." : (
                         <>
-                            Submit Listing <CheckCircle2 size={18} className="group-hover:scale-110 transition-transform" />
+                            Continue to Payment <CheckCircle2 size={18} className="group-hover:scale-110 transition-transform" />
                         </>
                     )}
                 </button>
@@ -334,7 +343,7 @@ export default function ConfirmationPage() {
                 <div className="flex gap-3 px-1">
                     <AlertCircle size={14} className="text-gray-400 shrink-0 mt-0.5" />
                     <p className="text-[10px] font-medium text-gray-400 leading-relaxed">
-                        Your property will be submitted for review. You will see a thank you message upon successful submission.
+                        Next you will pay ₹499 to publish this listing. Each additional property requires a separate payment.
                     </p>
                 </div>
               </div>

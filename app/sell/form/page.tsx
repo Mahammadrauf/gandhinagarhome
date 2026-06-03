@@ -530,30 +530,36 @@ const handleEditMediaSubmit = () => {
       });
     }
 
-    // Make API call
+    const token =
+      localStorage.getItem("gh_token") ||
+      localStorage.getItem("token") ||
+      localStorage.getItem("authToken") ||
+      "";
+
+    if (!token) {
+      alert("Please login as a seller to submit your listing.");
+      router.replace("/");
+      return;
+    }
+
     const response = await axios.post(`${API_URL}/sell`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${token}`,
       },
     });
 
     if (response.data.success) {
-      // Store success response
+      const propertyId = response.data.data?._id;
       localStorage.setItem("pendingListing", JSON.stringify({
         ...buildPayload(),
         submittedAt: new Date().toISOString(),
         apiResponse: response.data.data,
+        propertyId,
         paymentInfo: response.data.payment
       }));
 
-      // Check if payment is required
-      if (response.data.payment?.required) {
-        // Route to payment page with payment info
-  router.push(`/sell-property-in-gandhinagar-gujarat/subscription?tier=${response.data.payment.tier}&required=true`);
-      } else {
-        // Route to confirmation page for free submissions
-  router.push("/sell-property-in-gandhinagar-gujarat/confirmation");
-      }
+      router.push("/sell-property-in-gandhinagar-gujarat/confirmation");
     } else {
       // Store data even on failure
       localStorage.setItem("pendingListing", JSON.stringify({
@@ -567,7 +573,14 @@ const handleEditMediaSubmit = () => {
   } catch (error: any) {
     console.error("Sell API error:", error);
     const errorMessage = error.response?.data?.message || error.message || "Error creating sell request";
-    // Store data even on error
+    const errorCode = error.response?.data?.code;
+
+    if (errorCode === 'AWAITING_PAYMENT_EXISTS') {
+      alert(errorMessage);
+      router.push("/sell-property-in-gandhinagar-gujarat/subscription");
+      return;
+    }
+
     localStorage.setItem("pendingListing", JSON.stringify({
       ...buildPayload(),
       submittedAt: new Date().toISOString(),
