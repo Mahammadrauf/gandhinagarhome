@@ -238,7 +238,7 @@ const Footer = () => {
 
         {/* --- CONTACT STRIP (UNTOUCHED) --- */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-8 mb-10">
-            <div className="group flex items-center gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-[#006B5B]/30 hover:shadow-md transition-all duration-300 cursor-pointer">
+            <a href="https://maps.app.goo.gl/sKLHuX7NDcVNgrAj8" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-[#006B5B]/30 hover:shadow-md transition-all duration-300 cursor-pointer">
               <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 text-[#006B5B] group-hover:bg-[#006B5B] group-hover:text-white transition-colors duration-300">
                 <MapPin size={18} />
               </div>
@@ -248,7 +248,7 @@ const Footer = () => {
                   Office 420, Fourth Floor, Block B, CBD Mall, SP Ring Road, Ahmedabad, Gujarat 382424
                 </p>
               </div>
-            </div>
+            </a>
 
             <a href="mailto:hello@gandhinagarhomes.in" className="group flex items-center gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-[#006B5B]/30 hover:shadow-md transition-all duration-300">
               <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 text-[#006B5B] group-hover:bg-[#006B5B] group-hover:text-white transition-colors duration-300">

@@ -127,7 +127,7 @@ const Experience = () => {
 
         {/* --- Grid Animation Container --- */}
         <motion.div 
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 mx-6"
+          className="grid grid-cols-1 md:grid-cols-3 gap-6"
           variants={containerVariants}
           initial="hidden"
           animate={hasAnimated ? "visible" : "hidden"} // Use existing state

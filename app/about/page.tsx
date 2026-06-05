@@ -53,9 +53,9 @@ export default function AboutPage() {
               The Resale Specialist
             </motion.span>
 
-            <motion.h1 
+            <motion.h1
               variants={fadeInUp}
-              className="text-4xl md:text-6xl font-black text-white leading-[1.1] mb-6 tracking-tight"
+              className="text-3xl sm:text-4xl md:text-6xl font-black text-white leading-[1.1] mb-6 tracking-tight"
             >
               Resale property is broken. <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#8ee3d4] to-emerald-400">
@@ -84,7 +84,7 @@ export default function AboutPage() {
         </section>
 
         {/* METRICS – PROOF OF CONCEPT */}
-        <section className="max-w-6xl mx-auto px-6 -mt-10 relative z-20">
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 mt-4 md:-mt-10 relative z-20">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-0 rounded-3xl overflow-hidden shadow-2xl border border-slate-100">
             {[
               { label: "Resale Only", value: "100%", sub: "Zero new project noise" },

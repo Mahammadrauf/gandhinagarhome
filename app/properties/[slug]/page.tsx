@@ -95,6 +95,15 @@ const getTheme = (type: string) => {
   return themes[type as keyof typeof themes] || themes.normal;
 };
 
+// Get theme based on property category (for similar properties)
+const getThemeByCategory = (category?: string) => {
+  if (!category) return getTheme('normal');
+  const categoryLower = category.toLowerCase();
+  if (categoryLower === 'exclusive') return getTheme('exclusive');
+  if (categoryLower === 'featured') return getTheme('featured');
+  return getTheme('normal');
+};
+
 const DynamicSellerBadge = ({ sellerType }: { sellerType?: 'agent' | 'owner' | 'builder' }) => {
   const getBadgeInfo = () => {
     switch (sellerType) {
@@ -892,8 +901,10 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
             ref={scrollContainerRef}
             className="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 -mx-4 px-4 sm:mx-0 sm:px-1 no-scrollbar scroll-smooth"
           >
-            {similarProperties.map((sim) => (
-              <div key={sim.id} className="min-w-[300px] sm:min-w-[340px] snap-center bg-[#fffbf2] rounded-3xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer flex flex-col">
+            {similarProperties.map((sim) => {
+              const simTheme = getThemeByCategory(sim.propertyCategory);
+              return (
+              <div key={sim.id} className="min-w-[300px] sm:min-w-[340px] snap-center rounded-3xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer flex flex-col" style={{ backgroundColor: simTheme.lightBg }}>
                 
                 {/* Card Image Area */}
                 <div className="relative h-60 w-full">
@@ -901,19 +912,19 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
                   
                   {/* Floating Price Badge (Bottom Left) */}
                   <div className="absolute bottom-4 left-4 bg-white px-4 py-2 rounded-xl shadow-md z-10">
-                    <span className="text-lg font-extrabold text-[#1f5f5b]">{sim.price}</span>
+                    <span className="text-lg font-extrabold" style={{ color: simTheme.primary }}>{sim.price}</span>
                   </div>
 
                   {/* Floating Status Badge (Top Right) */}
                   {sim.tag.text && (
-                    <div className="absolute top-4 right-4 bg-[#b08d55]/90 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wide shadow-sm" style={{ backgroundColor: sim.tag.color + 'e6' }}>
+                    <div className="absolute top-4 right-4 text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wide shadow-sm backdrop-blur-sm" style={{ backgroundColor: simTheme.primary + 'e6' }}>
                       {sim.tag.text}
                     </div>
                   )}
                 </div>
 
                 {/* Content Area */}
-                <div className="p-5 flex-grow flex flex-col bg-[#fffbf2]">
+                <div className="p-5 flex-grow flex flex-col" style={{ backgroundColor: simTheme.lightBg }}>
                   <div className="mb-4">
                     <h3 className="text-xl font-bold text-gray-900 leading-tight mb-1">{sim.location.split(',')[0]}</h3>
                     <p className="text-sm text-gray-500 font-normal">{sim.location}</p>
@@ -938,7 +949,11 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
                   {/* Tags */}
                   <div className="flex flex-wrap gap-2 mb-5">
                     {sim.features.map((tag, i) => (
-                      <span key={i} className="bg-[#f5f2e8] text-[#8b6f47] text-xs font-semibold px-3 py-1 rounded-full border border-[#e6d7c3]">
+                      <span key={i} className="text-xs font-semibold px-3 py-1 rounded-full border transition-colors" style={{ 
+                        backgroundColor: simTheme.primary + '15',
+                        color: simTheme.primary,
+                        borderColor: simTheme.primary + '40'
+                      }}>
                         {tag}
                       </span>
                     ))}
@@ -954,14 +969,18 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
                         }
                       }}
                       aria-label={`View details for ${sim.title}`}
-                      className="w-full bg-[#1f5f5b] hover:bg-[#164542] text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-md hover:shadow-lg active:scale-95"
+                      className="w-full text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-md hover:shadow-lg active:scale-95"
+                      style={{ backgroundColor: simTheme.primary }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = simTheme.primaryHover}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = simTheme.primary}
                     >
                       Enquire Now
                     </button>
                   </div>
                 </div>
               </div>
-            ))}
+            );
+            })}
           </div>
 
           {similarProperties.length === 0 && (

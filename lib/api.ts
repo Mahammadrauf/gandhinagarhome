@@ -1,9 +1,6 @@
+﻿﻿import { generatePropertyUrl } from './propertyUrl';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://gandhinagarhomes.com/api';
-
-// Debug logging
-console.log('API_BASE_URL:', API_BASE_URL);
-
-import { generatePropertyUrl } from './propertyUrl';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -93,6 +90,7 @@ export interface FrontendProperty {
   baths: number;
   sqft: string;
   propertyType?: string;
+  propertyCategory?: string;
   features: string[];
   tag: { text: string; color: string };
   furnishing?: string;
@@ -243,12 +241,13 @@ export const transformProperty = (backendProp: BackendProperty): FrontendPropert
     price: formatPrice(pricing.expectedPrice || 0),
     location: location.sector || location.address || 'Unknown Location',
     address: location.address || '',
-  phone: (backendProp.userId && (backendProp.userId.whatsappNumber || backendProp.userId.mobile || backendProp.userId.phone)) || undefined,
+    phone: (backendProp.userId && (backendProp.userId.whatsappNumber || backendProp.userId.mobile || backendProp.userId.phone)) || undefined,
     city: location.city,
     beds: bedrooms,
     baths: bathrooms,
     sqft: formatAreaWithUnits(areaValue, areaUnit),
     propertyType: backendProp.propertyType,
+    propertyCategory: backendProp.propertyCategory,
     features: getFeatures(backendProp.highlights || [], backendProp.amenities || [], backendProp.propertyType),
     tag: getTagStyle(backendProp.propertyCategory),
     furnishing: specs.furnishing,
@@ -262,40 +261,23 @@ export const transformProperty = (backendProp: BackendProperty): FrontendPropert
 export const fetchFeaturedProperties = async (): Promise<FrontendProperty[]> => {
   try {
     const url = `${API_BASE_URL}/properties/home/featured`;
-    console.log('Fetching featured properties from:', url);
     const response = await fetch(url);
-    console.log('Response status:', response.status);
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     
     const result: ApiResponse<BackendProperty[]> = await response.json();
-    console.log('API response:', result);
-    console.log('result.success:', result.success);
-    console.log('result.data:', result.data);
-    console.log('result.data length:', result.data?.length);
     
     if (result.success && result.data && result.data.length > 0) {
-      console.log('Processing real data...');
       const transformed = result.data.map(transformProperty);
-      console.log('Transformed properties:', transformed);
       return transformed;
     }
     
     // Return empty array if API returns no data
-    console.log('No data from API, returning empty array');
-    console.log('Reason:', {
-      success: result.success,
-      hasData: !!result.data,
-      dataLength: result.data?.length,
-      dataContent: result.data
-    });
     return [];
   } catch (error) {
     console.error('Error fetching featured properties:', error);
-    // Return empty array on error
-    console.log('Returning empty array due to error');
     return [];
   }
 };
@@ -303,40 +285,23 @@ export const fetchFeaturedProperties = async (): Promise<FrontendProperty[]> => 
 export const fetchExclusiveProperties = async (): Promise<FrontendProperty[]> => {
   try {
     const url = `${API_BASE_URL}/properties/home/exclusive`;
-    console.log('Fetching exclusive properties from:', url);
     const response = await fetch(url);
-    console.log('Response status:', response.status);
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     
     const result: ApiResponse<BackendProperty[]> = await response.json();
-    console.log('API response:', result);
-    console.log('result.success:', result.success);
-    console.log('result.data:', result.data);
-    console.log('result.data length:', result.data?.length);
     
     if (result.success && result.data && result.data.length > 0) {
-      console.log('Processing real data...');
       const transformed = result.data.map(transformProperty);
-      console.log('Transformed properties:', transformed);
       return transformed;
     }
     
     // Return empty array if API returns no data
-    console.log('No data from API, returning empty array');
-    console.log('Reason:', {
-      success: result.success,
-      hasData: !!result.data,
-      dataLength: result.data?.length,
-      dataContent: result.data
-    });
     return [];
   } catch (error) {
     console.error('Error fetching exclusive properties:', error);
-    // Return empty array on error
-    console.log('Returning empty array due to error');
     return [];
   }
 };
@@ -354,7 +319,6 @@ export const fetchBuyPageProperties = async (filters?: {
   others: FrontendProperty[];
 }> => {
   try {
-    console.log('Fetching buy page properties with filters:', filters);
     
     // Build query string from filters
     const queryParams = new URLSearchParams();
@@ -367,7 +331,6 @@ export const fetchBuyPageProperties = async (filters?: {
     const baseUrl = `${API_BASE_URL}/properties`;
     const url = queryString ? `${baseUrl}?${queryString}` : baseUrl;
     
-    console.log('Fetching properties from:', url);
     
     // Fetch all three categories in parallel
     const [exclusiveData, featuredData, allData] = await Promise.allSettled([
@@ -420,12 +383,6 @@ export const fetchBuyPageProperties = async (filters?: {
     }
     // Keep others as empty array if no data from API
 
-    console.log('Buy page data loaded:', {
-      exclusive: exclusive.length,
-      featured: featured.length,
-      others: others.length
-    });
-
     return { exclusive, featured, others };
   } catch (error) {
     console.error('Error fetching buy page properties:', error);
@@ -440,7 +397,6 @@ export const fetchBuyPageProperties = async (filters?: {
 // Property detail API - fetches individual property by ID
 export const fetchPropertyById = async (id: string): Promise<BackendProperty | null> => {
   try {
-    console.log('Fetching property by ID:', id);
     const response = await fetch(`${API_BASE_URL}/properties/${id}`);
     
     if (!response.ok) {
@@ -448,7 +404,6 @@ export const fetchPropertyById = async (id: string): Promise<BackendProperty | n
     }
     
     const result: ApiResponse<BackendProperty> = await response.json();
-    console.log('Property detail API response:', result);
     
     if (result.success && result.data) {
       return result.data;
@@ -464,7 +419,6 @@ export const fetchPropertyById = async (id: string): Promise<BackendProperty | n
 // Property detail API - fetches individual property by slug
 export const fetchPropertyBySlug = async (slug: string): Promise<BackendProperty | null> => {
   try {
-    console.log('Fetching property by slug:', slug);
     const response = await fetch(`${API_BASE_URL}/properties/slug/${slug}`);
     
     if (!response.ok) {
@@ -472,7 +426,6 @@ export const fetchPropertyBySlug = async (slug: string): Promise<BackendProperty
     }
     
     const result: ApiResponse<BackendProperty> = await response.json();
-    console.log('Property detail by slug API response:', result);
     
     if (result.success && result.data) {
       return result.data;
@@ -489,7 +442,6 @@ export const fetchPropertyBySlug = async (slug: string): Promise<BackendProperty
 export const fetchSimilarProperties = async (propertyId: string, limit: number = 5): Promise<FrontendProperty[]> => {
   try {
     const url = `${API_BASE_URL}/properties/similar/${propertyId}?limit=${limit}`;
-    console.log('Fetching similar properties from:', url);
     const response = await fetch(url);
     
     if (!response.ok) {
@@ -497,11 +449,9 @@ export const fetchSimilarProperties = async (propertyId: string, limit: number =
     }
     
     const result: ApiResponse<BackendProperty[]> = await response.json();
-    console.log('Similar properties API response:', result);
     
     if (result.success && result.data) {
       const transformed = result.data.map(transformProperty);
-      console.log('Transformed similar properties:', transformed);
       return transformed;
     }
     
@@ -523,8 +473,9 @@ export const getMockSimilarProperties = (): FrontendProperty[] => [
     beds: 4,
     baths: 4,
     sqft: "3,000",
+    propertyCategory: "featured",
     features: ["Vaastu-friendly", "2 Car Parks"],
-    tag: { text: "New", color: "#10b981" },
+    tag: { text: "Featured", color: "#0F7F9C" },
     furnishing: "Semi-furnished",
     parking: 2,
     ageOfProperty: 2
@@ -540,6 +491,7 @@ export const getMockSimilarProperties = (): FrontendProperty[] => [
     beds: 3,
     baths: 3,
     sqft: "2,400",
+    propertyCategory: "normal",
     features: ["Gated Community", "Gym"],
     tag: { text: "Hot Deal", color: "#ef4444" },
     furnishing: "Fully furnished",
@@ -557,6 +509,7 @@ export const getMockSimilarProperties = (): FrontendProperty[] => [
     beds: 5,
     baths: 5,
     sqft: "4,200",
+    propertyCategory: "normal",
     features: ["Private Pool", "Home Theater"],
     tag: { text: "", color: "" },
     furnishing: "Fully furnished",
@@ -574,8 +527,9 @@ export const getMockSimilarProperties = (): FrontendProperty[] => [
     beds: 4,
     baths: 4,
     sqft: "3,500",
+    propertyCategory: "exclusive",
     features: ["High Rise", "Smart Home"],
-    tag: { text: "Exclusive", color: "#b59e78" },
+    tag: { text: "Exclusive", color: "#B59E78" },
     furnishing: "Semi-furnished",
     parking: 2,
     ageOfProperty: 3
@@ -591,6 +545,7 @@ export const getMockSimilarProperties = (): FrontendProperty[] => [
     beds: 3,
     baths: 3,
     sqft: "1,800",
+    propertyCategory: "normal",
     features: ["Garden", "Security"],
     tag: { text: "Sold Out", color: "#6b7280" },
     furnishing: "Unfurnished",
@@ -658,7 +613,6 @@ const getMockOtherProperties = (): FrontendProperty[] => [
 export const fetchMyProperties = async (token: string): Promise<BackendProperty[]> => {
   try {
     const url = `${API_BASE_URL}/properties/user/my-properties`;
-    console.log('Fetching my properties from:', url);
     const response = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -666,14 +620,12 @@ export const fetchMyProperties = async (token: string): Promise<BackendProperty[
       }
     });
     
-    console.log('Response status:', response.status);
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     
     const result: ApiResponse<BackendProperty[]> = await response.json();
-    console.log('My properties API response:', result);
     
     if (result.success && result.data) {
       return result.data;
@@ -814,7 +766,6 @@ export interface UserProfile {
 export const fetchUserProfile = async (token: string): Promise<UserProfile | null> => {
   try {
     const url = `${API_BASE_URL}/users/profile`;
-    console.log('Fetching user profile from:', url);
     const response = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -822,14 +773,12 @@ export const fetchUserProfile = async (token: string): Promise<UserProfile | nul
       }
     });
     
-    console.log('User profile response status:', response.status);
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     
     const result: ApiResponse<UserProfile> = await response.json();
-    console.log('User profile API response:', result);
     
     if (result.success && result.data) {
       return result.data;
@@ -852,8 +801,6 @@ export const updateUserProfile = async (token: string, profileData: {
 }): Promise<UserProfile | null> => {
   try {
     const url = `${API_BASE_URL}/users/profile`;
-    console.log('Updating user profile at:', url);
-    console.log('Profile data:', profileData);
     
     const response = await fetch(url, {
       method: 'PUT',
@@ -864,14 +811,12 @@ export const updateUserProfile = async (token: string, profileData: {
       body: JSON.stringify(profileData)
     });
     
-    console.log('Update profile response status:', response.status);
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     
     const result: ApiResponse<UserProfile> = await response.json();
-    console.log('Update profile API response:', result);
     
     if (result.success && result.data) {
       return result.data;
@@ -888,7 +833,6 @@ export const updateUserProfile = async (token: string, profileData: {
 export const fetchUnlockedProperties = async (token: string): Promise<BackendProperty[]> => {
   try {
     const url = `${API_BASE_URL}/users/unlocked-properties`;
-    console.log('Fetching unlocked properties from:', url);
     const response = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -896,14 +840,12 @@ export const fetchUnlockedProperties = async (token: string): Promise<BackendPro
       }
     });
     
-    console.log('Unlocked properties response status:', response.status);
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     
     const result: ApiResponse<BackendProperty[]> = await response.json();
-    console.log('Unlocked properties API response:', result);
     
     if (result.success && result.data) {
       return result.data;
@@ -920,7 +862,6 @@ export const fetchUnlockedProperties = async (token: string): Promise<BackendPro
 export const addToFavorites = async (token: string, propertyId: string): Promise<{ success: boolean; message: string; favoritesCount?: number }> => {
   try {
     const url = `${API_BASE_URL}/favorites/add`;
-    console.log('Adding to favorites:', propertyId);
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -931,7 +872,6 @@ export const addToFavorites = async (token: string, propertyId: string): Promise
     });
     
     const result = await response.json();
-    console.log('Add to favorites response:', result);
     
     if (response.ok && result.success) {
       return {
@@ -957,7 +897,6 @@ export const addToFavorites = async (token: string, propertyId: string): Promise
 export const removeFromFavorites = async (token: string, propertyId: string): Promise<{ success: boolean; message: string; favoritesCount?: number }> => {
   try {
     const url = `${API_BASE_URL}/favorites/remove`;
-    console.log('Removing from favorites:', propertyId);
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -968,7 +907,6 @@ export const removeFromFavorites = async (token: string, propertyId: string): Pr
     });
     
     const result = await response.json();
-    console.log('Remove from favorites response:', result);
     
     if (response.ok && result.success) {
       return {
@@ -994,7 +932,6 @@ export const removeFromFavorites = async (token: string, propertyId: string): Pr
 export const getFavorites = async (token: string): Promise<BackendProperty[]> => {
   try {
     const url = `${API_BASE_URL}/favorites`;
-    console.log('Fetching favorites from:', url);
     const response = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -1002,14 +939,12 @@ export const getFavorites = async (token: string): Promise<BackendProperty[]> =>
       }
     });
     
-    console.log('Favorites response status:', response.status);
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     
     const result: ApiResponse<BackendProperty[]> = await response.json();
-    console.log('Favorites API response:', result);
     
     if (result.success && result.data) {
       return result.data;
@@ -1025,7 +960,6 @@ export const getFavorites = async (token: string): Promise<BackendProperty[]> =>
 export const checkFavorite = async (token: string, propertyId: string): Promise<boolean> => {
   try {
     const url = `${API_BASE_URL}/favorites/check/${propertyId}`;
-    console.log('Checking favorite status:', propertyId);
     const response = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -1038,7 +972,6 @@ export const checkFavorite = async (token: string, propertyId: string): Promise<
     }
     
     const result = await response.json();
-    console.log('Check favorite response:', result);
     
     return result.success ? result.data.isFavorite : false;
   } catch (error) {

@@ -129,7 +129,7 @@ const Hero = () => {
 
       {/* Main Content Area */}
       <div className="container mx-auto px-4 md:px-8 mt-6 md:mt-6 relative z-10">
-        <div className="relative h-[500px] sm:h-[480px] md:h-[420px] overflow-hidden rounded-[2.5rem] border border-gray-100 shadow-2xl">
+        <div className="relative h-[620px] sm:h-[560px] md:h-[420px] overflow-hidden rounded-[2.5rem] border border-gray-100 shadow-2xl">
 
           {/* Background */}
           {/* Original green background - commented out */}
@@ -215,15 +215,15 @@ const Hero = () => {
       </div>
 
       {/* === CTA BUTTONS === */}
-      <div className="bg-white py-10 flex justify-center animate-rise delay-300">
-        <div className="bg-white rounded-[2.5rem] px-8 py-5 border border-gray-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] transition-shadow hover:shadow-[0_20px_50px_-10px_rgba(5,111,94,0.15)] inline-flex">
-          <div className="flex flex-col md:flex-row gap-6 flex-gap-6-fallback flex-no-shrink items-center">
-            
-            <Link href="/buy-property-in-gandhinagar-gujarat" className={`inline-block flex-shrink-0 ${BUTTON_BASE_CLASSES} !px-12 !py-4`}>
+      <div className="bg-white py-10 px-4 flex justify-center animate-rise delay-300">
+        <div className="bg-white rounded-[2.5rem] px-5 sm:px-8 py-5 border border-gray-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] transition-shadow hover:shadow-[0_20px_50px_-10px_rgba(5,111,94,0.15)] w-full max-w-sm sm:max-w-none sm:w-auto">
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center">
+
+            <Link href="/buy-property-in-gandhinagar-gujarat" className={`w-full sm:w-auto text-center flex-shrink-0 ${BUTTON_BASE_CLASSES} !px-10 sm:!px-12 !py-4`}>
               Buy Property
             </Link>
-            
-            <Link href="/sell-property-in-gandhinagar-gujarat/form" className={`inline-block flex-shrink-0 ${BUTTON_BASE_CLASSES} !px-12 !py-4`}>
+
+            <Link href="/sell-property-in-gandhinagar-gujarat/form" className={`w-full sm:w-auto text-center flex-shrink-0 ${BUTTON_BASE_CLASSES} !px-10 sm:!px-12 !py-4`}>
               Sell Property
             </Link>
 

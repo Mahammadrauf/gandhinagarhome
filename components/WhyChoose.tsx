@@ -144,7 +144,7 @@ const WhyChoose = () => {
       animate={hasAnimated ? "visible" : "hidden"}
       variants={fadeInSlideUp} 
     > 
-      <div className="max-w-10xl mx-auto px-6 lg:px-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
         
         {/* --- Title Section --- */}
         <motion.div variants={fadeInSlideUp} className="text-center mb-12">
@@ -159,13 +159,13 @@ const WhyChoose = () => {
 
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+
           <div className="lg:col-span-2 relative">
-            
-            <motion.div 
-              ref={scrollContainerRef} 
-              className="space-y-6 h-[420px] overflow-y-auto hide-scrollbar pr-2"
+
+            <motion.div
+              ref={scrollContainerRef}
+              className="space-y-6 h-[360px] sm:h-[420px] overflow-y-auto hide-scrollbar pr-2"
               variants={staggerContainer}
               initial="hidden"
               animate={hasAnimated ? "visible" : "hidden"}
@@ -209,7 +209,7 @@ const WhyChoose = () => {
                             <h4 className="font-semibold text-gray-800 group-hover:text-primary transition-colors">{testimonial.name}</h4>
                             <p className="text-sm text-gray-600">{testimonial.location}</p>
                           </div>
-                          <span className="absolute right-6 bg-primary text-white text-base px-4 py-2 rounded-full font-medium shadow-md">
+                          <span className="absolute right-3 sm:right-6 bg-primary text-white text-sm sm:text-base px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-medium shadow-md">
                             {testimonial.role}
                           </span>
                         </div>
