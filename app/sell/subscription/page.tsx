@@ -486,7 +486,7 @@ function SubscriptionPageContent() {
                     alert('Thank you. If you have paid, your listing will be activated soon.');
                     try { localStorage.setItem('pendingListingPaid', 'true'); } catch (e) {}
                     setShowPaymentModal(false);
-                    router.push('/');
+                    router.push('/sell-property-in-gandhinagar-gujarat/form?autoSubmit=true');
                   }}
                 >
                   I have paid
