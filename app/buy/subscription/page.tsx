@@ -435,7 +435,7 @@ export default function BuyerSubscriptionPage() {
                     // Mark payment done and show thank you
                     alert('Thank you. Payment recorded. Plan will be activated soon.');
                     setShowPaymentModal(false);
-                    router.push('/buy-property-in-gandhinagar-gujarat');
+                    router.push('/profile');
                   }}
                 >
                   I have paid
