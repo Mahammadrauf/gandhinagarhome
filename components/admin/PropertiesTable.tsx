@@ -56,6 +56,7 @@ interface Property {
     inclusions?: string
     ownershipDocuments: boolean
   }
+  amenities?: string[]
   description?: string
   status: 'pending' | 'approved' | 'rejected' | 'sold' | 'inactive' | 'awaiting_payment'
   postedBy?: 'owner' | 'broker'
