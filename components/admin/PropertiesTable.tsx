@@ -55,7 +55,8 @@ interface Property {
     inclusions?: string
     ownershipDocuments: boolean
   }
-  status: 'pending' | 'approved' | 'rejected' | 'sold' | 'inactive'
+  description?: string
+  status: 'pending' | 'approved' | 'rejected' | 'sold' | 'inactive' | 'awaiting_payment'
   postedBy?: 'owner' | 'broker'
   isFeatured: boolean
   views: number
