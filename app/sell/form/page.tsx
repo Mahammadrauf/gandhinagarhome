@@ -128,6 +128,7 @@ function SellFormPageContent() {
 
   // Protect this route: only allow logged-in sellers
   const guardRef = React.useRef(false);
+  const autoSubmitExecutedRef = React.useRef(false);
   useEffect(() => {
     if (guardRef.current) return;
     guardRef.current = true;
@@ -154,7 +155,8 @@ function SellFormPageContent() {
   useEffect(() => {
     try {
       const auto = searchParams.get("autoSubmit");
-      if (auto === "true") {
+      if (auto === "true" && !autoSubmitExecutedRef.current) {
+        autoSubmitExecutedRef.current = true;
         const paid = localStorage.getItem("pendingListingPaid");
         const raw = localStorage.getItem("pendingListing");
         if (paid && raw) {
