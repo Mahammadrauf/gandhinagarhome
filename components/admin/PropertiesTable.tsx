@@ -34,6 +34,7 @@ interface Property {
     bathrooms?: number
     balconies?: number
     totalArea: number
+    totalAreaUnit?: string
     carpetArea?: number
     builtUpArea?: number
     floorNo?: string
