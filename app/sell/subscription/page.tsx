@@ -55,7 +55,7 @@ const plans = [
     id: "standard",
     name: "Standard",
     tagline: "List 1 Property",
-    price: "499",
+    price: "299 (short time offer)",
     fullPrice: "999",
     comingSoon: false,
     icon: Zap,
@@ -345,7 +345,7 @@ function SubscriptionPageContent() {
           </h1>
           
           <p className="text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed">
-            Pay <span className="font-bold text-[#0b6b53]">₹499</span> to publish one property listing.
+            Pay <span className="font-bold text-[#0b6b53]">₹299</span> to publish one property listing.
             To add another property later, complete this payment flow again for each listing.
           </p>
         </div>
@@ -462,9 +462,9 @@ function SubscriptionPageContent() {
                     Flexible Upgrades Available
                 </h4>
                 <p className="text-xs md:text-sm text-slate-500 leading-relaxed">
-                    The <strong>Standard (₹499)</strong> plan publishes one property for buyer review after payment.
+                    The <strong>Standard (₹299)</strong> plan publishes one property for buyer review after payment.
                     <strong> Featured</strong> and <strong>Exclusive</strong> plans are coming soon.
-                    Want to list another property? Submit a new listing and pay ₹499 again.
+                    Want to list another property? Submit a new listing and pay ₹299 again.
                 </p>
             </div>
         </div>
