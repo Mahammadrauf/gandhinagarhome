@@ -192,6 +192,7 @@ function SellFormPageContent() {
               await handleSubmit({
                 skipValidation: true,
                 payloadOverride: payload,
+                redirectTo: 'home',
               });
               localStorage.removeItem("pendingListing");
               localStorage.removeItem("pendingListingPaid");
@@ -539,7 +540,7 @@ const handleEditMediaSubmit = () => {
 
 
   // Submit
-  const handleSubmit = async (options?: { skipValidation?: boolean; payloadOverride?: any }) => {
+  const handleSubmit = async (options?: { skipValidation?: boolean; payloadOverride?: any; redirectTo?: 'confirmation' | 'home' | 'none' }) => {
   const payload = options?.payloadOverride || {};
   const firstNameValue = String(payload.firstName ?? firstName ?? "").trim();
   const middleNameValue = String(payload.middleName ?? middleName ?? "");
@@ -693,7 +694,13 @@ const handleEditMediaSubmit = () => {
         paymentInfo: response.data.payment
       }));
 
-      router.push("/sell-property-in-gandhinagar-gujarat/confirmation");
+      if (options?.redirectTo === 'home') {
+        router.push("/");
+      } else if (options?.redirectTo === 'none') {
+        // no redirect requested
+      } else {
+        router.push("/sell-property-in-gandhinagar-gujarat/confirmation");
+      }
     } else {
       // Store data even on failure
       localStorage.setItem("pendingListing", JSON.stringify({
