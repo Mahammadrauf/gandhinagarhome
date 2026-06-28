@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from 'next/navigation';
 import Header from "@/components/Header";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -130,6 +131,25 @@ export default function BuyerSubscriptionPage() {
   const router = useRouter();
   const [hoveredPlan, setHoveredPlan] = useState<string | null>(null);
   const [submittingPlan, setSubmittingPlan] = useState<string | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<any | null>(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const searchParams = useSearchParams();
+
+  // Auto-open plan modal when navigated from Sell form with ?autoOpen=<planId>
+  useEffect(() => {
+    try {
+      const auto = searchParams?.get?.("autoOpen");
+      if (auto) {
+        const plan = plans.find((p) => p.id === auto);
+        if (plan) {
+          setSelectedPlan(plan);
+          setShowPaymentModal(true);
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [searchParams]);
 
   const getAuthToken = () => {
     return (
@@ -190,6 +210,8 @@ export default function BuyerSubscriptionPage() {
         return;
       }
 
+      /*
+      // Original Razorpay checkout flow commented out per request.
       const scriptOk = await loadRazorpayScript();
       if (!scriptOk) {
         alert("Failed to load Razorpay checkout. Please check your internet and try again.");
@@ -273,8 +295,17 @@ export default function BuyerSubscriptionPage() {
         rzp.open();
         return;
       }
+      */
 
-      alert(response.data?.message || "Failed to create payment order");
+      // Razorpay bypassed: preserve data locally and open our QR payment modal
+      localStorage.setItem(
+        "pendingBuyerPayment",
+        JSON.stringify({ planId: plan.id, planName: plan.name, createdAt: new Date().toISOString() })
+      );
+      setSelectedPlan(plan);
+      setShowPaymentModal(true);
+      // stop further navigation; user will confirm payment in modal
+      return;
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || "Payment API error";
       alert(msg);
@@ -386,6 +417,33 @@ export default function BuyerSubscriptionPage() {
             );
           })}
         </div>
+
+        {/* Inline Payment Modal for QR bypass */}
+        {showPaymentModal && selectedPlan && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div className="w-full max-w-md bg-white rounded-2xl p-6 shadow-lg">
+              <h3 className="text-lg font-semibold">Pay for {selectedPlan.name}</h3>
+              <div className="mt-4 text-center">
+                <img src="/images/qr_payment.jpeg" alt="Payment QR" className="mx-auto max-h-64 object-contain" />
+                <p className="text-sm text-gray-500 mt-3">Scan the QR and complete payment using your preferred UPI app.</p>
+              </div>
+              <div className="mt-6 flex items-center justify-end gap-3">
+                <button className="px-4 py-2 rounded-lg bg-gray-100" onClick={() => setShowPaymentModal(false)}>Cancel</button>
+                <button
+                  className="px-4 py-2 rounded-lg bg-[#0b6b53] text-white font-semibold"
+                  onClick={() => {
+                    // Mark payment done and show thank you
+                    alert('Thank you. Payment recorded. Plan will be activated soon.');
+                    setShowPaymentModal(false);
+                    router.push('/buy-property-in-gandhinagar-gujarat');
+                  }}
+                >
+                  I have paid
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* --- Footer --- */}
         <div className="mt-16 border-t border-slate-200 pt-10">

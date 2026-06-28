@@ -41,6 +41,31 @@ const CITY_AREAS: Record<string, string[]> = {
   "Gift City": ["Gift City"],
 };
 
+// Full terms list used inside modal (kept in sync with /terms-and-conditions/page.tsx)
+const TERMS: string[] = [
+  'By listing a property on GandhinagarHomes.com, I confirm that I am the legal owner of the property or I am legally authorized by the owner to post the property listing.',
+  'I confirm that all information provided by me including property details, pricing, area, location, approvals, amenities, photographs, videos, and ownership details are true, accurate, and updated.',
+  'I understand that GandhinagarHomes.com is only a technology-enabled property listing platform connecting buyers and sellers directly and is not acting as a broker, agent, legal advisor, or transaction mediator.',
+  'I understand that GandhinagarHomes.com does not guarantee property sale, buyer inquiries, transaction completion, or any financial outcome from the listing.',
+  'I agree that all negotiations, site visits, token amounts, agreements, payments, registrations, possession transfers, and transactions shall be handled directly between the buyer and seller without any responsibility of GandhinagarHomes.com.',
+  'I agree that GandhinagarHomes.com shall not be held responsible for any disputes related to ownership, title, payments, fraud, legal issues, possession, documentation, pricing, or transaction failure.',
+  'I confirm that the property listed by me complies with applicable laws, municipal rules, society norms, and other legal requirements.',
+  'I agree that any false, misleading, fake, duplicate, illegal, or suspicious listing may be removed by GandhinagarHomes.com without prior notice.',
+  'I authorize GandhinagarHomes.com to verify my listing details and request supporting documents whenever required.',
+  'I consent to GandhinagarHomes.com sharing my contact details with genuine interested buyers for property-related communication.',
+  'I agree that I have read, understood, and agreed to all the above Terms & Conditions before submitting my property listing.',
+  'I agree not to upload any content that is false, offensive, misleading, copyrighted without permission, unlawful, or intended to deceive users.',
+  'I agree not to misuse buyer information received through the platform for spam, harassment, or unrelated promotional activities.',
+  'I understand that GandhinagarHomes.com reserves the right to edit, reject, suspend, remove, or deactivate any listing at its sole discretion.',
+  'I grant GandhinagarHomes.com permission to use, display, promote, advertise, and publish my uploaded property photographs, videos, and descriptions across digital platforms and social media for marketing purposes.',
+  'I agree that GandhinagarHomes.com may contact me regarding listing verification, property updates, promotional services, or platform-related communication.',
+  'I understand that brokers, agents, or third parties posting misleading owner listings may face suspension or permanent removal from the platform.',
+  'I agree that GandhinagarHomes.com shall not be liable for any direct or indirect financial loss, damages, fraud, or legal claims arising from buyer-seller interactions.',
+  'I agree to indemnify and hold harmless GandhinagarHomes.com, its owners, employees, and affiliates against any legal claims, disputes, damages, or liabilities arising due to my listing or actions.',
+  'I understand that GandhinagarHomes.com reserves the right to modify these terms and conditions at any time without prior notice.',
+  'I agree that any disputes related to the use of this platform shall be subject to the jurisdiction of courts located in Ahmedabad/Gandhinagar, Gujarat.'
+];
+
 const priceToWords = (num: number): string => {
   if (!num || isNaN(num)) return "";
   const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
@@ -125,6 +150,62 @@ function SellFormPageContent() {
     }
   }, []);
 
+  // Auto-submit after payment: if user returns with ?autoSubmit=true and pendingListingPaid flag
+  useEffect(() => {
+    try {
+      const auto = searchParams.get("autoSubmit");
+      if (auto === "true") {
+        const paid = localStorage.getItem("pendingListingPaid");
+        const raw = localStorage.getItem("pendingListing");
+        if (paid && raw) {
+          const payload = JSON.parse(raw);
+          // populate form fields from payload (guard against undefined)
+          setFirstName(payload.firstName || "");
+          setMiddleName(payload.middleName || "");
+          setLastName(payload.lastName || "");
+          setEmail(payload.email || "");
+          setWhatsappNumber(payload.whatsappNumber || "");
+          setMobileNumber(payload.mobileNumber || "");
+          setCountryCode(payload.countryCode || "+91");
+          setTitle(payload.title || "");
+          setBedrooms(String(payload.bedrooms || ""));
+          setPropertyType(payload.propertyType || "");
+          setBathrooms(String(payload.bathrooms || ""));
+          setBalcony(payload.balcony || "");
+          setParking(payload.parking || "");
+          setAgeOfProperty(payload.ageOfProperty || "");
+          setFurnishing(payload.furnishing || "");
+          setPrice(String(payload.price || "0.00"));
+          setAmenities(payload.amenities || []);
+          setPropertySize(payload.propertySize || "");
+          setPropertySizeUnit(payload.propertySizeUnit || "sq ft");
+          setCity(payload.city || "");
+          setLocality(payload.locality || "");
+          setUnitNo(payload.unitNo || "");
+          setPincode(payload.pincode || "");
+          setLatitude(payload.latitude || null);
+          setLongitude(payload.longitude || null);
+          setPickedDisplayAddress(payload.pickedDisplayAddress || "");
+          // small delay to allow state to settle
+          setTimeout(async () => {
+            try {
+              await handleSubmit({
+                skipValidation: true,
+                payloadOverride: payload,
+              });
+              localStorage.removeItem("pendingListing");
+              localStorage.removeItem("pendingListingPaid");
+            } catch (e) {
+              console.error("Auto submit error", e);
+            }
+          }, 350);
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [searchParams]);
+
   // Basic Info
   const [firstName, setFirstName] = useState("");
   const [middleName, setMiddleName] = useState("");
@@ -195,6 +276,12 @@ function SellFormPageContent() {
   // UI
   const [triedContinue, setTriedContinue] = useState(false);
   const [saving, setSaving] = useState(false);
+  // Modal states for bypassing Razorpay: show terms/QR and thank you
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [showThankYou, setShowThankYou] = useState(false);
+  const [termsVisibleCount, setTermsVisibleCount] = useState(10);
+  const [showPaymentQrModal, setShowPaymentQrModal] = useState(false);
 
   useEffect(() => {
   if (!isEditMode) return;
@@ -452,24 +539,71 @@ const handleEditMediaSubmit = () => {
 
 
   // Submit
-  const handleSubmit = async () => {
-  if (!canContinueStep1) {
-    setStep(0);
-    setTriedContinue(true);
-    alert("Please complete Basic Information and verify your WhatsApp number.");
-    return;
-  }
-  if (!canContinueStep2) {
-    setStep(1);
-    setTriedContinue(true);
-    alert("Please complete Specifications.");
-    return;
-  }
-  if (!canContinueStep3) {
-    setStep(2);
-    setTriedContinue(true);
-    alert("Please complete Location details.");
-    return;
+  const handleSubmit = async (options?: { skipValidation?: boolean; payloadOverride?: any }) => {
+  const payload = options?.payloadOverride || {};
+  const firstNameValue = String(payload.firstName ?? firstName ?? "").trim();
+  const middleNameValue = String(payload.middleName ?? middleName ?? "");
+  const lastNameValue = String(payload.lastName ?? lastName ?? "").trim();
+  const emailValue = String(payload.email ?? email ?? "").trim();
+  const whatsappNumberValue = String(payload.whatsappNumber ?? whatsappNumber ?? "").trim();
+  const mobileNumberValue = String(payload.mobileNumber ?? mobileNumber ?? "").trim();
+  const countryCodeValue = String(payload.countryCode ?? countryCode ?? "+91");
+  const titleValue = String(payload.title ?? title ?? "").trim();
+  const bedroomsValue = String(payload.bedrooms ?? bedrooms ?? "");
+  const propertyTypeValue = String(payload.propertyType ?? propertyType ?? "");
+  const bathroomsValue = String(payload.bathrooms ?? bathrooms ?? "");
+  const balconyValue = String(payload.balcony ?? balcony ?? "");
+  const parkingValue = String(payload.parking ?? parking ?? "");
+  const ageOfPropertyValue = String(payload.ageOfProperty ?? ageOfProperty ?? "");
+  const furnishingValue = String(payload.furnishing ?? furnishing ?? "");
+  const priceValue = String(payload.price ?? price ?? "0.00");
+  const amenitiesValue = Array.isArray(payload.amenities) ? payload.amenities : (amenities || []);
+  const propertySizeValue = String(payload.propertySize ?? propertySize ?? "");
+  const propertySizeUnitValue = String(payload.propertySizeUnit ?? propertySizeUnit ?? "sq ft");
+  const cityValue = String(payload.city ?? city ?? "").trim();
+  const localityValue = String(payload.locality ?? locality ?? "").trim();
+  const addressValue = String(payload.address ?? address ?? "").trim();
+  const unitNoValue = String(payload.unitNo ?? unitNo ?? "");
+  const pincodeValue = String(payload.pincode ?? pincode ?? "").trim();
+  const photosValue = Array.isArray(payload.photos) ? payload.photos : (photos || []);
+  const videoValue = payload.video ?? video ?? null;
+  const saleDeedValue = payload.saleDeed ?? saleDeed ?? null;
+  const brochureValue = payload.brochure ?? brochure ?? null;
+
+  if (!options?.skipValidation) {
+    const isFirstNameValid = firstNameValue.length >= 2;
+    const isLastNameValid = lastNameValue.length >= 2;
+    const isEmailValid = validateEmail(emailValue);
+    const isWhatsappValid = whatsappNumberValue.length === 10;
+    if (!isFirstNameValid || !isLastNameValid || !isEmailValid || !isWhatsappValid) {
+      setStep(0);
+      setTriedContinue(true);
+      alert("Please complete Basic Information and verify your WhatsApp number.");
+      return;
+    }
+
+    const isTitleValid = titleValue.length >= 3;
+    const isBedroomsValid = Number(bedroomsValue.replace("+", "")) >= 0;
+    const isBathroomsValid = Number(bathroomsValue.replace("+", "")) >= 0;
+    const isPriceValid = parseFloat(priceValue.replace(/,/g, '')) > 0;
+    if (!isTitleValid || !isBedroomsValid || !isBathroomsValid || !isPriceValid) {
+      setStep(1);
+      setTriedContinue(true);
+      alert("Please complete Specifications.");
+      return;
+    }
+
+    const isCityValid = cityValue.length > 2;
+    const isLocalityValid = localityValue.length > 2;
+    const isPincodeValid = pincodeValue.length === 6;
+    const isSocietyValid = titleValue.length >= 3;
+    const isAddressValid = addressValue.length > 5;
+    if (!isCityValid || !isLocalityValid || !isPincodeValid || !isSocietyValid || !isAddressValid) {
+      setStep(2);
+      setTriedContinue(true);
+      alert("Please complete Location details.");
+      return;
+    }
   }
 
   try {
@@ -479,50 +613,50 @@ const handleEditMediaSubmit = () => {
     const formData = new FormData();
 
     // Add basic form fields
-    formData.append('firstName', firstName);
-    formData.append('middleName', middleName);
-    formData.append('lastName', lastName);
-    formData.append('email', email);
-    formData.append('whatsappNumber', whatsappNumber);
-    formData.append('mobileNumber', mobileNumber);
-    formData.append('countryCode', countryCode);
-    formData.append('title', title);
-    formData.append('bedrooms', bedrooms);
-    formData.append('propertyType', propertyType);
-    formData.append('bathrooms', bathrooms);
-    formData.append('balcony', balcony);
-    formData.append('parking', parking);
-    formData.append('ageOfProperty', ageOfProperty);
-    formData.append('furnishing', furnishing);
+    formData.append('firstName', firstNameValue);
+    formData.append('middleName', middleNameValue);
+    formData.append('lastName', lastNameValue);
+    formData.append('email', emailValue);
+    formData.append('whatsappNumber', whatsappNumberValue);
+    formData.append('mobileNumber', mobileNumberValue);
+    formData.append('countryCode', countryCodeValue);
+    formData.append('title', titleValue);
+    formData.append('bedrooms', bedroomsValue);
+    formData.append('propertyType', propertyTypeValue);
+    formData.append('bathrooms', bathroomsValue);
+    formData.append('balcony', balconyValue);
+    formData.append('parking', parkingValue);
+    formData.append('ageOfProperty', ageOfPropertyValue);
+    formData.append('furnishing', furnishingValue);
     formData.append('availability', 'Immediate'); // Default availability
     
-    const numericPrice = parseFloat(price.replace(/,/g, ''));
+    const numericPrice = parseFloat(priceValue.replace(/,/g, ''));
     formData.append('price', numericPrice.toString());
     
-    formData.append('amenities', JSON.stringify(amenities));
-    formData.append('propertySize', propertySize);
-    formData.append('propertySizeUnit', propertySizeUnit);
-    formData.append('city', city);
-    formData.append('locality', locality);
-    formData.append('society', title); // Using title as society name
-    formData.append('unitNo', unitNo);
-    formData.append('pincode', pincode);
+    formData.append('amenities', JSON.stringify(amenitiesValue));
+    formData.append('propertySize', propertySizeValue);
+    formData.append('propertySizeUnit', propertySizeUnitValue);
+    formData.append('city', cityValue);
+    formData.append('locality', localityValue);
+    formData.append('society', titleValue); // Using title as society name
+    formData.append('unitNo', unitNoValue);
+    formData.append('pincode', pincodeValue);
 
     // Add files if they exist
-    if (photos.length > 0) {
-      photos.forEach((photo) => {
+    if (photosValue.length > 0) {
+      photosValue.forEach((photo: File) => {
         formData.append('images', photo);
       });
     }
 
-    if (video) {
-      formData.append('video', video);
+    if (videoValue) {
+      formData.append('video', videoValue as Blob);
     }
 
     // Combine sale deed and brochure into documents array
-    const documents = [];
-    if (saleDeed) documents.push(saleDeed);
-    if (brochure) documents.push(brochure);
+    const documents = [] as File[];
+    if (saleDeedValue) documents.push(saleDeedValue as File);
+    if (brochureValue) documents.push(brochureValue as File);
     
     if (documents.length > 0) {
       documents.forEach((doc) => {
@@ -1897,12 +2031,129 @@ Can’t find your area? Select the nearest major locality.            </p>
                       <button onClick={() => setStep(2)} className={btnLight}>Back to Location</button>
                       <button onClick={handleSaveDraft} className={btnSecondary}>Save Draft</button>
                       <button
-  onClick={isEditMode ? handleEditMediaSubmit : handleSubmit}
+  onClick={isEditMode ? handleEditMediaSubmit : () => setShowPaymentModal(true)}
   className={saving ? btnDisabled : btnPrimary}
   disabled={saving}
 >
   {saving ? (isEditMode ? "Saving..." : "Submitting...") : (isEditMode ? "Save & Return to Review" : "Submit Listing")}
 </button>
+
+                    {/* Payment / Terms modal (bypass Razorpay) */}
+                    {showPaymentModal && (
+                      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                        <div className="w-full max-w-xl bg-white rounded-2xl p-6 shadow-lg">
+                          {!showThankYou ? (
+                            <div>
+                              <h3 className="text-lg font-semibold mb-3">Terms & Payment</h3>
+                              <div className="text-sm text-gray-700 mb-4">
+                                Please read and agree to the terms and conditions before proceeding. After you pay using the QR code, click Submit.
+                              </div>
+
+                              {/* Scrollable terms preview showing `termsVisibleCount` items */}
+                              <div className="max-h-40 overflow-y-auto p-3 border border-gray-100 rounded-md bg-white mb-2">
+                                <h4 className="text-sm font-semibold mb-2">Terms &amp; Conditions (Preview)</h4>
+                                <ol className="list-decimal list-inside space-y-2 text-sm text-gray-700">
+                                  {TERMS.slice(0, termsVisibleCount).map((t, i) => (
+                                    <li key={i}>{t}</li>
+                                  ))}
+                                </ol>
+                              </div>
+
+                              <div className="flex items-center justify-between mb-3">
+                                {termsVisibleCount < TERMS.length ? (
+                                  <button
+                                    className="text-sm text-[#0b6b53] font-medium"
+                                    onClick={() => setTermsVisibleCount(Math.min(TERMS.length, termsVisibleCount + 10))}
+                                  >
+                                    Read more
+                                  </button>
+                                ) : (
+                                  <div className="text-xs text-gray-500">All terms shown</div>
+                                )}
+                                <label className="flex items-center gap-2">
+                                  <input type="checkbox" checked={agreeToTerms} onChange={(e) => setAgreeToTerms(e.target.checked)} />
+                                  <span className="text-sm">I agree to the Terms & Conditions</span>
+                                </label>
+                              </div>
+
+                              {/* {agreeToTerms && (
+                                <div className="mt-4">
+                                  <div className="mb-2 font-medium">Pay here</div>
+                                  <div className="w-full h-64 flex items-center justify-center border border-gray-100 rounded-lg bg-gray-50">
+                                    <img src="/images/qr_payment.png" alt="Payment QR" className="max-h-56 object-contain" />
+                                  </div>
+                                  <p className="text-xs text-gray-500 mt-2">Scan the QR and complete payment using your preferred UPI app.</p>
+                                </div>
+                              )} */}
+
+                              <div className="mt-6 flex items-center justify-end gap-3">
+                                <button className="px-4 py-2 rounded-lg bg-gray-100" onClick={() => { setShowPaymentModal(false); setAgreeToTerms(false); }}>Cancel</button>
+                                <button
+                                  className={`px-4 py-2 rounded-lg font-semibold ${agreeToTerms ? 'bg-[#0b6b53] text-white' : 'bg-gray-300 text-gray-600 cursor-not-allowed'}`}
+                                  disabled={!agreeToTerms}
+                                  onClick={() => {
+                                    // Save the current form payload and navigate to the seller subscription page
+                                    try {
+                                      localStorage.setItem('pendingListing', JSON.stringify(buildPayload()));
+                                    } catch (e) {
+                                      console.warn('Failed to save pending listing to localStorage', e);
+                                    }
+                                    setShowPaymentModal(false);
+                                    router.push('/sell-property-in-gandhinagar-gujarat/subscription');
+                                  }}
+                                >
+                                  Proceed to Payment
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-center">
+                              <h3 className="text-lg font-semibold">Thank you</h3>
+                              <p className="mt-3 text-sm text-gray-700">If you have paid successfully, your property will be uploaded soon.</p>
+                              <div className="mt-6">
+                                <button className="px-4 py-2 rounded-lg bg-[#0b6b53] text-white" onClick={() => { setShowPaymentModal(false); setShowThankYou(false); setAgreeToTerms(false); }}>
+                                  Close
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Separate Payment QR modal */}
+                    {showPaymentQrModal && (
+                      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                        <div className="w-full max-w-md bg-white rounded-2xl p-6 shadow-lg">
+                          <h3 className="text-lg font-semibold">Payment</h3>
+                            <div className="mt-4 text-center">
+                            <img src="/images/qr_payment.jpeg" alt="Payment QR" className="mx-auto max-h-64 object-contain" />
+                            <p className="text-sm text-gray-500 mt-3">Scan the QR and complete payment using your preferred UPI app.</p>
+                          </div>
+                          <div className="mt-6 flex items-center justify-end gap-3">
+                            <button className="px-4 py-2 rounded-lg bg-gray-100" onClick={() => { setShowPaymentQrModal(false); setAgreeToTerms(false); setTermsVisibleCount(10); }}>Cancel</button>
+                            <button
+                              className="px-4 py-2 rounded-lg bg-[#0b6b53] text-white font-semibold"
+                              onClick={async () => {
+                                // User confirms payment done. Submit listing.
+                                setShowPaymentQrModal(false);
+                                setSaving(true);
+                                try {
+                                  await handleSubmit();
+                                  // handleSubmit routes to confirmation on success
+                                } catch (e) {
+                                  // errors handled in handleSubmit
+                                } finally {
+                                  setSaving(false);
+                                }
+                              }}
+                            >
+                              I have paid
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     </div>
                   </div>

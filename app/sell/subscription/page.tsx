@@ -142,6 +142,8 @@ function SubscriptionPageContent() {
   const [submittingPlan, setSubmittingPlan] = useState<string | null>(null);
   const [propertyId, setPropertyId] = useState<string | null>(null);
   const [viewerCount, setViewerCount] = useState(12);
+  const [selectedPlan, setSelectedPlan] = useState<any | null>(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   useEffect(() => {
     setViewerCount(Math.floor(Math.random() * (20 - 11 + 1)) + 11);
 
@@ -196,6 +198,13 @@ function SubscriptionPageContent() {
   const handlePlanPay = async (plan: { id: string; name: string; price: string; comingSoon?: boolean }) => {
     try {
       if (plan.comingSoon) return;
+
+      // For the standard 499 plan, bypass Razorpay and show local QR modal
+      if (plan.id === 'standard') {
+        setSelectedPlan(plan);
+        setShowPaymentModal(true);
+        return;
+      }
 
       setSubmittingPlan(plan.id);
 
@@ -459,6 +468,32 @@ function SubscriptionPageContent() {
                 </p>
             </div>
         </div>
+
+        {/* --- QR Payment Modal (Standard plan) --- */}
+        {showPaymentModal && selectedPlan && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div className="w-full max-w-md bg-white rounded-2xl p-6 shadow-lg">
+              <h3 className="text-lg font-semibold">Pay for {selectedPlan.name}</h3>
+              <div className="mt-4 text-center">
+                <img src="/images/qr_payment.jpeg" alt="Payment QR" className="mx-auto max-h-64 object-contain" />
+                <p className="text-sm text-gray-500 mt-3">Scan the QR and complete payment using your preferred UPI app.</p>
+              </div>
+              <div className="mt-6 flex items-center justify-end gap-3">
+                <button className="px-4 py-2 rounded-lg bg-gray-100" onClick={() => setShowPaymentModal(false)}>Cancel</button>
+                <button
+                  className="px-4 py-2 rounded-lg bg-[#0b6b53] text-white font-semibold"
+                  onClick={() => {
+                    try { localStorage.setItem('pendingListingPaid', 'true'); } catch (e) {}
+                    setShowPaymentModal(false);
+                    router.push('/sell-property-in-gandhinagar-gujarat/form?autoSubmit=true');
+                  }}
+                >
+                  I have paid
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* --- Trust & Security Footer --- */}
         <div className="mt-16 border-t border-slate-200 pt-10">
