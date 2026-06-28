@@ -1,7 +1,7 @@
 // app/buy/subscription/page.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from 'next/navigation';
 import Header from "@/components/Header";
 import { useRouter } from "next/navigation";
@@ -127,7 +127,7 @@ const plans = [
   }
 ];
 
-export default function BuyerSubscriptionPage() {
+function BuyerSubscriptionPageContent() {
   const router = useRouter();
   const [hoveredPlan, setHoveredPlan] = useState<string | null>(null);
   const [submittingPlan, setSubmittingPlan] = useState<string | null>(null);
@@ -481,4 +481,12 @@ export default function BuyerSubscriptionPage() {
       </div>
     </main>
   );
+}
+
+export default function BuyerSubscriptionPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center"><div className="text-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0b6b53] mx-auto"></div><p className="mt-4 text-gray-600">Loading subscription plans...</p></div></div>}>
+      <BuyerSubscriptionPageContent />
+    </Suspense>
+  )
 }
