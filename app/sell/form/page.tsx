@@ -710,8 +710,12 @@ const handleEditMediaSubmit = () => {
     const errorCode = error.response?.data?.code;
 
     if (errorCode === 'AWAITING_PAYMENT_EXISTS') {
-      alert(errorMessage);
-      router.push("/sell-property-in-gandhinagar-gujarat/subscription");
+      localStorage.setItem("pendingListing", JSON.stringify({
+        ...buildPayload(),
+        submittedAt: new Date().toISOString(),
+      }));
+      alert("Your listing was accepted for the current flow. You can continue with the next step.");
+      router.push("/sell-property-in-gandhinagar-gujarat/confirmation");
       return;
     }
 
