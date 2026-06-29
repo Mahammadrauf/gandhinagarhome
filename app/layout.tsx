@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import WhatsAppChat from '@/components/WhatsAppChat'
+import { ToastProvider } from '@/components/ui/Toast'
 
 export const metadata: Metadata = {
   title: 'GandhinagarHomes - Premium Real Estate in Gandhinagar',
@@ -20,8 +21,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {children}
-        <WhatsAppChat />
+        <ToastProvider>
+          {children}
+          <WhatsAppChat />
+        </ToastProvider>
       </body>
     </html>
   )

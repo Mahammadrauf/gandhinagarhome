@@ -5,10 +5,12 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
 import Header from "@/components/Header";
+import { useToast } from "@/components/ui/Toast";
 
 export default function SellIntroPage() {
   const [userRole, setUserRole] = useState<'buyer' | 'seller' | ''>('');
   const router = useRouter();
+  const { showToast } = useToast();
 
   useEffect(() => {
     const savedUser = localStorage.getItem('gh_user');
@@ -20,7 +22,7 @@ export default function SellIntroPage() {
         if (isLoggedIn && role === 'seller') {
           setUserRole(role);
         } else {
-          alert('Only sellers can access this page. Please login as a seller.');
+          showToast('Only sellers can access this page. Please login as a seller.', 'warning');
           router.replace('/');
         }
       } catch (e) {
@@ -35,7 +37,7 @@ export default function SellIntroPage() {
   const handleStartListing = (e: React.MouseEvent) => {
     if (userRole === 'buyer' || userRole === '') {
       e.preventDefault();
-      alert("You can't sell properties as you are logged in as buyer/user");
+      showToast("You can't sell properties as you are logged in as buyer/user", 'warning');
     }
   };
 

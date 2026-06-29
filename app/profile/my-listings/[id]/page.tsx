@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/Toast";
 import { useState } from "react";
 
 // Mock data for properties
@@ -98,6 +99,7 @@ const mockProperties: Record<string, any> = {
 export default function MyListingPage() {
   const params = useParams();
   const router = useRouter();
+  const { showToast } = useToast();
   const id = params?.id as string;
 
   const property = mockProperties[id];
@@ -125,7 +127,7 @@ export default function MyListingPage() {
   };
 
   const handleBoost = () => {
-    alert("Boost listing feature coming soon!");
+    showToast("Boost listing feature coming soon!", 'info');
   };
 
   const handleDelete = () => {
@@ -133,7 +135,7 @@ export default function MyListingPage() {
   };
 
   const confirmDelete = () => {
-    alert("Listing deleted successfully!");
+    showToast("Listing deleted successfully!", 'success');
     router.push("/profile");
   };
 

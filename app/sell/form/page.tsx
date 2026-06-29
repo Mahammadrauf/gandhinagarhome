@@ -9,6 +9,7 @@ import React, { Fragment, useRef, useState, KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import axios from 'axios';
 import API_URL from '@/app/config/config';
+import { useToast } from '@/components/ui/Toast';
 import GoogleLocationPicker from "@/components/GoogleLocationPicker";
 import { fetchUserProfile } from '@/lib/api';
 
@@ -122,6 +123,7 @@ const DropdownChevron = () => (
 
 function SellFormPageContent() {
   const router = useRouter();
+  const { showToast } = useToast();
   const searchParams = useSearchParams();
   const isEditMode = searchParams.get("mode") === "edit";
   const [step, setStep] = useState<Step>(0);
@@ -134,14 +136,14 @@ function SellFormPageContent() {
     guardRef.current = true;
     const savedUser = localStorage.getItem('gh_user');
     if (!savedUser) {
-      alert('Only sellers can access the listing form. Please login as a seller.');
+      showToast('Only sellers can access the listing form. Please login as a seller.', 'warning');
       router.replace('/');
       return;
     }
     try {
       const parsed = JSON.parse(savedUser);
       if (!(parsed.isLoggedIn && parsed.role === 'seller')) {
-        alert('Only sellers can access the listing form. Please login as a seller.');
+        showToast('Only sellers can access the listing form. Please login as a seller.', 'warning');
         router.replace('/');
         return;
       }
@@ -505,7 +507,7 @@ useEffect(() => {
     console.log("Save draft:", payload);
     setTimeout(() => {
       setSaving(false);
-      alert("Draft saved locally (console). Backend pending.");
+      showToast("Draft saved locally.", 'info');
     }, 700);
   };
 
@@ -581,7 +583,7 @@ const handleEditMediaSubmit = () => {
     if (!isFirstNameValid || !isLastNameValid || !isEmailValid || !isWhatsappValid) {
       setStep(0);
       setTriedContinue(true);
-      alert("Please complete Basic Information and verify your WhatsApp number.");
+      showToast("Please complete Basic Information and verify your WhatsApp number.", 'warning');
       return;
     }
 
@@ -592,7 +594,7 @@ const handleEditMediaSubmit = () => {
     if (!isTitleValid || !isBedroomsValid || !isBathroomsValid || !isPriceValid) {
       setStep(1);
       setTriedContinue(true);
-      alert("Please complete Specifications.");
+      showToast("Please complete Specifications.", 'warning');
       return;
     }
 
@@ -604,7 +606,7 @@ const handleEditMediaSubmit = () => {
     if (!isCityValid || !isLocalityValid || !isPincodeValid || !isSocietyValid || !isAddressValid) {
       setStep(2);
       setTriedContinue(true);
-      alert("Please complete Location details.");
+      showToast("Please complete Location details.", 'warning');
       return;
     }
   }
@@ -674,7 +676,7 @@ const handleEditMediaSubmit = () => {
       "";
 
     if (!token) {
-      alert("Please login as a seller to submit your listing.");
+      showToast("Please login as a seller to submit your listing.", 'warning');
       router.replace("/");
       return;
     }
@@ -709,7 +711,7 @@ const handleEditMediaSubmit = () => {
         ...buildPayload(),
         submittedAt: new Date().toISOString(),
       }));
-      alert("There was an issue submitting, but your data is saved. Please proceed to review.");
+      showToast("There was an issue submitting, but your data is saved. Please proceed to review.", 'warning');
   router.push("/sell-property-in-gandhinagar-gujarat/confirmation");
     }
 
@@ -723,7 +725,7 @@ const handleEditMediaSubmit = () => {
         ...buildPayload(),
         submittedAt: new Date().toISOString(),
       }));
-      alert("Your listing was accepted for the current flow. You can continue with the next step.");
+      showToast("Your listing was accepted. You can continue with the next step.", 'success');
       router.push("/sell-property-in-gandhinagar-gujarat/confirmation");
       return;
     }
@@ -732,7 +734,7 @@ const handleEditMediaSubmit = () => {
       ...buildPayload(),
       submittedAt: new Date().toISOString(),
     }));
-    alert(`There was an issue submitting: ${errorMessage}. Your data is saved, please proceed to review.`);
+    showToast(`Issue submitting: ${errorMessage}. Your data is saved, please proceed to review.`, 'warning');
   router.push("/sell-property-in-gandhinagar-gujarat/confirmation");
   } finally {
     setSaving(false);
@@ -770,7 +772,7 @@ const handleEditMediaSubmit = () => {
     setTriedContinue(true);
     if (!canContinueStep1) {
       if (!isEditMode && !isOtpVerified) {
-        alert("Please verify your Mobile number via SMS to continue.");
+        showToast("Please verify your Mobile number via SMS to continue.", 'warning');
       }
       return;
     }
@@ -833,17 +835,17 @@ const handleEditMediaSubmit = () => {
         setOtpSent(true);
         const otpForDev = response.data.data?.otp;
         if (otpForDev) {
-          alert(`OTP Sent to your Mobile number via SMS! Development OTP: ${otpForDev}`);
+          showToast(`OTP Sent via SMS! Dev OTP: ${otpForDev}`, 'info');
         } else {
-          alert("OTP Sent to your Mobile number via SMS!");
+          showToast("OTP Sent to your Mobile number via SMS!", 'success');
         }
       } else {
-        alert(response.data.message || "Failed to send OTP. Please try again.");
+        showToast(response.data.message || "Failed to send OTP. Please try again.", 'error');
       }
     } catch (error: any) {
       console.error("Send SMS OTP error:", error);
       const errorMessage = error.response?.data?.message || error.message || "Failed to send SMS OTP";
-      alert(errorMessage);
+      showToast(errorMessage, 'error');
     } finally {
       setIsSendingOtp(false);
     }
@@ -859,14 +861,14 @@ const handleEditMediaSubmit = () => {
 
       if (response.data.success) {
         setIsOtpVerified(true);
-        alert("Mobile number verified successfully via SMS!");
+        showToast("Mobile number verified successfully!", 'success');
       } else {
-        alert(response.data.message || "Invalid OTP. Please try again.");
+        showToast(response.data.message || "Invalid OTP. Please try again.", 'error');
       }
     } catch (error: any) {
       console.error("Verify SMS OTP error:", error);
       const errorMessage = error.response?.data?.message || error.message || "Failed to verify SMS OTP";
-      alert(errorMessage);
+      showToast(errorMessage, 'error');
     } finally {
       setIsVerifying(false);
     }

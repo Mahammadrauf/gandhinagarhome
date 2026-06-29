@@ -7,6 +7,7 @@ import Header from "@/components/Header";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import API_URL from "@/app/config/config";
+import { useToast } from "@/components/ui/Toast";
 
 import { 
   CheckCircle2, 
@@ -137,6 +138,7 @@ const plans = [
 
 function SubscriptionPageContent() {
   const router = useRouter();
+  const { showToast } = useToast();
   const searchParams = useSearchParams();
   const [hoveredPlan, setHoveredPlan] = useState<string | null>(null);
   const [submittingPlan, setSubmittingPlan] = useState<string | null>(null);
@@ -210,25 +212,25 @@ function SubscriptionPageContent() {
 
       const token = getAuthToken();
       if (!token) {
-        alert("Login token not found. Please login first to continue payment.");
+        showToast("Login token not found. Please login first to continue payment.", 'warning');
         return;
       }
 
       if (!propertyId) {
-        alert("No property found for payment. Please submit your listing from the sell form first.");
+        showToast("No property found for payment. Please submit your listing from the sell form first.", 'warning');
         router.push("/sell-property-in-gandhinagar-gujarat/form");
         return;
       }
 
       const amount = parseAmount(plan.price);
       if (!amount) {
-        alert("Invalid plan amount.");
+        showToast("Invalid plan amount.", 'error');
         return;
       }
 
       const scriptOk = await loadRazorpayScript();
       if (!scriptOk) {
-        alert("Failed to load Razorpay checkout. Please check your internet and try again.");
+        showToast("Failed to load Razorpay checkout. Please check your internet and try again.", 'error');
         return;
       }
 
@@ -250,7 +252,7 @@ function SubscriptionPageContent() {
       if (response.data?.success) {
         const { order, keyId } = response.data.data || {};
         if (!order?.id || !keyId) {
-          alert("Payment order response is invalid.");
+          showToast("Payment order response is invalid.", 'error');
           return;
         }
 
@@ -292,20 +294,20 @@ function SubscriptionPageContent() {
               if (verifyRes.data?.success) {
                 localStorage.removeItem("pendingListing");
                 localStorage.removeItem("pendingPayment");
-                alert("Payment successful! Your property has been submitted for review.");
+                showToast("Payment successful! Your property has been submitted for review.", 'success');
                 router.push("/profile");
                 return;
               }
 
-              alert(verifyRes.data?.message || "Payment verification failed");
+              showToast(verifyRes.data?.message || "Payment verification failed", 'error');
             } catch (e: any) {
               const msg = e?.response?.data?.message || e?.message || "Payment verification API error";
-              alert(msg);
+              showToast(msg, 'error');
             }
           },
           modal: {
             ondismiss: () => {
-              alert("Payment cancelled.");
+              showToast("Payment cancelled.", 'info');
             },
           },
           prefill: {},
@@ -316,10 +318,10 @@ function SubscriptionPageContent() {
         return;
       }
 
-      alert(response.data?.message || "Failed to create payment order");
+      showToast(response.data?.message || "Failed to create payment order", 'error');
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || "Payment API error";
-      alert(msg);
+      showToast(msg, 'error');
     } finally {
       setSubmittingPlan(null);
     }
@@ -483,7 +485,7 @@ function SubscriptionPageContent() {
                 <button
                   className="px-4 py-2 rounded-lg bg-[#0b6b53] text-white font-semibold"
                   onClick={() => {
-                    alert('Thank you. If you have paid, your listing will be activated soon.');
+                    showToast('Thank you! Your listing will be activated after payment verification.', 'success');
                     try { localStorage.setItem('pendingListingPaid', 'true'); } catch (e) {}
                     setShowPaymentModal(false);
                     router.push('/sell-property-in-gandhinagar-gujarat/form?autoSubmit=true');

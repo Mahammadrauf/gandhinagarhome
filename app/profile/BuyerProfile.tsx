@@ -17,6 +17,7 @@ import {
   Crown
 } from 'lucide-react';
 import { updateUserProfile, fetchUnlockedProperties, transformProperty, getFavorites } from '@/lib/api';
+import { useToast } from '@/components/ui/Toast';
 
 const BRAND_COLOR = "text-[#006A58]";
 const BRAND_BG = "bg-[#006A58]";
@@ -35,6 +36,7 @@ const MOCK_FAVORITES = [
 
 export default function BuyerProfile() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState('profile');
   const [user, setUser] = useState<any>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -153,7 +155,7 @@ export default function BuyerProfile() {
     try {
       const token = localStorage.getItem('gh_token');
       if (!token) {
-        alert('Authentication token not found. Please login again.');
+        showToast('Authentication token not found. Please login again.', 'error');
         return;
       }
 
@@ -183,16 +185,16 @@ export default function BuyerProfile() {
         localStorage.setItem('gh_user', JSON.stringify(newUser));
         setUser(newUser);
         
-        alert('Profile updated successfully!');
+        showToast('Profile updated successfully!', 'success');
       } else {
-        alert('Failed to update profile. Please try again.');
+        showToast('Failed to update profile. Please try again.', 'error');
       }
 
       // Reset button text
       if (button) button.textContent = originalText;
     } catch (error) {
       console.error('Error saving profile:', error);
-      alert('An error occurred while updating your profile. Please try again.');
+      showToast('An error occurred while updating your profile. Please try again.', 'error');
       
       // Reset button text
       const button = document.querySelector('button[onclick="handleSaveChanges()"]') as HTMLButtonElement;

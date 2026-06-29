@@ -41,6 +41,7 @@ import {
   Code,
   Check
 } from 'lucide-react';
+import { useToast } from '@/components/ui/Toast';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { fetchPropertyDetail, fetchPropertyDetailBySlug, PropertyDetail } from '@/lib/propertyDetailApi';
@@ -204,6 +205,7 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   
   const router = useRouter();
+  const { showToast } = useToast();
   const propertySlug = params.slug;
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -412,7 +414,7 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
       if (savedUser) {
         const parsedUser = JSON.parse(savedUser);
         if (parsedUser.isLoggedIn && parsedUser.role === 'seller') {
-          alert('You are not eligible to unlock seller as you are logged in as seller.');
+          showToast('You are not eligible to unlock seller as you are logged in as seller.', 'warning');
           return;
         }
       }
@@ -429,9 +431,9 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
         const isUserRegistered = savedUser && JSON.parse(savedUser).isLoggedIn;
         
         if (!isUserRegistered) {
-          alert('You need to register first before unlocking seller details.\n\nPlease sign up to create an account, then you can unlock property owner contact information.');
+          showToast('Please sign up first, then you can unlock property owner contact information.', 'warning');
         } else {
-          alert('Your session has expired. Please log in again to unlock seller details.');
+          showToast('Your session has expired. Please log in again to unlock seller details.', 'warning');
         }
         return;
       }
@@ -453,9 +455,9 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
       } else {
         if (response.data.data?.unlockStats) {
           const stats = response.data.data.unlockStats;
-          alert(response.data.message + `\n\nCurrent Status: ${stats.usedUnlocks}/${stats.totalLimit} unlocks used.`);
+          showToast(`${response.data.message} (Used: ${stats.usedUnlocks}/${stats.totalLimit})`, 'warning');
         } else {
-          alert(response.data.message || 'Failed to unlock property. Please try again.');
+          showToast(response.data.message || 'Failed to unlock property. Please try again.', 'error');
         }
       }
     } catch (error: any) {
@@ -464,13 +466,13 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
         const errorData = error.response.data;
         if (errorData.data?.unlockStats) {
           const stats = errorData.data.unlockStats;
-          alert(errorData.message + `\n\nCurrent Status: ${stats.usedUnlocks}/${stats.totalLimit} unlocks used.\n\nPlease upgrade your plan to unlock more properties.`);
+          showToast(`${errorData.message} — Used: ${stats.usedUnlocks}/${stats.totalLimit}. Please upgrade your plan.`, 'warning');
         } else {
-          alert(errorData.message || 'Access denied. Please purchase a subscription.');
+          showToast(errorData.message || 'Access denied. Please purchase a subscription.', 'error');
           router.push('/buy-property-in-gandhinagar-gujarat/subscription');
         }
       } else {
-        alert('Failed to unlock contact details. Please try again.');
+        showToast('Failed to unlock contact details. Please try again.', 'error');
       }
     }
   };

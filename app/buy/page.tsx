@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { fetchAndTransformBuyPageProperties, BuyPageProperty, transformToBuyPageProperty } from "@/lib/buyPageApi";
 import { fetchMyProperties, transformProperty } from "@/lib/api";
+import { useToast } from "@/components/ui/Toast";
 
 // --- TYPES ---
 type Tier = "exclusive" | "featured" | "regular";
@@ -125,6 +126,7 @@ function shuffleArray<T>(array: T[]): T[] {
 // --- MAIN PAGE COMPONENT ---
 function BuyIntroPage() {
   const router = useRouter();
+  const { showToast } = useToast();
   const searchParams = useSearchParams();
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [sortBy, setSortBy] = useState<SortOption>("Newest");
@@ -587,7 +589,7 @@ function BuyIntroPage() {
       if (savedUser) {
         const parsedUser = JSON.parse(savedUser);
         if (parsedUser.isLoggedIn && parsedUser.role === 'seller') {
-          alert('You have logged in as seller, you cant unlock properties');
+          showToast('You have logged in as seller, you cannot unlock properties', 'warning');
           return;
         }
       }
@@ -598,7 +600,7 @@ function BuyIntroPage() {
                    "";
       
       if (!token) {
-        alert('Please login first to unlock seller details.');
+        showToast('Please login first to unlock seller details.', 'warning');
         return;
       }
       
@@ -611,15 +613,15 @@ function BuyIntroPage() {
       );
       
       if (response.data.success) {
-        const { contact, unlockStats } = response.data.data;
+        const { unlockStats } = response.data.data;
         setUnlockedProperties(prev => new Set(prev).add(propertyId));
-        alert(`Contact Details Unlocked!\n\nName: ${contact.name}\nPhone: ${contact.phone}\nEmail: ${contact.email}\nWhatsApp: ${contact.whatsapp || 'Not available'}\n\nRemaining unlocks: ${unlockStats.remainingUnlocks}/${unlockStats.totalLimit}`);
+        showToast(`Contact Unlocked! Remaining: ${unlockStats.remainingUnlocks}/${unlockStats.totalLimit}`, 'success');
       } else {
         if (response.data.data?.unlockStats) {
           const stats = response.data.data.unlockStats;
-          alert(response.data.message + `\n\nCurrent Status: ${stats.usedUnlocks}/${stats.totalLimit} unlocks used.`);
+          showToast(`${response.data.message}\n\nUsed: ${stats.usedUnlocks}/${stats.totalLimit} unlocks`, 'warning');
         } else {
-          alert(response.data.message || 'Failed to unlock property. Please try again.');
+          showToast(response.data.message || 'Failed to unlock property. Please try again.', 'error');
         }
       }
     } catch (error: any) {
@@ -628,13 +630,13 @@ function BuyIntroPage() {
         const errorData = error.response.data;
         if (errorData.data?.unlockStats) {
           const stats = errorData.data.unlockStats;
-          alert(errorData.message + `\n\nCurrent Status: ${stats.usedUnlocks}/${stats.totalLimit} unlocks used.\n\nPlease upgrade your plan to unlock more properties.`);
+          showToast(`${errorData.message}\n\nUsed: ${stats.usedUnlocks}/${stats.totalLimit}. Please upgrade your plan.`, 'warning');
         } else {
-          alert(errorData.message || 'Access denied. Please purchase a subscription.');
+          showToast(errorData.message || 'Access denied. Please purchase a subscription.', 'error');
           router.push('/buy-property-in-gandhinagar-gujarat/subscription');
         }
       } else {
-        alert('Failed to unlock seller details. Please try again.');
+        showToast('Failed to unlock seller details. Please try again.', 'error');
       }
     }
   };

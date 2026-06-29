@@ -7,11 +7,12 @@ import Header from "@/components/Header";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import API_URL from "@/app/config/config";
-import { 
-  CheckCircle2, 
-  Key, 
-  Crown, 
-  ShieldCheck, 
+import { useToast } from "@/components/ui/Toast";
+import {
+  CheckCircle2,
+  Key,
+  Crown,
+  ShieldCheck,
   ArrowRight, 
   Lock, 
   Clock, 
@@ -129,6 +130,7 @@ const plans = [
 
 function BuyerSubscriptionPageContent() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [hoveredPlan, setHoveredPlan] = useState<string | null>(null);
   const [submittingPlan, setSubmittingPlan] = useState<string | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<any | null>(null);
@@ -196,9 +198,9 @@ function BuyerSubscriptionPageContent() {
         const isUserRegistered = savedUser && JSON.parse(savedUser).isLoggedIn;
         
         if (!isUserRegistered) {
-          alert("You need to register first before purchasing a plan.\n\nPlease sign up to create an account, then you can purchase a subscription to unlock property owner details.");
+          showToast("Please sign up first to purchase a subscription plan.", 'warning');
         } else {
-          alert("Your session has expired. Please log in again to purchase a plan.");
+          showToast("Your session has expired. Please log in again to purchase a plan.", 'warning');
         }
         
         return;
@@ -206,7 +208,7 @@ function BuyerSubscriptionPageContent() {
 
       const amount = parseAmount(plan.price);
       if (!amount) {
-        alert("Invalid plan amount.");
+        showToast("Invalid plan amount.", 'error');
         return;
       }
 
@@ -308,7 +310,7 @@ function BuyerSubscriptionPageContent() {
       return;
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || "Payment API error";
-      alert(msg);
+      showToast(msg, 'error');
     } finally {
       setSubmittingPlan(null);
     }
@@ -433,7 +435,7 @@ function BuyerSubscriptionPageContent() {
                   className="px-4 py-2 rounded-lg bg-[#0b6b53] text-white font-semibold"
                   onClick={() => {
                     // Mark payment done and show thank you
-                    alert('Thank you. Payment recorded. Plan will be activated soon.');
+                    showToast('Thank you! Payment recorded. Your plan will be activated soon.', 'success');
                     setShowPaymentModal(false);
                     router.push('/profile');
                   }}

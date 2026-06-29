@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, ReactNode } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Home, Menu, X, User, LogOut, ChevronDown, Loader2, ArrowRight } from 'lucide-react';
+import { useToast } from '@/components/ui/Toast';
 
 // --- CONFIGURATION ---
 const BRAND_COLOR = "text-[#006A58]";
@@ -185,6 +186,7 @@ const SellerTypeDropdown: React.FC<SellerTypeDropdownProps> = ({ value, onChange
 // --- MAIN HEADER COMPONENT ---
 const Header = () => {
   const router = useRouter();
+  const { showToast } = useToast();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
@@ -319,7 +321,7 @@ const Header = () => {
         return; 
       }
       if (user.role === 'seller' && !user.sellerType) {
-        alert('Please select your type (Agent, Owner, or Builder)');
+        showToast('Please select your type (Agent, Owner, or Builder)', 'warning');
         return;
       }
     } else {
@@ -378,13 +380,13 @@ const Header = () => {
         
         if (sendMobileOtpJson?.errorCode === 'ALREADY_REGISTERED_DIFFERENT_ROLE') {
           const existingRole = sendMobileOtpJson?.existingRole;
-          alert(`This mobile number is already registered as a ${existingRole}. You cannot register again with a different role.`);
+          showToast(`This mobile number is already registered as a ${existingRole}. You cannot register again with a different role.`, 'warning');
           return;
         }
         
         if (sendMobileOtpJson?.errorCode === 'ALREADY_REGISTERED_SAME_ROLE') {
           const existingRole = sendMobileOtpJson?.existingRole;
-          alert(`You have already registered as a ${existingRole}. Please log in instead of registering again.`);
+          showToast(`You have already registered as a ${existingRole}. Please log in instead of registering again.`, 'warning');
           return;
         }
         
@@ -425,7 +427,7 @@ const Header = () => {
       setTimeout(() => whatsappRefs.current[0]?.focus(), 100);
     } catch (err) {
       console.error(err);
-      alert(err instanceof Error ? err.message : 'Failed to send OTP');
+      showToast(err instanceof Error ? err.message : 'Failed to send OTP', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -546,7 +548,7 @@ const Header = () => {
       }
     } catch (err) {
       console.error(err);
-      alert(err instanceof Error ? err.message : 'Verification failed');
+      showToast(err instanceof Error ? err.message : 'Verification failed', 'error');
     } finally {
       setIsLoading(false);
     }

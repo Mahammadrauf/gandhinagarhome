@@ -15,6 +15,7 @@ import {
   AlertCircle,
   RotateCcw 
 } from "lucide-react";
+import { useToast } from "@/components/ui/Toast";
 
 // Utility functions
 const formatPrice = (price: string): string => {
@@ -32,6 +33,7 @@ const formatArea = (size: string, unit: string): string =>
 
 export default function ConfirmationPage() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [listing, setListing] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -60,7 +62,7 @@ export default function ConfirmationPage() {
       listing.apiResponse?.data?._id;
 
     if (!propertyId) {
-      alert("Listing data is incomplete. Please go back to the form and submit again.");
+      showToast("Listing data is incomplete. Please go back to the form and submit again.", 'warning');
       setSubmitting(false);
       return;
     }

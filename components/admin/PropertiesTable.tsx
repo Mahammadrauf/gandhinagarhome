@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import { useToast } from '@/components/ui/Toast'
 
 const STATUS_OPTIONS = ['awaiting_payment', 'pending', 'approved', 'rejected', 'sold', 'inactive']
 const CATEGORY_OPTIONS = ['residential', 'commercial', 'plot']
@@ -68,6 +69,7 @@ interface Property {
 }
 
 export default function PropertiesTable() {
+  const { showToast } = useToast()
   const [properties, setProperties] = useState<Property[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -304,7 +306,7 @@ export default function PropertiesTable() {
       }
     } catch (error) {
       console.error('Error updating property:', error)
-      alert('Failed to update property')
+      showToast('Failed to update property', 'error')
     } finally {
       setSaving(false)
     }
