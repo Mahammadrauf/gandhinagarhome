@@ -288,6 +288,23 @@ function SellFormPageContent() {
   const [termsVisibleCount, setTermsVisibleCount] = useState(10);
   const [showPaymentQrModal, setShowPaymentQrModal] = useState(false);
 
+  // Track file state changes for debugging
+  useEffect(() => {
+    console.log("[STATE TRACKER] photos updated:", photos.length, photos.map(p => p.name));
+  }, [photos]);
+
+  useEffect(() => {
+    console.log("[STATE TRACKER] video updated:", video?.name || "none");
+  }, [video]);
+
+  useEffect(() => {
+    console.log("[STATE TRACKER] saleDeed updated:", saleDeed?.name || "none");
+  }, [saleDeed]);
+
+  useEffect(() => {
+    console.log("[STATE TRACKER] brochure updated:", brochure?.name || "none");
+  }, [brochure]);
+
   useEffect(() => {
   if (!isEditMode) return;
 
@@ -545,6 +562,15 @@ const handleEditMediaSubmit = () => {
 
   // Submit
   const handleSubmit = async (options?: { skipValidation?: boolean; payloadOverride?: any; redirectTo?: 'confirmation' | 'home' | 'none' }) => {
+  // DEBUG: Check current state of files before processing
+  console.log("[SELL FORM - START] Current React state:", {
+    photos: photos.length,
+    photoNames: photos.map(p => p.name),
+    video: video?.name || "none",
+    saleDeed: saleDeed?.name || "none",
+    brochure: brochure?.name || "none",
+  });
+
   const payload = options?.payloadOverride || {};
   const firstNameValue = String(payload.firstName ?? firstName ?? "").trim();
   const middleNameValue = String(payload.middleName ?? middleName ?? "");
@@ -648,14 +674,28 @@ const handleEditMediaSubmit = () => {
     formData.append('pincode', pincodeValue);
 
     // Add files if they exist
+    console.log("[SELL FORM] File counts:", {
+      photos: photosValue.length,
+      video: videoValue ? 1 : 0,
+      saleDeed: saleDeedValue ? 1 : 0,
+      brochure: brochureValue ? 1 : 0
+    });
+
     if (photosValue.length > 0) {
-      photosValue.forEach((photo: File) => {
+      console.log(`[SELL FORM] Adding ${photosValue.length} image(s) to FormData`);
+      photosValue.forEach((photo: File, index: number) => {
+        console.log(`[SELL FORM] Photo ${index + 1}:`, photo.name, photo.size, photo.type);
         formData.append('images', photo);
       });
+    } else {
+      console.log("[SELL FORM] No photos to upload");
     }
 
     if (videoValue) {
+      console.log("[SELL FORM] Adding video to FormData:", videoValue.name, videoValue.size, videoValue.type);
       formData.append('video', videoValue as Blob);
+    } else {
+      console.log("[SELL FORM] No video to upload");
     }
 
     // Combine sale deed and brochure into documents array
@@ -664,10 +704,16 @@ const handleEditMediaSubmit = () => {
     if (brochureValue) documents.push(brochureValue as File);
     
     if (documents.length > 0) {
-      documents.forEach((doc) => {
+      console.log(`[SELL FORM] Adding ${documents.length} document(s) to FormData`);
+      documents.forEach((doc, index) => {
+        console.log(`[SELL FORM] Document ${index + 1}:`, doc.name, doc.size, doc.type);
         formData.append('documents', doc);
       });
+    } else {
+      console.log("[SELL FORM] No documents to upload");
     }
+
+    console.log("[SELL FORM] FormData ready. Total entries:", Array.from(formData.entries()).length);
 
     const token =
       localStorage.getItem("gh_token") ||
@@ -681,12 +727,14 @@ const handleEditMediaSubmit = () => {
       return;
     }
 
+    console.log("[SELL FORM] Sending request to:", `${API_URL}/sell`);
     const response = await axios.post(`${API_URL}/sell`, formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
         Authorization: `Bearer ${token}`,
       },
     });
+
+    console.log("[SELL FORM] Response received:", response.status, response.data.success);
 
     if (response.data.success) {
       const propertyId = response.data.data?._id;
@@ -744,27 +792,48 @@ const handleEditMediaSubmit = () => {
 
   // Files handlers
   const onAddPhotos = (files: FileList | null) => {
+    console.log("[FILE INPUT] onAddPhotos called with", files?.length || 0, "files");
     if (!files) return;
     const maxRemaining = 9 - photos.length;
     const arr = Array.from(files).slice(0, maxRemaining);
-    if (arr.length === 0) return;
-    setPhotos((p) => [...p, ...arr]);
+    if (arr.length === 0) {
+      console.log("[FILE INPUT] No photos to add after filtering");
+      return;
+    }
+    console.log("[FILE INPUT] Adding", arr.length, "photos to state");
+    arr.forEach((f, i) => console.log(`  Photo ${i + 1}:`, f.name, f.size, f.type));
+    console.trace("[FILE INPUT] setPhotos called from:");
+    setPhotos((p) => {
+      console.log("[FILE INPUT SETTER] photos before:", p.length, "after:", [...p, ...arr].length);
+      return [...p, ...arr];
+    });
   };
+
   const onAddVideo = (file: FileList | null) => {
+    console.log("[FILE INPUT] onAddVideo called with", file?.length || 0, "files");
     if (!file || file.length === 0) return;
+    console.log("[FILE INPUT] Setting video:", file[0].name, file[0].size, file[0].type);
+    console.trace("[FILE INPUT] setVideo called from:");
     setVideo(file[0]);
   };
+
   const removePhoto = (i: number) => setPhotos((p) => p.filter((_, idx) => idx !== i));
   const removeVideo = () => setVideo(null);
 
   const onAddSaleDeed = (fileList: FileList | null) => {
+    console.log("[FILE INPUT] onAddSaleDeed called with", fileList?.length || 0, "files");
     if (!fileList || fileList.length === 0) return;
+    console.log("[FILE INPUT] Setting sale deed:", fileList[0].name, fileList[0].size, fileList[0].type);
     setSaleDeed(fileList[0]);
   };
+
   const onAddBrochure = (fileList: FileList | null) => {
+    console.log("[FILE INPUT] onAddBrochure called with", fileList?.length || 0, "files");
     if (!fileList || fileList.length === 0) return;
+    console.log("[FILE INPUT] Setting brochure:", fileList[0].name, fileList[0].size, fileList[0].type);
     setBrochure(fileList[0]);
   };
+
   const removeSaleDeed = () => setSaleDeed(null);
   const removeBrochure = () => setBrochure(null);
 
