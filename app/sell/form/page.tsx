@@ -12,6 +12,14 @@ import API_URL from '@/app/config/config';
 import { useToast } from '@/components/ui/Toast';
 import GoogleLocationPicker from "@/components/GoogleLocationPicker";
 import { fetchUserProfile } from '@/lib/api';
+import {
+  clearSellFormMedia,
+  getSellFormMedia,
+  setSellFormBrochure,
+  setSellFormPhotos,
+  setSellFormSaleDeed,
+  setSellFormVideo,
+} from '@/lib/sellFormMediaStore';
 
 type Step = 0 | 1 | 2 | 3;
 const stepTitles = ["Basic Information", "Specifications", "Location", "Media Upload"];
@@ -163,6 +171,18 @@ function SellFormPageContent() {
         const raw = localStorage.getItem("pendingListing");
         if (paid && raw) {
           const payload = JSON.parse(raw);
+          const existingPropertyId =
+            payload?.propertyId ||
+            payload?.apiResponse?._id ||
+            payload?.apiResponse?.data?._id;
+
+          if (existingPropertyId) {
+            localStorage.removeItem("pendingListing");
+            localStorage.removeItem("pendingListingPaid");
+            router.push("/sell-property-in-gandhinagar-gujarat/confirmation");
+            return;
+          }
+
           // populate form fields from payload (guard against undefined)
           setFirstName(payload.firstName || "");
           setMiddleName(payload.middleName || "");
@@ -260,15 +280,54 @@ function SellFormPageContent() {
   const [longitude, setLongitude] = useState<number | null>(null);
   const [pickedDisplayAddress, setPickedDisplayAddress] = useState("");
 
-  // Media
-  const [photos, setPhotos] = useState<File[]>([]);
-  const [video, setVideo] = useState<File | null>(null);
+  // Media — initialize from module store so files survive remounts/navigation
+  const [photos, _setPhotos] = useState<File[]>(() => getSellFormMedia().photos);
+  const [video, _setVideo] = useState<File | null>(() => getSellFormMedia().video);
+
+  // Wrapper to log state changes
+  const setPhotos = (val: File[] | ((prev: File[]) => File[])) => {
+    if (typeof val === 'function') {
+      _setPhotos((prev) => {
+        const next = (val as (prev: File[]) => File[])(prev);
+        if (next.length === 0 && prev.length > 0) {
+          console.warn("[!!PHOTOS CLEARED!!]");
+          console.error(new Error("[STACK]").stack);
+        }
+        return next;
+      });
+    } else {
+      if (val.length === 0 && photos.length > 0) {
+        console.warn("[!!PHOTOS CLEARED!!]");
+        console.error(new Error("[STACK]").stack);
+      }
+      _setPhotos(val);
+    }
+  };
+
+  const setVideo = (val: File | null | ((prev: File | null) => File | null)) => {
+    if (typeof val === 'function') {
+      _setVideo((prev) => {
+        const next = (val as (prev: File | null) => File | null)(prev);
+        if (next === null && prev !== null) {
+          console.warn("[!!VIDEO CLEARED!!]");
+          console.error(new Error("[STACK]").stack);
+        }
+        return next;
+      });
+    } else {
+      if (val === null && video !== null) {
+        console.warn("[!!VIDEO CLEARED!!]");
+        console.error(new Error("[STACK]").stack);
+      }
+      _setVideo(val);
+    }
+  };
   const photoRef = useRef<HTMLInputElement | null>(null);
   const videoRef = useRef<HTMLInputElement | null>(null);
 
   // NEW: Docs
-  const [saleDeed, setSaleDeed] = useState<File | null>(null);
-  const [brochure, setBrochure] = useState<File | null>(null);
+  const [saleDeed, setSaleDeed] = useState<File | null>(() => getSellFormMedia().saleDeed);
+  const [brochure, setBrochure] = useState<File | null>(() => getSellFormMedia().brochure);
   const saleDeedRef = useRef<HTMLInputElement | null>(null);
   const brochureRef = useRef<HTMLInputElement | null>(null);
 
@@ -288,22 +347,10 @@ function SellFormPageContent() {
   const [termsVisibleCount, setTermsVisibleCount] = useState(10);
   const [showPaymentQrModal, setShowPaymentQrModal] = useState(false);
 
-  // Track file state changes for debugging
-  useEffect(() => {
-    console.log("[STATE TRACKER] photos updated:", photos.length, photos.map(p => p.name));
-  }, [photos]);
-
-  useEffect(() => {
-    console.log("[STATE TRACKER] video updated:", video?.name || "none");
-  }, [video]);
-
-  useEffect(() => {
-    console.log("[STATE TRACKER] saleDeed updated:", saleDeed?.name || "none");
-  }, [saleDeed]);
-
-  useEffect(() => {
-    console.log("[STATE TRACKER] brochure updated:", brochure?.name || "none");
-  }, [brochure]);
+  useEffect(() => { setSellFormPhotos(photos); }, [photos]);
+  useEffect(() => { setSellFormVideo(video); }, [video]);
+  useEffect(() => { setSellFormSaleDeed(saleDeed); }, [saleDeed]);
+  useEffect(() => { setSellFormBrochure(brochure); }, [brochure]);
 
   useEffect(() => {
   if (!isEditMode) return;
@@ -529,6 +576,12 @@ useEffect(() => {
   };
 
   const buildPayload = () => {
+  const storedMedia = getSellFormMedia();
+  const effectivePhotos = photos.length > 0 ? photos : storedMedia.photos;
+  const effectiveVideo = video ?? storedMedia.video;
+  const effectiveSaleDeed = saleDeed ?? storedMedia.saleDeed;
+  const effectiveBrochure = brochure ?? storedMedia.brochure;
+
   const numericPrice = parseFloat(price.replace(/,/g, ""));
   return {
     firstName, middleName, lastName, email, whatsappNumber, mobileNumber, countryCode,
@@ -539,10 +592,10 @@ useEffect(() => {
     propertySize,
     propertySizeUnit,
     city, locality, address, unitNo, pincode,
-    photosCount: isEditMode && photos.length === 0 ? existingPhotosCount : photos.length,
-    hasVideo: isEditMode && !video ? existingHasVideo : !!video,
-    hasSaleDeed: isEditMode && !saleDeed ? existingHasSaleDeed : !!saleDeed,
-    hasBrochure: isEditMode && !brochure ? existingHasBrochure : !!brochure,
+    photosCount: isEditMode && effectivePhotos.length === 0 ? existingPhotosCount : effectivePhotos.length,
+    hasVideo: isEditMode && !effectiveVideo ? existingHasVideo : !!effectiveVideo,
+    hasSaleDeed: isEditMode && !effectiveSaleDeed ? existingHasSaleDeed : !!effectiveSaleDeed,
+    hasBrochure: isEditMode && !effectiveBrochure ? existingHasBrochure : !!effectiveBrochure,
   };
 };
 
@@ -596,10 +649,13 @@ const handleEditMediaSubmit = () => {
   const addressValue = String(payload.address ?? address ?? "").trim();
   const unitNoValue = String(payload.unitNo ?? unitNo ?? "");
   const pincodeValue = String(payload.pincode ?? pincode ?? "").trim();
-  const photosValue = Array.isArray(payload.photos) ? payload.photos : (photos || []);
-  const videoValue = payload.video ?? video ?? null;
-  const saleDeedValue = payload.saleDeed ?? saleDeed ?? null;
-  const brochureValue = payload.brochure ?? brochure ?? null;
+  const storedMedia = getSellFormMedia();
+  const photosValue = Array.isArray(payload.photos)
+    ? payload.photos
+    : (photos.length > 0 ? photos : storedMedia.photos);
+  const videoValue = payload.video ?? video ?? storedMedia.video ?? null;
+  const saleDeedValue = payload.saleDeed ?? saleDeed ?? storedMedia.saleDeed ?? null;
+  const brochureValue = payload.brochure ?? brochure ?? storedMedia.brochure ?? null;
 
   if (!options?.skipValidation) {
     const isFirstNameValid = firstNameValue.length >= 2;
@@ -669,6 +725,7 @@ const handleEditMediaSubmit = () => {
     formData.append('propertySizeUnit', propertySizeUnitValue);
     formData.append('city', cityValue);
     formData.append('locality', localityValue);
+    formData.append('address', addressValue);
     formData.append('society', titleValue); // Using title as society name
     formData.append('unitNo', unitNoValue);
     formData.append('pincode', pincodeValue);
@@ -738,6 +795,7 @@ const handleEditMediaSubmit = () => {
 
     if (response.data.success) {
       const propertyId = response.data.data?._id;
+      clearSellFormMedia();
       localStorage.setItem("pendingListing", JSON.stringify({
         ...buildPayload(),
         submittedAt: new Date().toISOString(),
@@ -793,7 +851,11 @@ const handleEditMediaSubmit = () => {
   // Files handlers
   const onAddPhotos = (files: FileList | null) => {
     console.log("[FILE INPUT] onAddPhotos called with", files?.length || 0, "files");
-    if (!files) return;
+    if (!files) {
+      console.log("[FILE INPUT] files is null, returning");
+      console.trace("[FILE INPUT] called from:");
+      return;
+    }
     const maxRemaining = 9 - photos.length;
     const arr = Array.from(files).slice(0, maxRemaining);
     if (arr.length === 0) {
@@ -817,8 +879,17 @@ const handleEditMediaSubmit = () => {
     setVideo(file[0]);
   };
 
-  const removePhoto = (i: number) => setPhotos((p) => p.filter((_, idx) => idx !== i));
-  const removeVideo = () => setVideo(null);
+  const removePhoto = (i: number) => {
+    console.log("[FILE REMOVE] removePhoto called for index", i);
+    console.trace("[FILE REMOVE] removePhoto called from:");
+    setPhotos((p) => p.filter((_, idx) => idx !== i));
+  };
+  
+  const removeVideo = () => {
+    console.log("[FILE REMOVE] removeVideo called");
+    console.trace("[FILE REMOVE] removeVideo called from:");
+    setVideo(null);
+  };
 
   const onAddSaleDeed = (fileList: FileList | null) => {
     console.log("[FILE INPUT] onAddSaleDeed called with", fileList?.length || 0, "files");
@@ -834,8 +905,17 @@ const handleEditMediaSubmit = () => {
     setBrochure(fileList[0]);
   };
 
-  const removeSaleDeed = () => setSaleDeed(null);
-  const removeBrochure = () => setBrochure(null);
+  const removeSaleDeed = () => {
+    console.log("[FILE REMOVE] removeSaleDeed called");
+    console.trace("[FILE REMOVE] removeSaleDeed called from:");
+    setSaleDeed(null);
+  };
+  
+  const removeBrochure = () => {
+    console.log("[FILE REMOVE] removeBrochure called");
+    console.trace("[FILE REMOVE] removeBrochure called from:");
+    setBrochure(null);
+  };
 
   const onContinueFromStep1 = () => {
     setTriedContinue(true);
@@ -1909,7 +1989,11 @@ Can’t find your area? Select the nearest major locality.            </p>
                       accept="image/*"
                       multiple
                       className="hidden"
-                      onChange={(e) => onAddPhotos(e.target.files)}
+                      onChange={(e) => {
+                        console.log("[PHOTO INPUT] onChange fired with", e.target.files?.length || 0, "files");
+                        console.trace("[PHOTO INPUT] onChange stack:");
+                        onAddPhotos(e.target.files);
+                      }}
                     />
 
                     {(photos.length > 0 || (isEditMode && existingPhotosCount > 0)) && (
@@ -1987,7 +2071,11 @@ Can’t find your area? Select the nearest major locality.            </p>
                           <button onClick={() => videoRef.current?.click()} className="ml-auto h-10 w-40 flex justify-center items-center rounded-lg bg-[#0b6b53] text-white text-sm font-semibold">Add Video</button>
                         </div>
                       )}
-                      <input ref={videoRef} type="file" accept="video/*" className="hidden" onChange={(e) => onAddVideo(e.target.files)} />
+                      <input ref={videoRef} type="file" accept="video/*" className="hidden" onChange={(e) => {
+                        console.log("[VIDEO INPUT] onChange fired with", e.target.files?.length || 0, "files");
+                        console.trace("[VIDEO INPUT] onChange stack:");
+                        onAddVideo(e.target.files);
+                      }} />
                     </div>
                   </div>
 
@@ -2042,7 +2130,11 @@ Can’t find your area? Select the nearest major locality.            </p>
                         type="file"
                         accept="application/pdf,image/*"
                         className="hidden"
-                        onChange={(e) => onAddSaleDeed(e.target.files)}
+                        onChange={(e) => {
+                          console.log("[SALE DEED INPUT] onChange fired with", e.target.files?.length || 0, "files");
+                          console.trace("[SALE DEED INPUT] onChange stack:");
+                          onAddSaleDeed(e.target.files);
+                        }}
                       />
                     </div>
                   </div>
@@ -2104,7 +2196,11 @@ Can’t find your area? Select the nearest major locality.            </p>
                         type="file"
                         accept="application/pdf,image/*"
                         className="hidden"
-                        onChange={(e) => onAddBrochure(e.target.files)}
+                        onChange={(e) => {
+                          console.log("[BROCHURE INPUT] onChange fired with", e.target.files?.length || 0, "files");
+                          console.trace("[BROCHURE INPUT] onChange stack:");
+                          onAddBrochure(e.target.files);
+                        }}
                       />
                     </div>
                   </div>
@@ -2174,19 +2270,22 @@ Can’t find your area? Select the nearest major locality.            </p>
                                 <button className="px-4 py-2 rounded-lg bg-gray-100" onClick={() => { setShowPaymentModal(false); setAgreeToTerms(false); }}>Cancel</button>
                                 <button
                                   className={`px-4 py-2 rounded-lg font-semibold ${agreeToTerms ? 'bg-[#0b6b53] text-white' : 'bg-gray-300 text-gray-600 cursor-not-allowed'}`}
-                                  disabled={!agreeToTerms}
-                                  onClick={() => {
-                                    // Save the current form payload and navigate to the seller subscription page
-                                    try {
-                                      localStorage.setItem('pendingListing', JSON.stringify(buildPayload()));
-                                    } catch (e) {
-                                      console.warn('Failed to save pending listing to localStorage', e);
-                                    }
+                                  disabled={!agreeToTerms || saving}
+                                  onClick={async () => {
                                     setShowPaymentModal(false);
-                                    router.push('/sell-property-in-gandhinagar-gujarat/subscription');
+                                    setSaving(true);
+                                    try {
+                                      await handleSubmit({ redirectTo: 'none' });
+                                      router.push('/sell-property-in-gandhinagar-gujarat/subscription');
+                                    } catch (e) {
+                                      console.error('Failed to submit listing before payment', e);
+                                      showToast('Failed to submit listing. Please try again.', 'error');
+                                    } finally {
+                                      setSaving(false);
+                                    }
                                   }}
                                 >
-                                  Proceed to Payment
+                                  {saving ? 'Submitting...' : 'Proceed to Payment'}
                                 </button>
                               </div>
                             </div>

@@ -488,7 +488,25 @@ function SubscriptionPageContent() {
                     showToast('Thank you! Your listing will be activated after payment verification.', 'success');
                     try { localStorage.setItem('pendingListingPaid', 'true'); } catch (e) {}
                     setShowPaymentModal(false);
-                    router.push('/sell-property-in-gandhinagar-gujarat/form?autoSubmit=true');
+
+                    let nextRoute = '/sell-property-in-gandhinagar-gujarat/form?autoSubmit=true';
+                    try {
+                      const raw = localStorage.getItem('pendingListing');
+                      if (raw) {
+                        const parsed = JSON.parse(raw);
+                        const existingPropertyId =
+                          parsed?.propertyId ||
+                          parsed?.apiResponse?._id ||
+                          parsed?.apiResponse?.data?._id;
+                        if (existingPropertyId) {
+                          nextRoute = '/sell-property-in-gandhinagar-gujarat/confirmation';
+                        }
+                      }
+                    } catch {
+                      // keep default autoSubmit route
+                    }
+
+                    router.push(nextRoute);
                   }}
                 >
                   I have paid
