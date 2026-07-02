@@ -499,7 +499,7 @@ function SubscriptionPageContent() {
                           parsed?.apiResponse?._id ||
                           parsed?.apiResponse?.data?._id;
                         if (existingPropertyId) {
-                          nextRoute = '/sell-property-in-gandhinagar-gujarat/confirmation';
+                          nextRoute = '/';
                         }
                       }
                     } catch {
