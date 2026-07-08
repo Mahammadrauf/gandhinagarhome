@@ -83,7 +83,7 @@ interface Filters {
 
 // --- DATA CONSTANTS ---
 const CITY_AREAS: Record<string, string[]> = {
-  Gandhinagar: ["Raysan", "Randesan", "Sargasan", "Kudasan", "Koba", "Sectors"],
+  Gandhinagar: ["Raysan", "Randesan", "Sargasan", "Kudasan", "Koba", "Sectors", "Vavol", "New Vavol", "Randheja", "Pethapur"],
   Ahmedabad: ["Motera", "Chandkheda", "Zundal", "Adalaj", "Bhat", "Tapovan", "Vaishnodevi"],
 };
 

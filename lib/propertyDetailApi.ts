@@ -11,6 +11,7 @@ export interface PropertyDetail {
   price: string;
   priceLabel: string;
   priceNote?: string;
+  priceNegotiable?: boolean;
   location: string;
   city: string;
   state: string;
@@ -322,6 +323,7 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
     price: formatPrice(pricing.expectedPrice || 0),
     priceLabel: formatPrice(pricing.expectedPrice || 0),
     priceNote: '+ Stamp Duty',
+    priceNegotiable: pricing.priceNegotiable,
     location: `${location.sector || ''}, ${location.city || ''}`.replace(/^,\s*/, ''),
     city: location.city || 'Unknown',
     state: location.state || 'Unknown',
@@ -349,7 +351,7 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
     amenities: backendProp.amenities || [],
     highlights: backendProp.highlights || [],
     nearbyFacilities: backendProp.nearbyFacilities || [],
-    description: '', // Add description field to backend if needed
+    description: backendProp.description || '',
     status: backendProp.status || 'available',
     views: backendProp.views || 0,
     createdAt: backendProp.createdAt,

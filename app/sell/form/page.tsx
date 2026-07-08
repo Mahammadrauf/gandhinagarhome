@@ -45,7 +45,7 @@ const formatPrice = (price: string): string => {
 
 /// City and locality data
 const CITY_AREAS: Record<string, string[]> = {
-  Gandhinagar: ["Raysan", "Randesan", "Sargasan", "Kudasan", "Koba", "Sectors"],
+  Gandhinagar: ["Raysan", "Randesan", "Sargasan", "Kudasan", "Koba", "Sectors", "Vavol", "New Vavol", "Randheja", "Pethapur"],
   Ahmedabad: ["Motera", "Chandkheda", "Zundal", "Adalaj", "Bhat", "Tapovan", "Vaishnodevi"],
   "Gift City": ["Gift City"],
 };
@@ -200,6 +200,8 @@ function SellFormPageContent() {
           setAgeOfProperty(payload.ageOfProperty || "");
           setFurnishing(payload.furnishing || "");
           setPrice(String(payload.price || "0.00"));
+          setPriceNegotiable(payload.priceNegotiable || "");
+          setDescription(payload.description || "");
           setAmenities(payload.amenities || []);
           setPropertySize(payload.propertySize || "");
           setPropertySizeUnit(payload.propertySizeUnit || "sq ft");
@@ -269,6 +271,10 @@ function SellFormPageContent() {
   // NEW: Size of Property
   const [propertySize, setPropertySize] = useState("");
   const [propertySizeUnit, setPropertySizeUnit] = useState<"sq ft" | "sq m" | "sq yd">("sq ft");
+
+  // NEW: Price negotiation & description
+  const [priceNegotiable, setPriceNegotiable] = useState<"Negotiable" | "Non-Negotiable" | "">("");
+  const [description, setDescription] = useState("");
 
   // Location
   const [city, setCity] = useState("");
@@ -389,6 +395,8 @@ useEffect(() => {
   setAgeOfProperty(d.ageOfProperty || "");
   setFurnishing(d.furnishing || "");
   setPrice(d.price ? d.price.toString() : "0.00");
+  setPriceNegotiable(d.priceNegotiable || "");
+  setDescription(d.description || "");
   setAmenities(d.amenities || []);
   setPropertySize(d.propertySize || "");
   setPropertySizeUnit(d.propertySizeUnit || "sq ft");
@@ -588,6 +596,8 @@ useEffect(() => {
     title, bedrooms, propertyType, bathrooms, balcony, parking,
     ageOfProperty, furnishing,
     price: numericPrice,
+    priceNegotiable,
+    description,
     amenities,
     propertySize,
     propertySizeUnit,
@@ -641,6 +651,8 @@ const handleEditMediaSubmit = () => {
   const ageOfPropertyValue = String(payload.ageOfProperty ?? ageOfProperty ?? "");
   const furnishingValue = String(payload.furnishing ?? furnishing ?? "");
   const priceValue = String(payload.price ?? price ?? "0.00");
+  const priceNegotiableValue = String(payload.priceNegotiable ?? priceNegotiable ?? "");
+  const descriptionValue = String(payload.description ?? description ?? "");
   const amenitiesValue = Array.isArray(payload.amenities) ? payload.amenities : (amenities || []);
   const propertySizeValue = String(payload.propertySize ?? propertySize ?? "");
   const propertySizeUnitValue = String(payload.propertySizeUnit ?? propertySizeUnit ?? "sq ft");
@@ -719,7 +731,9 @@ const handleEditMediaSubmit = () => {
     
     const numericPrice = parseFloat(priceValue.replace(/,/g, ''));
     formData.append('price', numericPrice.toString());
-    
+    formData.append('priceNegotiable', String(priceNegotiableValue === 'Negotiable'));
+    formData.append('description', descriptionValue);
+
     formData.append('amenities', JSON.stringify(amenitiesValue));
     formData.append('propertySize', propertySizeValue);
     formData.append('propertySizeUnit', propertySizeUnitValue);
@@ -1685,7 +1699,40 @@ const handleEditMediaSubmit = () => {
 
   {/* Removed the bottom <p> tag as per your request */}
   {triedContinue && !isPriceValid && <div className="text-xs text-red-600 mt-2">Required</div>}
+
+  <div className="mt-4">
+    <label className={fieldLabel}>Price Negotiation</label>
+    <div className="flex gap-3">
+      <button
+        type="button"
+        onClick={() => setPriceNegotiable("Negotiable")}
+        className={`flex-1 h-12 rounded-xl border font-semibold text-sm transition ${priceNegotiable === "Negotiable" ? "bg-[#0b6b53] text-white border-[#0b6b53]" : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"}`}
+      >
+        Negotiable
+      </button>
+      <button
+        type="button"
+        onClick={() => setPriceNegotiable("Non-Negotiable")}
+        className={`flex-1 h-12 rounded-xl border font-semibold text-sm transition ${priceNegotiable === "Non-Negotiable" ? "bg-[#0b6b53] text-white border-[#0b6b53]" : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"}`}
+      >
+        Non-Negotiable
+      </button>
+    </div>
+  </div>
 </div>
+                  </div>
+
+                  {/* Row 4b: Property Description */}
+                  <div className={cardWrapper + " grid grid-cols-1"}>
+                    <div>
+                      <label className={fieldLabel}>Property Description</label>
+                      <textarea
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        placeholder="Describe your property... Highway touch, corner plot, near metro, garden facing, newly renovated, etc."
+                        className={inputNormal + " min-h-[120px]"}
+                      />
+                    </div>
                   </div>
 
                   {/* Row 5: Amenities */}
