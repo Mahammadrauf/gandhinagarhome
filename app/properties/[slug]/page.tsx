@@ -564,6 +564,11 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
               <div className="text-left md:text-right">
                     <p className="text-3xl font-bold tracking-tight" style={{ color: theme.primary }}>{property.price}</p>
                     <p className="text-xs text-gray-500 font-medium mt-1">{property.priceNote}</p>
+                    {property.priceNegotiable !== undefined && (
+                      <span className={`inline-block mt-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${property.priceNegotiable ? 'bg-[#e0f2f1] text-[#1f5f5b]' : 'bg-gray-100 text-gray-600'}`}>
+                        {property.priceNegotiable ? 'Negotiable' : 'Non-Negotiable'}
+                      </span>
+                    )}
               </div>
             </div>
           </div>
@@ -724,6 +729,14 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
                   </div>
               </div>
 
+              {/* 3b. Property Description */}
+              {property.description && (
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-md p-6">
+                    <h3 className="text-base font-bold text-gray-900 mb-5 pb-2 border-b border-gray-100">Property Description</h3>
+                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{property.description}</p>
+                </div>
+              )}
+
               {/* 4. Amenities (ENHANCED: Pill Pop Effect) */}
               <div className="bg-white rounded-2xl border border-gray-100 shadow-md p-6">
                   <h3 className="text-base font-bold text-gray-900 mb-5 pb-2 border-b border-gray-100">Amenities</h3>
@@ -797,7 +810,14 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
                   
                   <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Price</p>
                   <h2 className="text-3xl lg:text-4xl font-extrabold text-gray-900 mb-1 tracking-tight">{property.price}</h2>
-                  <p className="text-xs text-gray-500 font-medium mb-6">{property.priceNote}</p>
+                  <p className="text-xs text-gray-500 font-medium mb-2">{property.priceNote}</p>
+                  <div className="mb-6">
+                    {property.priceNegotiable !== undefined && (
+                      <span className={`inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${property.priceNegotiable ? 'bg-[#e0f2f1] text-[#1f5f5b]' : 'bg-gray-100 text-gray-600'}`}>
+                        {property.priceNegotiable ? 'Negotiable' : 'Non-Negotiable'}
+                      </span>
+                    )}
+                  </div>
 
                   <div className="mb-6 bg-gray-50 rounded-xl p-4 border border-gray-100">
                     <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">

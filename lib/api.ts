@@ -61,6 +61,7 @@ export interface BackendProperty {
   highlights: string[];
   amenities: string[];
   nearbyFacilities: string[];
+  description?: string;
   status: string;
   userId: {
     _id: string;
