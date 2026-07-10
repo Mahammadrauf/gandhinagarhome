@@ -341,25 +341,30 @@ function BuyIntroPage() {
 
   const filteredListings = useMemo(() => {
     const hasFilters = filters.city !== "any" || filters.priceRange !== "any" || filters.propertyType !== "any" || filters.ageOfProperty !== "any";
-    const useRotation = !hasFilters && !isMapView;
+    // const useRotation = !hasFilters && !isMapView;
     
     // Use all properties when filters are applied, otherwise use rotated listings
-    let sourceData: Listing[];
-    if (hasFilters || !useRotation) {
-      // Use all properties when filters are applied
-      sourceData = [
-        ...allProperties.exclusive,
-        ...allProperties.featured,
-        ...allProperties.others
-      ];
-    } else {
-      // Use rotated listings when no filters
-      sourceData = rotatedListings.length > 0 ? rotatedListings : [
-        ...allProperties.exclusive,
-        ...allProperties.featured,
-        ...allProperties.others
-      ];
-    }
+    // let sourceData: Listing[];
+    // if (hasFilters || !useRotation) {
+    //   // Use all properties when filters are applied
+    //   sourceData = [
+    //     ...allProperties.exclusive,
+    //     ...allProperties.featured,
+    //     ...allProperties.others
+    //   ];
+    // } else {
+    //   // Use rotated listings when no filters
+    //   sourceData = rotatedListings.length > 0 ? rotatedListings : [
+    //     ...allProperties.exclusive,
+    //     ...allProperties.featured,
+    //     ...allProperties.others
+    //   ];
+    // }
+    const sourceData: Listing[] = [
+      ...allProperties.exclusive,
+      ...allProperties.featured,
+      ...allProperties.others,
+    ];
 
     const normalize = (v: string) => v.toLowerCase().trim();
 

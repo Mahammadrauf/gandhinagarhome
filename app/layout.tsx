@@ -7,8 +7,8 @@ export const metadata: Metadata = {
   title: 'GandhinagarHomes - Premium Real Estate in Gandhinagar',
   description: 'Premium homes and a trusted selling experience — curated for Gandhinagar.',
   icons: {
-    icon: '/images/icons.jpeg',
-    shortcut: '/images/icons.jpeg',
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
     apple: '/images/icons.jpeg',
   },
 }
