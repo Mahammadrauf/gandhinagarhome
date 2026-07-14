@@ -497,10 +497,10 @@ useEffect(() => {
 
   // --- Helper arrays for ALL dropdowns ---
   const propertyTypeOptions = ["Apartment", "Tenement", "Bungalow", "Penthouse", "Plot", "Shop", "Office"];
-  const bedroomOptions = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10+"];
-  const balconyOptions = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10+"];
-  const bathroomOptions = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10+"];
-  const parkingOptions = ["None", "1", "2", "3+"];
+  const bedroomOptions = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
+  const balconyOptions = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
+  const bathroomOptions = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
+  const parkingOptions = ["None", "1", "2", "3","4","5","6","7","8","9","10"];
 
   // Age of property: Updated options
   const ageOfPropertyOptions = [

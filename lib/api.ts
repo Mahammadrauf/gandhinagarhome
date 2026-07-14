@@ -35,13 +35,14 @@ export interface BackendProperty {
     age: number | string;
     furnishing: string;
     facing: string;
+    parking: number;
   };
   pricing: {
     expectedPrice: number;
     pricePerSqft: number;
     maintenanceCharges: number;
     bookingAmount: number;
-    priceNegotiable: boolean;
+    negotiable: boolean;
   };
   media: {
     images: Array<{

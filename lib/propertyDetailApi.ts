@@ -118,20 +118,32 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
   };
 
   // Get age label
+  // const getAgeLabel = (age: number | string) => {
+  //   // If age is already a formatted string, return it as is
+  //   if (typeof age === 'string' && age.includes('Years')) {
+  //     return age;
+  //   }
+    
+  //   // Convert to number if it's a string
+  //   const ageNum = typeof age === 'string' ? parseInt(age, 10) : age;
+    
+  //   if (ageNum === 0) return 'New Property';
+  //   if (ageNum <= 3) return '1–3 Years Old';
+  //   if (ageNum <= 6) return '3–6 Years Old';
+  //   if (ageNum <= 9) return '6–9 Years Old';
+  //   return '9+ Years Old';
+  // };
+
   const getAgeLabel = (age: number | string) => {
-    // If age is already a formatted string, return it as is
-    if (typeof age === 'string' && age.includes('Years')) {
+    if (typeof age === "string") {
       return age;
     }
-    
-    // Convert to number if it's a string
-    const ageNum = typeof age === 'string' ? parseInt(age, 10) : age;
-    
-    if (ageNum === 0) return 'New Property';
-    if (ageNum <= 3) return '1–3 Years Old';
-    if (ageNum <= 6) return '3–6 Years Old';
-    if (ageNum <= 9) return '6–9 Years Old';
-    return '9+ Years Old';
+
+    if (age === 0) return "New Property";
+    if (age <= 3) return "1–3 Years Old";
+    if (age <= 6) return "3–6 Years Old";
+    if (age <= 9) return "6–9 Years Old";
+    return "9+ Years Old";
   };
 
   // Get ready status
@@ -145,6 +157,13 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
   const getParking = (balconies: number) => {
     if (balconies >= 2) return `${balconies} covered`;
     if (balconies === 1) return '1 covered';
+    return 'Open';
+  };
+  const getParkings = (parking: number) => {
+    if (parking === 1) return '1';
+    if (parking === 2) return '2';
+    if (parking === 3) return '3';
+    if (parking >= 3) return `${parking}`;
     return 'Open';
   };
 
@@ -284,7 +303,7 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
     { label: 'Built-up Area', value: formattedArea, icon: 'Maximize2' },
     { label: 'Furnishing', value: specs.furnishing || 'Unfurnished', icon: 'Home' },
     { label: 'Status', value: getReadyStatus(backendProp.status), icon: 'CheckCircle2' },
-    { label: 'Parking', value: getParking(specs.balconies || 0), icon: 'Car' },
+    { label: 'Parking', value: getParkings(specs.parking || 0), icon: 'Car' },
     { label: 'Age', value: getAgeLabel(specs.age || 0), icon: 'Clock' },
     { label: 'Bathrooms', value: `${specs.bathrooms || 0} Baths`, icon: 'Bath' },
   ];
@@ -298,7 +317,7 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
     { label: 'Bedrooms', value: `${bedrooms}` },
     { label: 'Bathrooms', value: `${specs.bathrooms || 0}` },
     { label: 'Balconies', value: `${specs.balconies || 0}` },
-    { label: 'Parking', value: getParking(specs.balconies || 0) },
+    { label: 'Parking', value: getParkings(specs.parking || 0) },
     { label: 'Furnishing', value: specs.furnishing || 'Unfurnished' },
     { label: 'Availability', value: getReadyStatus(backendProp.status) },
     { label: 'Age of property', value: getAgeLabel(specs.age || 0) },
@@ -323,7 +342,7 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
     price: formatPrice(pricing.expectedPrice || 0),
     priceLabel: formatPrice(pricing.expectedPrice || 0),
     priceNote: '+ Stamp Duty',
-    priceNegotiable: pricing.priceNegotiable,
+    priceNegotiable: pricing?.negotiable ?? false,
     location: `${location.sector || ''}, ${location.city || ''}`.replace(/^,\s*/, ''),
     city: location.city || 'Unknown',
     state: location.state || 'Unknown',
@@ -341,7 +360,7 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
     totalFloors: specs.totalFloors || 0,
     propertyOnFloor: getFloorInfo(specs.propertyOnFloor || 0, specs.totalFloors || 0),
     readyStatus: getReadyStatus(backendProp.status),
-    parking: getParking(specs.balconies || 0),
+    parking: getParkings(specs.parking || 0),
     images: processImages(media.images),
     videoUrl: toAbsoluteUrl(media.video?.url),
     saleDeedUrl: toAbsoluteUrl(media.documents?.[0]?.url),

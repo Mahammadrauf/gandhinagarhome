@@ -85,11 +85,36 @@ export const transformToBuyPageProperty = (
   };
 
   // Map furnishing from backend to frontend types
-  const mapFurnishing = (backendFurnishing: string): BuyPageProperty["furnishing"] => {
+  // const mapFurnishing = (backendFurnishing: string): BuyPageProperty["furnishing"] => {
+  //   if (!backendFurnishing) return "Unfurnished";
+  //   const furnishingLower = backendFurnishing.toLowerCase();
+  //   if (furnishingLower.includes('semi')) return "Semi-furnished";
+  //   if (furnishingLower.includes('full')) return "Fully furnished";
+  //   return "Unfurnished";
+  // };
+  const mapFurnishing = (
+  backendFurnishing: string
+  ): BuyPageProperty["furnishing"] => {
     if (!backendFurnishing) return "Unfurnished";
-    const furnishingLower = backendFurnishing.toLowerCase();
-    if (furnishingLower.includes('semi')) return "Semi-furnished";
-    if (furnishingLower.includes('full')) return "Fully furnished";
+
+    const furnishingLower = backendFurnishing.trim().toLowerCase();
+
+    if (furnishingLower.includes("semi")) {
+      return "Semi-furnished";
+    }
+
+    if (
+      furnishingLower.includes("full") ||
+      furnishingLower === "furnished" ||
+      furnishingLower.includes("fully")
+    ) {
+      return "Fully furnished";
+    }
+
+    if (furnishingLower.includes("un")) {
+      return "Unfurnished";
+    }
+
     return "Unfurnished";
   };
 
