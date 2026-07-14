@@ -271,6 +271,7 @@ function SellFormPageContent() {
   // NEW: Size of Property
   const [propertySize, setPropertySize] = useState("");
   const [propertySizeUnit, setPropertySizeUnit] = useState<"sq ft" | "sq m" | "sq yd">("sq ft");
+  const [propertySizeType, setPropertySizeType] = useState<"Super Build up" | "Built up" | "Carpet area" | "">("");
 
   // NEW: Price negotiation & description
   const [priceNegotiable, setPriceNegotiable] = useState<"Negotiable" | "Non-Negotiable" | "">("");
@@ -1664,6 +1665,29 @@ const handleEditMediaSubmit = () => {
                             </Transition>
                           </div>
                         </Listbox>
+                      </div>
+                      <div className="flex gap-3 mt-3">
+                        <button
+                          type="button"
+                          onClick={() => setPropertySizeType("Super Build up")}
+                          className={`flex-1 h-12 rounded-xl border font-semibold text-sm transition ${propertySizeType === "Super Build up" ? "bg-[#0b6b53] text-white border-[#0b6b53]" : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"}`}
+                        >
+                          Super Build up
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPropertySizeType("Built up")}
+                          className={`flex-1 h-12 rounded-xl border font-semibold text-sm transition ${propertySizeType === "Built up" ? "bg-[#0b6b53] text-white border-[#0b6b53]" : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"}`}
+                        >
+                          Built up
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPropertySizeType("Carpet area")}
+                          className={`flex-1 h-12 rounded-xl border font-semibold text-sm transition ${propertySizeType === "Carpet area" ? "bg-[#0b6b53] text-white border-[#0b6b53]" : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"}`}
+                        >
+                          Carpet area
+                        </button>
                       </div>
                       <p className="text-xs text-gray-500 mt-2">
                         Example: 1200 sq ft (built-up as per your local standard).
