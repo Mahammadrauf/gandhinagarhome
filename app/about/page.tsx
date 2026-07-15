@@ -1,9 +1,11 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { BLOG_POSTS } from "@/lib/blogPosts";
 import {
   ShieldCheck,
   Eye,
@@ -200,6 +202,81 @@ export default function AboutPage() {
                   </div>
                   <h3 className="font-bold text-xl text-slate-900 mb-3">{item.title}</h3>
                   <p className="text-slate-500 leading-relaxed text-sm">{item.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* FROM OUR BLOG */}
+        <section className="py-24 px-6">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+              >
+                <span className="inline-block px-3 py-1 mb-4 text-[11px] font-bold tracking-[0.2em] uppercase bg-emerald-50 text-emerald-700 rounded-full border border-emerald-100">
+                  Insights & Guides
+                </span>
+                <h2 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
+                  From our Blog
+                </h2>
+                <p className="text-slate-500 mt-3 max-w-lg">
+                  Locality guides, price insights, and honest advice on
+                  Gandhinagar's resale market.
+                </p>
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+              >
+                <Link
+                  href="/blog"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-slate-200 bg-white text-slate-800 font-bold text-sm hover:border-emerald-300 hover:text-emerald-700 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-emerald-900/5 transition-all duration-300"
+                >
+                  View all articles <ArrowRight className="w-4 h-4" />
+                </Link>
+              </motion.div>
+            </div>
+
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+              {BLOG_POSTS.slice(0, 3).map((post, i) => (
+                <motion.div
+                  key={post.slug}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                >
+                  <Link
+                    href={`/blog/${post.slug}`}
+                    className="group flex flex-col h-full rounded-3xl overflow-hidden bg-white border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-500"
+                  >
+                    <div className={`relative h-36 bg-gradient-to-br ${post.accent} overflow-hidden`}>
+                      <div className="absolute inset-0 opacity-15 bg-[linear-gradient(to_right,#ffffff14_1px,transparent_1px),linear-gradient(to_bottom,#ffffff14_1px,transparent_1px)] bg-[size:28px_28px]" />
+                      <div className="absolute -bottom-10 -right-10 w-32 h-32 rounded-full bg-white/10 group-hover:scale-110 transition-transform duration-700" />
+                      <span className="absolute top-4 left-4 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/15 text-white border border-white/20 backdrop-blur-sm">
+                        {post.category}
+                      </span>
+                    </div>
+                    <div className="p-6 flex flex-col flex-1">
+                      <h3 className="font-bold text-slate-900 leading-snug mb-3 group-hover:text-emerald-700 transition-colors line-clamp-2">
+                        {post.title}
+                      </h3>
+                      <p className="text-slate-500 text-sm leading-relaxed line-clamp-2 mb-4">
+                        {post.description}
+                      </p>
+                      <span className="mt-auto inline-flex items-center gap-2 text-emerald-700 font-bold text-sm">
+                        Read article
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </span>
+                    </div>
+                  </Link>
                 </motion.div>
               ))}
             </div>

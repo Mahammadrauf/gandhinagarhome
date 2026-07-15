@@ -285,6 +285,13 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
   const areaUnit = (specs as any).totalAreaUnit ?? (specs as any).builtUpAreaUnit ?? 'sq ft';
   const formattedArea = formatAreaWithUnits(areaValue, areaUnit);
 
+  // Seller-chosen area measurement type (Super Built up / Built up / Carpet area)
+  const areaSizeType = ((specs as any).propertySizeType || '').trim();
+  const formattedAreaWithType =
+    formattedArea !== 'N/A' && areaSizeType
+      ? `${formattedArea} · ${areaSizeType}`
+      : formattedArea;
+
   // Generate a proper title with database title first, then add BHK info if not already included
   const generatePropertyTitle = (backendTitle: string, beds: number, propertyType: string, location: string): string => {
     // If backend title exists and has content, use it as is
@@ -300,7 +307,7 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
   const createOverview = () => [
     { label: 'Price', value: formatPrice(pricing.expectedPrice || 0), icon: 'FileText' },
     { label: 'Bedrooms', value: `${bedrooms} BHK`, icon: 'BedDouble' },
-    { label: 'Built-up Area', value: formattedArea, icon: 'Maximize2' },
+    { label: 'Size', value: formattedAreaWithType, icon: 'Maximize2' },
     { label: 'Furnishing', value: specs.furnishing || 'Unfurnished', icon: 'Home' },
     { label: 'Status', value: getReadyStatus(backendProp.status), icon: 'CheckCircle2' },
     { label: 'Parking', value: getParkings(specs.parking || 0), icon: 'Car' },
@@ -313,7 +320,7 @@ export const transformPropertyDetail = (backendProp: BackendProperty): PropertyD
     { label: 'Title', value: backendProp.title },
     { label: 'Type', value: backendProp.propertyType },
     { label: 'Price', value: formatPrice(pricing.expectedPrice || 0) },
-    { label: 'Built-up Area', value: formattedArea },
+    { label: 'Size', value: formattedAreaWithType },
     { label: 'Bedrooms', value: `${bedrooms}` },
     { label: 'Bathrooms', value: `${specs.bathrooms || 0}` },
     { label: 'Balconies', value: `${specs.balconies || 0}` },
@@ -443,7 +450,7 @@ export const getMockPropertyDetail = (): PropertyDetail => {
   const createOverview = () => [
     { label: 'Price', value: '₹3.10 Cr', icon: 'FileText' },
     { label: 'Bedrooms', value: '4 BHK', icon: 'BedDouble' },
-    { label: 'Built-up Area', value: '3,400 sq ft', icon: 'Maximize2' },
+    { label: 'Size', value: '3,400 sq ft · Super Built up', icon: 'Maximize2' },
     { label: 'Furnishing', value: 'Fully furnished', icon: 'Home' },
     { label: 'Status', value: 'Ready to move', icon: 'CheckCircle2' },
     { label: 'Parking', value: '2 covered', icon: 'Car' },
@@ -455,7 +462,7 @@ export const getMockPropertyDetail = (): PropertyDetail => {
     { label: 'Title', value: 'Raysan Luxury Apartment 4 BHK' },
     { label: 'Type', value: 'Apartment' },
     { label: 'Price', value: '₹3.10 Cr' },
-    { label: 'Built-up Area', value: '3,400 sq ft' },
+    { label: 'Size', value: '3,400 sq ft · Super Built up' },
     { label: 'Bedrooms', value: '4' },
     { label: 'Bathrooms', value: '4' },
     { label: 'Balconies', value: '2' },

@@ -483,12 +483,32 @@ useEffect(() => {
   const isWhatsappValid = whatsappNumber.length === 10;
   const canContinueStep1 = isFirstNameValid && isLastNameValid && isEmailValid && (isEditMode ? true : isWhatsappValid);
 
-  // Step 2 Validation
+  // Step 2 Validation — every field mandatory except Description & Amenities
   const isTitleValid = title.trim().length >= 3;
-  const isBedroomsValid = Number(bedrooms.replace("+", "")) >= 0;
-  const isBathroomsValid = Number(bathrooms.replace("+", "")) >= 0;
+  const isPropertyTypeValid = propertyType.trim() !== "";
+  const isBedroomsValid = bedrooms.trim() !== "" && Number(bedrooms.replace("+", "")) >= 0;
+  const isBathroomsValid = bathrooms.trim() !== "" && Number(bathrooms.replace("+", "")) >= 0;
+  const isBalconyValid = balcony.trim() !== "";
+  const isParkingValid = parking.trim() !== "";
+  const isAgeOfPropertyValid = ageOfProperty.trim() !== "";
+  const isFurnishingValid = furnishing.trim() !== "";
+  const isPropertySizeValid = propertySize.trim() !== "" && Number(propertySize) > 0;
+  const isPropertySizeTypeValid = propertySizeType !== "";
   const isPriceValid = parseFloat(price.replace(/,/g, '')) > 0;
-  const canContinueStep2 = isTitleValid && isBedroomsValid && isBathroomsValid && isPriceValid;
+  const isPriceNegotiableValid = priceNegotiable !== "";
+  const canContinueStep2 =
+    isTitleValid &&
+    isPropertyTypeValid &&
+    isBedroomsValid &&
+    isBathroomsValid &&
+    isBalconyValid &&
+    isParkingValid &&
+    isAgeOfPropertyValid &&
+    isFurnishingValid &&
+    isPropertySizeValid &&
+    isPropertySizeTypeValid &&
+    isPriceValid &&
+    isPriceNegotiableValid;
 
   // Step 3 Validation
   const isCityValid = city.trim().length > 2;
@@ -1311,7 +1331,7 @@ const handleEditMediaSubmit = () => {
                     </div>
 
                     <div>
-                      <label className={fieldLabel}>Property Type</label>
+                      <label className={fieldLabel}>Property Type <span className="text-[#0b6b53]">*</span></label>
                       <Listbox value={propertyType} onChange={setPropertyType}>
                         <div className="relative">
                           <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
@@ -1351,6 +1371,7 @@ const handleEditMediaSubmit = () => {
                           </Transition>
                         </div>
                       </Listbox>
+                      {triedContinue && !isPropertyTypeValid && <div className="text-xs text-red-600 mt-2">Select property type.</div>}
                     </div>
                   </div>
 
@@ -1401,7 +1422,7 @@ const handleEditMediaSubmit = () => {
                     </div>
 
                     <div>
-                      <label className={fieldLabel}>Balcony</label>
+                      <label className={fieldLabel}>Balcony <span className="text-[#0b6b53]">*</span></label>
                       <Listbox value={balcony} onChange={setBalcony}>
                         <div className="relative">
                           <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
@@ -1441,6 +1462,7 @@ const handleEditMediaSubmit = () => {
                           </Transition>
                         </div>
                       </Listbox>
+                      {triedContinue && !isBalconyValid && <div className="text-xs text-red-600 mt-2">Select balcony.</div>}
                     </div>
 
                     <div>
@@ -1491,7 +1513,7 @@ const handleEditMediaSubmit = () => {
                   {/* Row 3: Parking / Age / Furnishing */}
                   <div className={cardWrapper + " grid grid-cols-1 md:grid-cols-3 gap-6"}>
                     <div>
-                      <label className={fieldLabel}>Parking</label>
+                      <label className={fieldLabel}>Parking <span className="text-[#0b6b53]">*</span></label>
                       <Listbox value={parking} onChange={setParking}>
                         <div className="relative">
                           <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
@@ -1531,10 +1553,11 @@ const handleEditMediaSubmit = () => {
                           </Transition>
                         </div>
                       </Listbox>
+                      {triedContinue && !isParkingValid && <div className="text-xs text-red-600 mt-2">Select parking.</div>}
                     </div>
 
                     <div>
-                      <label className={fieldLabel}>Property Age</label>
+                      <label className={fieldLabel}>Property Age <span className="text-[#0b6b53]">*</span></label>
                       <Listbox value={ageOfProperty} onChange={setAgeOfProperty}>
                         <div className="relative">
                           <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
@@ -1574,10 +1597,11 @@ const handleEditMediaSubmit = () => {
                           </Transition>
                         </div>
                       </Listbox>
+                      {triedContinue && !isAgeOfPropertyValid && <div className="text-xs text-red-600 mt-2">Select property age.</div>}
                     </div>
 
                     <div>
-                      <label className={fieldLabel}>Furnishing</label>
+                      <label className={fieldLabel}>Furnishing <span className="text-[#0b6b53]">*</span></label>
                       <Listbox value={furnishing} onChange={setFurnishing as any}>
                         <div className="relative">
                           <Listbox.Button className={selectNormal + " flex items-center justify-between"}>
@@ -1617,13 +1641,14 @@ const handleEditMediaSubmit = () => {
                           </Transition>
                         </div>
                       </Listbox>
+                      {triedContinue && !isFurnishingValid && <div className="text-xs text-red-600 mt-2">Select furnishing.</div>}
                     </div>
                   </div>
 
                   {/* Size of Property */}
                   <div className={cardWrapper + " grid grid-cols-1 md:grid-cols-2 gap-6"}>
                     <div>
-                      <label className={fieldLabel}>Size of Property</label>
+                      <label className={fieldLabel}>Size of Property <span className="text-[#0b6b53]">*</span></label>
                       <div className="flex gap-3">
                         <input
                           value={propertySize}
@@ -1672,7 +1697,9 @@ const handleEditMediaSubmit = () => {
                           </div>
                         </Listbox>
                       </div>
-                      <div className="flex gap-3 mt-3">
+                      {triedContinue && !isPropertySizeValid && <div className="text-xs text-red-600 mt-2">Enter property size.</div>}
+                      <label className={`${fieldLabel} mt-4`}>Area measurements <span className="text-[#0b6b53]">*</span></label>
+                      <div className="flex gap-3">
                         <button
                           type="button"
                           onClick={() => setPropertySizeType("Super Built up")}
@@ -1695,7 +1722,7 @@ const handleEditMediaSubmit = () => {
                           Carpet area
                         </button>
                       </div>
-                      
+                      {triedContinue && !isPropertySizeTypeValid && <div className="text-xs text-red-600 mt-2">Select area measurement type.</div>}
                     </div>
 
                     <div>
@@ -1729,7 +1756,7 @@ const handleEditMediaSubmit = () => {
   {triedContinue && !isPriceValid && <div className="text-xs text-red-600 mt-2">Required</div>}
 
   <div className="mt-4">
-    <label className={fieldLabel}>Price Negotiation</label>
+    <label className={fieldLabel}>Price Negotiation <span className="text-[#0b6b53]">*</span></label>
     <div className="flex gap-3">
       <button
         type="button"
@@ -1746,6 +1773,7 @@ const handleEditMediaSubmit = () => {
         Non-Negotiable
       </button>
     </div>
+    {triedContinue && !isPriceNegotiableValid && <div className="text-xs text-red-600 mt-2">Select price negotiation.</div>}
   </div>
 </div>
                   </div>
