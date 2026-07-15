@@ -68,6 +68,9 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
   // Refs
   const startXRef = useRef<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
+  // rAF throttle refs: keep pointer-move updates to one per frame for buttery dragging
+  const rafRef = useRef<number | null>(null);
+  const latestDragRef = useRef(0);
 
   // --- Logic Helpers ---
 
@@ -127,6 +130,7 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
     setIsDragging(true);
     setIsPaused(true);
     startXRef.current = e.clientX;
+    latestDragRef.current = 0;
     (e.target as Element).setPointerCapture(e.pointerId);
   };
 
@@ -134,18 +138,31 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
     if (!isDragging || startXRef.current === null) return;
     e.preventDefault();
     const currentX = e.clientX;
-    setDragOffset(currentX - startXRef.current);
+    latestDragRef.current = currentX - startXRef.current;
+    // Coalesce high-frequency pointer events into one state update per frame
+    if (rafRef.current === null) {
+      rafRef.current = window.requestAnimationFrame(() => {
+        rafRef.current = null;
+        setDragOffset(latestDragRef.current);
+      });
+    }
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
     if (!isDragging) return;
     setIsDragging(false);
+    if (rafRef.current !== null) {
+      window.cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
     (e.target as Element).releasePointerCapture(e.pointerId);
     startXRef.current = null;
+    const finalOffset = latestDragRef.current;
+    latestDragRef.current = 0;
 
-    if (dragOffset > CAROUSEL_CONFIG.DRAG_THRESHOLD) {
+    if (finalOffset > CAROUSEL_CONFIG.DRAG_THRESHOLD) {
       prevSlide();
-    } else if (dragOffset < -CAROUSEL_CONFIG.DRAG_THRESHOLD) {
+    } else if (finalOffset < -CAROUSEL_CONFIG.DRAG_THRESHOLD) {
       nextSlide();
     } else {
       setDragOffset(0);
@@ -183,9 +200,11 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
         position: "absolute" as const,
         transition: isDragging
           ? "none"
-          : "transform 500ms cubic-bezier(0.25, 1, 0.5, 1), opacity 500ms",
+          : "transform 650ms cubic-bezier(0.22, 1, 0.36, 1), opacity 450ms ease-out",
         width: `${cardWidth}px`,
         cursor: isDragging ? "grabbing" : "grab",
+        willChange: "transform, opacity",
+        backfaceVisibility: "hidden" as const,
       };
     },
     [centerIndex, totalSlides, dragOffset, cardWidth, isDragging]
@@ -238,7 +257,7 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
   }
 
   return (
-    <section className="py-20 bg-gradient-to-b from-[#c5e6ff]/10 via-[#9fd4ff]/40 to-[#f5fbff] relative overflow-hidden touch-pan-y">
+    <section className="py-20 bg-gradient-to-b from-[#c5e6ff]/10 via-[#9fd4ff]/25 to-[#f5fbff] relative overflow-hidden touch-pan-y">
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-sky-300 to-transparent" />
 
       <div className="container mx-auto">
@@ -261,10 +280,11 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
           {/* --- CONTROLS --- */}
           <button
             onClick={prevSlide}
-            className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-40 w-20 h-20 rounded-full bg-white/20 backdrop-blur-md border border-white/10 shadow-lg items-center justify-center hover:scale-105 hover:bg-white/40 transition-all text-gray-700"
+            aria-label="Previous property"
+            className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-40 w-12 h-12 rounded-full bg-white/90 backdrop-blur-md border border-sky-100 shadow-[0_8px_24px_-8px_rgba(15,127,156,0.35)] items-center justify-center hover:bg-white hover:border-sky-200 hover:shadow-[0_12px_28px_-8px_rgba(15,127,156,0.4)] active:scale-95 transition-all duration-200 text-gray-600"
           >
             <svg
-              className="w-8 h-8"
+              className="w-5 h-5"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -280,10 +300,11 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
 
           <button
             onClick={nextSlide}
-            className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-40 w-20 h-20 rounded-full bg-white/20 backdrop-blur-md border border-white/10 shadow-lg items-center justify-center hover:scale-105 hover:bg-white/40 transition-all text-gray-700"
+            aria-label="Next property"
+            className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-40 w-12 h-12 rounded-full bg-white/90 backdrop-blur-md border border-sky-100 shadow-[0_8px_24px_-8px_rgba(15,127,156,0.35)] items-center justify-center hover:bg-white hover:border-sky-200 hover:shadow-[0_12px_28px_-8px_rgba(15,127,156,0.4)] active:scale-95 transition-all duration-200 text-gray-600"
           >
             <svg
-              className="w-8 h-8"
+              className="w-5 h-5"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -317,10 +338,10 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
                 >
                   <div
                     className={[
-                      "relative rounded-3xl overflow-hidden h-full bg-white border border-gray-100 transition-shadow duration-300",
+                      "relative rounded-3xl overflow-hidden h-full bg-white border border-gray-100 transition-shadow duration-500",
                       isCenterCard
-                        ? "shadow-[0_30px_40px_rgba(15,127,156,0.17)] ring-2 ring-sky-200"
-                        : "shadow-sm",
+                        ? "shadow-[0_25px_50px_-12px_rgba(15,127,156,0.25)] ring-1 ring-sky-200/80"
+                        : "shadow-md",
                     ].join(" ")}
                   >
                     {/* Inner Card Content */}
@@ -332,6 +353,8 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
                           alt={property.location}
                           className="absolute inset-0 w-full h-full object-cover"
                           draggable={false}
+                          loading="lazy"
+                          decoding="async"
                         />
                         <div
                           className={getTagClass(
@@ -461,10 +484,11 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
               <button
                 key={idx}
                 onClick={() => goToSlide(idx)}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                aria-label={`Go to slide ${idx + 1}`}
+                className={`transition-all duration-300 rounded-full ${
                   centerIndex === idx
-                    ? "scale-125 bg-[#0F7F9C] shadow-md"
-                    : "bg-gray-300 hover:bg-gray-400"
+                    ? "w-8 h-2 bg-[#0F7F9C]"
+                    : "w-2 h-2 bg-gray-300 hover:bg-gray-400"
                 }`}
               />
             ))}

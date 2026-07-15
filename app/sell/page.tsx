@@ -49,15 +49,15 @@ export default function SellIntroPage() {
         <div className="container mx-auto px-4">
 
           {/* Main Card */}
-          <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden flex flex-col lg:flex-row items-center gap-6 p-6 lg:p-8 animate-card-in">
+          <div className="bg-white rounded-3xl shadow-[0_20px_50px_-20px_rgba(11,107,83,0.18)] border border-slate-100 overflow-hidden flex flex-col lg:flex-row items-center gap-6 lg:gap-10 p-6 sm:p-8 lg:p-10 animate-card-in">
 
             {/* LEFT SIDE */}
             <div className="flex-1 min-w-0">
-              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 leading-tight animate-fade-up">
+              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 leading-tight tracking-tight animate-fade-up">
                 Sell your Gandhinagar property with confidence
               </h1>
 
-              <p className="mt-3 text-slate-600 max-w-xl text-sm sm:text-base animate-fade-up delay-75">
+              <p className="mt-4 text-slate-500 max-w-xl text-sm sm:text-base leading-relaxed animate-fade-up delay-75">
                 One simple form. Verified local buyers. No broker spam.
                 Get the best offer without wasting time.
               </p>
@@ -68,7 +68,7 @@ export default function SellIntroPage() {
               <Link
                 href="/sell-property-in-gandhinagar-gujarat/form"
                 onClick={handleStartListing}
-                className="inline-flex items-center justify-center px-8 py-4 text-lg rounded-full bg-gradient-to-r from-[#0b6b53] to-[#085341] text-white font-bold shadow-xl hover:scale-[1.03] hover:shadow-2xl transition-all duration-300 ease-in-out animate-cta-in relative group overflow-hidden"
+                className="inline-flex items-center justify-center px-8 py-4 text-lg rounded-full bg-gradient-to-r from-[#0b6b53] to-[#085341] text-white font-bold shadow-[0_14px_30px_-10px_rgba(11,107,83,0.5)] hover:-translate-y-0.5 hover:shadow-[0_20px_38px_-12px_rgba(11,107,83,0.55)] active:translate-y-0 transition-all duration-300 ease-out animate-cta-in relative group overflow-hidden"
               >
                 <span className="relative z-10">Start Listing Now</span>
                 <span className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
@@ -80,7 +80,7 @@ export default function SellIntroPage() {
           <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
 
             {/* Chip 1 */}
-            <div className="bg-gradient-to-br from-[#0b6b53]/5 via-[#0b6b53]/10 to-white rounded-xl p-6 shadow-md border border-[#0b6b53]/15 animate-chip-in group cursor-pointer hover:scale-[1.02] hover:shadow-lg transition-all duration-300 transform-gpu hover:-translate-y-1">
+            <div className="bg-gradient-to-br from-[#0b6b53]/5 via-[#0b6b53]/10 to-white rounded-2xl p-6 shadow-[0_8px_24px_-12px_rgba(11,107,83,0.18)] border border-[#0b6b53]/15 animate-chip-in group hover:shadow-[0_16px_32px_-14px_rgba(11,107,83,0.28)] transition-all duration-300 transform-gpu hover:-translate-y-1">
               <div className="text-xs font-semibold uppercase tracking-wide text-[#0b6b53]">
                 Verified buyers
               </div>
@@ -91,7 +91,7 @@ export default function SellIntroPage() {
             </div>
 
             {/* Chip 2 */}
-            <div className="bg-gradient-to-br from-[#0b6b53]/5 via-slate-50 to-white rounded-xl p-6 shadow-md border border-slate-200 animate-chip-in delay-75 group cursor-pointer hover:scale-[1.02] hover:shadow-lg transition-all duration-300 transform-gpu hover:-translate-y-1">
+            <div className="bg-gradient-to-br from-[#0b6b53]/5 via-slate-50 to-white rounded-2xl p-6 shadow-[0_8px_24px_-12px_rgba(11,107,83,0.14)] border border-slate-200 animate-chip-in delay-75 group hover:shadow-[0_16px_32px_-14px_rgba(11,107,83,0.24)] transition-all duration-300 transform-gpu hover:-translate-y-1">
               <div className="text-xs font-semibold uppercase tracking-wide text-[#0b6b53]">
                 Gandhinagar focus
               </div>
@@ -102,7 +102,7 @@ export default function SellIntroPage() {
             </div>
 
             {/* Chip 3 */}
-            <div className="bg-gradient-to-br from-[#0b6b53]/5 via-emerald-50 to-white rounded-xl p-6 shadow-md border border-emerald-100 animate-chip-in delay-150 group cursor-pointer hover:scale-[1.02] hover:shadow-lg transition-all duration-300 transform-gpu hover:-translate-y-1">
+            <div className="bg-gradient-to-br from-[#0b6b53]/5 via-emerald-50 to-white rounded-2xl p-6 shadow-[0_8px_24px_-12px_rgba(11,107,83,0.14)] border border-emerald-100 animate-chip-in delay-150 group hover:shadow-[0_16px_32px_-14px_rgba(11,107,83,0.24)] transition-all duration-300 transform-gpu hover:-translate-y-1">
               <div className="text-xs font-semibold uppercase tracking-wide text-emerald-700/90">
                 Privacy first
               </div>
@@ -140,14 +140,12 @@ export default function SellIntroPage() {
           to   { opacity: 1; transform: translateY(0); }
         }
         @keyframes chipIn {
-          0% { opacity: 0; transform: translateY(20px) scale(.9); }
-          50% { opacity: .7; transform: translateY(-5px) scale(1.02); }
-          100% { opacity: 1; transform: translateY(0) scale(1); }
+          0% { opacity: 0; transform: translateY(16px); }
+          100% { opacity: 1; transform: translateY(0); }
         }
         @keyframes ctaIn {
-          0% { opacity: 0; transform: translateY(8px) scale(.98); }
-          70% { opacity: 1; transform: translateY(-2px) scale(1.02); }
-          100% { transform: translateY(0) scale(1); }
+          0% { opacity: 0; transform: translateY(8px); }
+          100% { opacity: 1; transform: translateY(0); }
         }
 
         @media (min-width: 1024px) {

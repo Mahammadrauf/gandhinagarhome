@@ -68,7 +68,10 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
   // Refs for Drag Logic
   const startXRef = useRef<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
-  
+  // rAF throttle refs: keep pointer-move updates to one per frame for buttery dragging
+  const rafRef = useRef<number | null>(null);
+  const latestDragRef = useRef(0);
+
   // --- Logic Helpers ---
 
   const getWrappedIndex = useCallback(
@@ -116,8 +119,9 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
   const handlePointerDown = (e: React.PointerEvent) => {
     if (totalSlides <= 1) return;
     setIsDragging(true);
-    setIsPaused(true); 
+    setIsPaused(true);
     startXRef.current = e.clientX;
+    latestDragRef.current = 0;
     (e.target as Element).setPointerCapture(e.pointerId);
   };
 
@@ -126,19 +130,32 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
     e.preventDefault();
     const currentX = e.clientX;
     const diff = currentX - startXRef.current;
-    setDragOffset(diff);
+    latestDragRef.current = diff;
+    // Coalesce high-frequency pointer events into one state update per frame
+    if (rafRef.current === null) {
+      rafRef.current = window.requestAnimationFrame(() => {
+        rafRef.current = null;
+        setDragOffset(latestDragRef.current);
+      });
+    }
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
     if (!isDragging) return;
     setIsDragging(false);
-    
+
+    if (rafRef.current !== null) {
+      window.cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
     (e.target as Element).releasePointerCapture(e.pointerId);
     startXRef.current = null;
+    const finalOffset = latestDragRef.current;
+    latestDragRef.current = 0;
 
-    if (dragOffset > CAROUSEL_CONFIG.DRAG_THRESHOLD) {
+    if (finalOffset > CAROUSEL_CONFIG.DRAG_THRESHOLD) {
       prevSlide();
-    } else if (dragOffset < -CAROUSEL_CONFIG.DRAG_THRESHOLD) {
+    } else if (finalOffset < -CAROUSEL_CONFIG.DRAG_THRESHOLD) {
       nextSlide();
     } else {
       setDragOffset(0);
@@ -172,9 +189,11 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
       zIndex: zIndex,
       opacity: opacity,
       position: 'absolute' as const,
-      transition: isDragging ? 'none' : 'transform 500ms cubic-bezier(0.25, 1, 0.5, 1), opacity 500ms',
+      transition: isDragging ? 'none' : 'transform 650ms cubic-bezier(0.22, 1, 0.36, 1), opacity 450ms ease-out',
       width: `${cardWidth}px`,
       cursor: isDragging ? 'grabbing' : 'grab',
+      willChange: 'transform, opacity',
+      backfaceVisibility: 'hidden' as const,
     };
   }, [centerIndex, totalSlides, dragOffset, cardWidth, isDragging]);
 
@@ -245,16 +264,18 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
           {/* --- CONTROLS --- */}
           <button
             onClick={prevSlide}
-            className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-40 w-20 h-20 rounded-full bg-white/20 backdrop-blur-md border border-white/10 shadow-lg items-center justify-center hover:scale-105 hover:bg-white/40 transition-all text-stone-700"
+            aria-label="Previous property"
+            className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-40 w-12 h-12 rounded-full bg-white/90 backdrop-blur-md border border-stone-200/80 shadow-[0_8px_24px_-8px_rgba(87,72,47,0.3)] items-center justify-center hover:bg-white hover:border-[#B59E78]/40 hover:shadow-[0_12px_28px_-8px_rgba(87,72,47,0.35)] active:scale-95 transition-all duration-200 text-stone-600"
           >
-            <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           </button>
-          
+
           <button
             onClick={nextSlide}
-            className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-40 w-20 h-20 rounded-full bg-white/20 backdrop-blur-md border border-white/10 shadow-lg items-center justify-center hover:scale-105 hover:bg-white/40 transition-all text-stone-700"
+            aria-label="Next property"
+            className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-40 w-12 h-12 rounded-full bg-white/90 backdrop-blur-md border border-stone-200/80 shadow-[0_8px_24px_-8px_rgba(87,72,47,0.3)] items-center justify-center hover:bg-white hover:border-[#B59E78]/40 hover:shadow-[0_12px_28px_-8px_rgba(87,72,47,0.35)] active:scale-95 transition-all duration-200 text-stone-600"
           >
-            <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
           </button>
 
           {/* Viewport with Drag Events Attached */}
@@ -276,8 +297,8 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
                   className="top-4 origin-center touch-none" 
                 >
                   <div className={`
-                    relative rounded-3xl overflow-hidden h-full bg-[#FDFBF7] border border-[#EBE5D9] transition-shadow duration-300
-                    ${isCenterCard ? "shadow-2xl ring-2 ring-[#B59E78]/50" : "shadow-lg"}
+                    relative rounded-3xl overflow-hidden h-full bg-[#FDFBF7] border border-[#EBE5D9] transition-shadow duration-500
+                    ${isCenterCard ? "shadow-[0_25px_50px_-12px_rgba(87,72,47,0.25)] ring-1 ring-[#B59E78]/40" : "shadow-md"}
                   `}>
                     <div className="flex flex-col h-full bg-[#FDFBF7] rounded-3xl overflow-hidden">
                       {/* Image */}
@@ -287,6 +308,8 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
                           alt={property.location}
                           className="w-full h-full object-cover"
                           draggable={false}
+                          loading="lazy"
+                          decoding="async"
                         />
                         <div
                           className={`absolute top-4 ${isCenterCard ? "right-4" : "left-4"} px-3 py-1.5 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm`}
@@ -350,7 +373,8 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
               <button
                 key={idx}
                 onClick={() => goToSlide(idx)}
-                className={`transition-all duration-300 rounded-full ${centerIndex === idx ? 'w-8 h-2 bg-[#B59E78]' : 'w-2 h-2 bg-stone-300'}`}
+                aria-label={`Go to slide ${idx + 1}`}
+                className={`transition-all duration-300 rounded-full ${centerIndex === idx ? 'w-8 h-2 bg-[#B59E78]' : 'w-2 h-2 bg-stone-300 hover:bg-stone-400'}`}
               />
             ))}
           </div>

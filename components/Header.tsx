@@ -580,7 +580,7 @@ const Header = () => {
               <div className={`${BRAND_BG} p-1.5 rounded-lg text-white transition-transform group-hover:scale-110 duration-300`}>
                 <Home className="w-5 h-5" strokeWidth={2.5} />
               </div>
-              <span className={`text-lg font-bold text-gray-800 tracking-tight group-hover:text-[#006A58] transition-colors`}>Gandhinagar<span className="text-[#006A58]">Homes</span></span>
+              <span className={`text-lg max-[420px]:text-base max-[350px]:hidden font-bold text-gray-800 tracking-tight group-hover:text-[#006A58] transition-colors`}>Gandhinagar<span className="text-[#006A58]">Homes</span></span>
             </Link>
 
             {/* Desktop Navigation */}
@@ -621,10 +621,10 @@ const Header = () => {
             <div className="flex items-center gap-2 md:hidden">
               {!isLoggedIn ? (
                 <>
-                  <button onClick={() => openAuth('login')} className="flex-shrink-0 whitespace-nowrap border-2 border-[#006A58] text-[#006A58] px-3 py-2 rounded-full font-semibold text-sm transition-all duration-300 hover:bg-[#006A58]/5 active:scale-95">
+                  <button onClick={() => openAuth('login')} className="flex-shrink-0 whitespace-nowrap border-2 border-[#006A58] text-[#006A58] px-3 py-2 max-[420px]:px-2.5 max-[420px]:text-xs rounded-full font-semibold text-sm transition-all duration-300 hover:bg-[#006A58]/5 active:scale-95">
                     Log In
                   </button>
-                  <button onClick={() => openAuth('signup')} className={`flex-shrink-0 whitespace-nowrap ${BRAND_BG} ${BRAND_HOVER_BG} text-white px-3 py-2 rounded-full font-semibold text-sm transition-all duration-300 shadow-lg shadow-[#006A58]/20 hover:shadow-[#006A58]/40 active:scale-95 transform`}>
+                  <button onClick={() => openAuth('signup')} className={`flex-shrink-0 whitespace-nowrap ${BRAND_BG} ${BRAND_HOVER_BG} text-white px-3 py-2 max-[420px]:px-2.5 max-[420px]:text-xs rounded-full font-semibold text-sm transition-all duration-300 shadow-lg shadow-[#006A58]/20 hover:shadow-[#006A58]/40 active:scale-95 transform`}>
                     Sign Up
                   </button>
                 </>
@@ -633,7 +633,7 @@ const Header = () => {
                   <User className="w-6 h-6" />
                 </Link>
               )}
-              <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors z-50" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+              <button aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'} aria-expanded={isMobileMenuOpen} className="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors z-50" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
                 {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
             </div>
@@ -674,7 +674,7 @@ const Header = () => {
           
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={handleCloseLoop} />
           
-          <div className="relative bg-white w-full max-w-[400px] rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col">
+          <div className="relative bg-white w-full max-w-[400px] rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto overscroll-contain animate-in fade-in zoom-in duration-200 flex flex-col">
             
             <div className={`${BRAND_BG} px-6 py-5 text-center relative shrink-0`}>
               <button onClick={handleCloseLoop} className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors bg-white/10 p-1 rounded-full"><X className="w-4 h-4" /></button>

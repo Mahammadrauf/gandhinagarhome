@@ -1064,16 +1064,16 @@ const handleEditMediaSubmit = () => {
 
 
   // Reusable classes
-  const inputBase = "w-full h-12 rounded-xl px-4 border outline-none shadow-sm";
-  const inputNormal = `${inputBase} border-gray-100 bg-white`;
+  const inputBase = "w-full h-12 rounded-xl px-4 border outline-none shadow-sm placeholder:text-gray-400 transition-all duration-200";
+  const inputNormal = `${inputBase} border-gray-200 bg-white hover:border-gray-300 focus:border-[#0b6b53]/60 focus:ring-2 focus:ring-[#0b6b53]/20`;
   const selectNormal = `${inputNormal} appearance-none bg-no-repeat pr-10 text-left`;
-  const inputError = `${inputBase} border-red-200 bg-red-50`;
-  const btnPrimary = "inline-flex items-center justify-center h-12 px-6 rounded-full bg-[#0b6b53] text-white font-semibold transition transform hover:scale-[1.02]";
-  const btnSecondary = "inline-flex items-center justify-center h-12 px-5 rounded-lg border border-gray-200 bg-white text-gray-700 transition hover:shadow-sm";
-  const btnLight = "inline-flex items-center justify-center h-12 px-6 rounded-full bg-gray-100 text-gray-800 font-semibold transition hover:bg-gray-200";
+  const inputError = `${inputBase} border-red-300 bg-red-50 focus:border-red-400 focus:ring-2 focus:ring-red-200`;
+  const btnPrimary = "inline-flex items-center justify-center h-12 px-6 rounded-full bg-[#0b6b53] text-white font-semibold shadow-[0_8px_20px_-8px_rgba(11,107,83,0.5)] transition-all duration-200 ease-out hover:bg-[#095c47] hover:-translate-y-0.5 hover:shadow-[0_12px_24px_-8px_rgba(11,107,83,0.55)] active:translate-y-0";
+  const btnSecondary = "inline-flex items-center justify-center h-12 px-5 rounded-full border border-gray-200 bg-white text-gray-700 transition-all duration-200 hover:border-gray-300 hover:bg-gray-50";
+  const btnLight = "inline-flex items-center justify-center h-12 px-6 rounded-full bg-gray-100 text-gray-800 font-semibold transition-all duration-200 hover:bg-gray-200";
   const btnDisabled = "inline-flex items-center justify-center h-12 px-6 rounded-full bg-gray-300 text-white cursor-not-allowed";
-  const fieldLabel = "text-sm font-semibold text-gray-800 mb-2 block";
-  const cardWrapper = "p-6 rounded-xl border border-gray-100 shadow-sm";
+  const fieldLabel = "text-sm font-semibold text-gray-700 mb-2 block";
+  const cardWrapper = "p-5 sm:p-6 rounded-2xl border border-gray-100 bg-gray-50/50";
 
 
   return (
@@ -1082,7 +1082,7 @@ const handleEditMediaSubmit = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Sidebar */}
           <aside className="lg:col-span-3">
-            <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm sticky top-6">
+            <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-[0_10px_30px_-18px_rgba(11,107,83,0.25)] sticky top-6">
               <h4 className="text-sm font-semibold text-gray-700 mb-4">Listing Steps</h4>
 
               <nav className="space-y-3">
@@ -1095,10 +1095,10 @@ const handleEditMediaSubmit = () => {
                       key={t}
                       onClick={() => goTo(idx)}
                       disabled={disabled}
-                      className={`w-full text-left flex items-center gap-3 p-3 rounded-xl transition ${active ? "bg-[#f1faf6] ring-1 ring-[#dbeee7]" : disabled ? "opacity-60 cursor-not-allowed" : "hover:bg-gray-50"}`}
+                      className={`w-full text-left flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${active ? "bg-[#f1faf6] ring-1 ring-[#0b6b53]/20 shadow-sm" : disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50"}`}
                       aria-current={active ? "step" : undefined}
                     >
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold ${active ? "bg-[#0b6b53] text-white" : "bg-white border border-gray-200 text-gray-600"}`}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0 transition-colors duration-200 ${active ? "bg-[#0b6b53] text-white shadow-[0_4px_10px_-3px_rgba(11,107,83,0.5)]" : "bg-white border border-gray-200 text-gray-500"}`}>
                         {i + 1}
                       </div>
                       <div>
@@ -1120,13 +1120,13 @@ const handleEditMediaSubmit = () => {
 
           {/* Main content */}
           <main className="lg:col-span-9">
-            <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+            <div className="bg-white rounded-2xl p-5 sm:p-6 lg:p-8 border border-gray-100 shadow-[0_10px_30px_-18px_rgba(11,107,83,0.25)]">
 
               {/* --- STEP 0: BASIC INFO --- */}
               {step === 0 && (
                 <div className="space-y-6">
                   {/* Row 0: Header */}
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
                     <h3 className="text-lg font-semibold">Step 1: Basic Information</h3>
                     <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1284,7 +1284,7 @@ const handleEditMediaSubmit = () => {
               {step === 1 && (
                 <div className="space-y-6">
                   {/* Row 0: Header */}
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
                     <h3 className="text-lg font-semibold">Step 2: Specifications</h3>
                     <button className="flex items-center gap-2 text-sm text-gray-600 font-medium">
                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1810,8 +1810,8 @@ const handleEditMediaSubmit = () => {
                    </div>
 
                   {/* Row 6: Footer */}
-                  <div className="flex items-center justify-between mt-4">
-                    <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-between mt-4 flex-wrap gap-3">
+                    <div className="flex items-center gap-3 flex-wrap">
                       <button onClick={() => setStep(0)} className={btnLight}>Back to Basic Info</button>
                       <button onClick={onContinueFromStep2} className={canContinueStep2 ? btnPrimary : btnDisabled} disabled={!canContinueStep2}>{isEditMode ? "Save Changes" : "Continue to Location"}</button>
                     </div>
@@ -1830,7 +1830,7 @@ const handleEditMediaSubmit = () => {
 {step === 2 && (
   <div className="space-y-6">
     {/* Row 0: Header */}
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between flex-wrap gap-2">
       <h3 className="text-lg font-semibold">Step 3: Location</h3>
       <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1980,8 +1980,8 @@ Can’t find your area? Select the nearest major locality.            </p>
       />
     </div>
 
-    <div className="flex items-center justify-between mt-4">
-      <div className="flex items-center gap-3">
+    <div className="flex items-center justify-between mt-4 flex-wrap gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
         <button onClick={() => setStep(1)} className={btnLight}>Back to Specifications</button>
         <button
           onClick={onContinueFromStep3}
@@ -2000,7 +2000,7 @@ Can’t find your area? Select the nearest major locality.            </p>
               {step === 3 && (
                 <div className="space-y-6">
                     {/* Row 0: Header */}
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
                     <h3 className="text-lg font-semibold">Step 4: Media Upload </h3>
                     <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
@@ -2281,8 +2281,8 @@ Can’t find your area? Select the nearest major locality.            </p>
                   </div>
 
                   {/* Footer: Buttons */}
-                  <div className="flex items-center justify-between mt-4">
-                    <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-between mt-4 flex-wrap gap-3">
+                    <div className="flex items-center gap-3 flex-wrap">
                       <button onClick={() => setStep(2)} className={btnLight}>Back to Location</button>
                       <button onClick={handleSaveDraft} className={btnSecondary}>Save Draft</button>
                       <button
@@ -2295,8 +2295,8 @@ Can’t find your area? Select the nearest major locality.            </p>
 
                     {/* Payment / Terms modal (bypass Razorpay) */}
                     {showPaymentModal && (
-                      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-                        <div className="w-full max-w-xl bg-white rounded-2xl p-6 shadow-lg">
+                      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+                        <div className="w-full max-w-xl bg-white rounded-2xl p-6 shadow-lg max-h-[90vh] overflow-y-auto overscroll-contain">
                           {!showThankYou ? (
                             <div>
                               <h3 className="text-lg font-semibold mb-3">Terms & Payment</h3>

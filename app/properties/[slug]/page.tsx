@@ -44,6 +44,7 @@ import {
 import { useToast } from '@/components/ui/Toast';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import PropertyImageLightbox from '@/components/PropertyImageLightbox';
 import { fetchPropertyDetail, fetchPropertyDetailBySlug, PropertyDetail } from '@/lib/propertyDetailApi';
 import { fetchSimilarProperties, FrontendProperty, addToFavorites, removeFromFavorites, checkFavorite } from '@/lib/api';
 import { parsePropertyUrl, generateShareUrl } from '@/lib/propertyUrl';
@@ -182,6 +183,8 @@ const maskPhoneNumber = (phone?: string) => {
 export default function PropertyDetailsPage({ params }: { params: { slug: string } }) {
   const [mediaMode, setMediaMode] = useState('photos');
   const [galleryIndex, setGalleryIndex] = useState(0);
+  // Fullscreen image viewer (UI only — null means closed)
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [property, setProperty] = useState<PropertyDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -583,16 +586,16 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
               <div className="bg-white rounded-2xl border border-gray-100 shadow-md p-5">
                 <div className="rounded-2xl overflow-hidden bg-[#f5f7f9] relative">
                   {mediaMode === 'gallery' ? (
-                    <div className="relative w-full h-[420px] md:h-[520px] group">
+                    <div className="relative w-full h-[420px] md:h-[520px] group cursor-zoom-in" onClick={() => setLightboxIndex(galleryIndex)}>
                       <Image
                         src={property.images[galleryIndex]}
                         alt="Gallery"
                         fill
-                        className="object-cover"
+                        className="object-cover max-md:object-contain"
                       />
                       <div className="absolute inset-0 flex items-center justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={handlePrev} className="bg-white/90 p-3 rounded-full hover:bg-white shadow-lg transition-transform hover:scale-110"><ArrowLeft className="w-5 h-5"/></button>
-                          <button onClick={handleNext} className="bg-white/90 p-3 rounded-full hover:bg-white shadow-lg transition-transform hover:scale-110"><ArrowLeft className="w-5 h-5 rotate-180"/></button>
+                          <button onClick={(e) => { e.stopPropagation(); handlePrev(); }} aria-label="Previous photo" className="bg-white/90 p-3 rounded-full hover:bg-white shadow-lg transition-transform hover:scale-110"><ArrowLeft className="w-5 h-5"/></button>
+                          <button onClick={(e) => { e.stopPropagation(); handleNext(); }} aria-label="Next photo" className="bg-white/90 p-3 rounded-full hover:bg-white shadow-lg transition-transform hover:scale-110"><ArrowLeft className="w-5 h-5 rotate-180"/></button>
                       </div>
                     </div>
                   ) : mediaMode === 'video' ? (
@@ -602,7 +605,7 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
                   ) : (
                     // Default Mosaic Grid
                     <div className="flex flex-col lg:flex-row gap-3 h-[420px]">
-                      <div className="relative w-full lg:flex-[3] h-full rounded-xl overflow-hidden group cursor-pointer shadow-sm" onClick={handleGalleryClick}>
+                      <div className="relative w-full lg:flex-[3] h-full rounded-xl overflow-hidden group cursor-pointer shadow-sm" onClick={() => setLightboxIndex(0)}>
                         <Image
                           src={property.images[0]}
                           alt="Main property"
@@ -617,11 +620,14 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
                           <div
                             key={idx}
                             className="relative w-full h-full rounded-xl overflow-hidden group cursor-pointer shadow-sm"
-                            onClick={handleGalleryClick}
+                            onClick={() => setLightboxIndex(idx + 1)}
                           >
                             <Image src={src} alt="Thumb" fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
                             {idx === 3 && (
-                               <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white backdrop-blur-[2px] transition-opacity hover:bg-black/50">
+                               <div
+                                 className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white backdrop-blur-[2px] transition-opacity hover:bg-black/50"
+                                 onClick={(e) => { e.stopPropagation(); handleGalleryClick(); }}
+                               >
                                   <Grid className="w-6 h-6 mb-1" />
                                   <span className="text-xs font-bold uppercase tracking-wider">View All</span>
                                </div>
@@ -1012,6 +1018,15 @@ export default function PropertyDetailsPage({ params }: { params: { slug: string
           )}
         </div>
       </div>
+
+      {/* Fullscreen Image Viewer (presentation only) */}
+      {lightboxIndex !== null && property.images.length > 0 && (
+        <PropertyImageLightbox
+          images={property.images}
+          initialIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+        />
+      )}
 
       <Footer />
     </div>

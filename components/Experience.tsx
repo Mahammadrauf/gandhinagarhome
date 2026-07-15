@@ -95,11 +95,11 @@ const Experience = () => {
   };
 
   const itemVariants: Variants = {
-    hidden: { opacity: 0, y: 30 }, // Start invisible and 30px down
-    visible: { 
-      opacity: 1, 
+    hidden: { opacity: 0, y: 24 }, // Start invisible and 24px down
+    visible: {
+      opacity: 1,
       y: 0, // Animate to visible and 0px
-      transition: { type: 'spring', stiffness: 100 } // Add a springy bounce
+      transition: { type: 'spring', stiffness: 90, damping: 16 } // Gentle settle, no wobble
     },
   };
 
@@ -126,8 +126,8 @@ const Experience = () => {
         </motion.div>
 
         {/* --- Grid Animation Container --- */}
-        <motion.div 
-          className="grid grid-cols-1 md:grid-cols-3 gap-6"
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-8 max-w-5xl mx-auto"
           variants={containerVariants}
           initial="hidden"
           animate={hasAnimated ? "visible" : "hidden"} // Use existing state
@@ -138,20 +138,29 @@ const Experience = () => {
               <motion.div
                 key={idx}
                 variants={itemVariants}
-                className={`rounded-3xl p-6 shadow-lg text-center
-                            bg-primary text-white border-primary
-                            transition-all duration-300 ease-in-out
-                            hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/30`}
+                className={`rounded-3xl p-8 text-center
+                            bg-white border border-gray-100
+                            shadow-[0_10px_30px_-14px_rgba(0,109,91,0.15)]
+                            transition-all duration-300 ease-out
+                            hover:-translate-y-1.5 hover:border-primary/20
+                            hover:shadow-[0_20px_44px_-16px_rgba(0,109,91,0.25)]`}
               >
-                <div className="flex justify-center mb-2">
-                  <a.icon className={`w-10 h-10 text-white`} />
+                <div className="flex justify-center mb-5">
+                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+                    <a.icon className={`w-7 h-7 text-primary`} />
+                  </div>
                 </div>
-                <div className="text-3xl font-bold mb-2">
+                <div className="mb-2">
                   {/* The number count-up is handled by the useEffect */}
-                  {counts[a.key as keyof typeof counts]}
-                  {a.suffix}
+                  <span className="text-4xl md:text-5xl font-extrabold tracking-tight text-primary tabular-nums">
+                    {counts[a.key as keyof typeof counts]}
+                    {a.suffix.split(' ')[0]}
+                  </span>
+                  <span className="block mt-2 text-lg font-semibold text-gray-900">
+                    {a.suffix.split(' ').slice(1).join(' ')}
+                  </span>
                 </div>
-                <div className="text-lg">{a.title}</div>
+                <div className="text-sm text-gray-500">{a.title}</div>
               </motion.div>
             );
           })}
