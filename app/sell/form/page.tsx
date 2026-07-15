@@ -205,6 +205,7 @@ function SellFormPageContent() {
           setAmenities(payload.amenities || []);
           setPropertySize(payload.propertySize || "");
           setPropertySizeUnit(payload.propertySizeUnit || "sq ft");
+          setPropertySizeType(payload.propertySizeType || "");
           setCity(payload.city || "");
           setLocality(payload.locality || "");
           setUnitNo(payload.unitNo || "");
@@ -271,7 +272,7 @@ function SellFormPageContent() {
   // NEW: Size of Property
   const [propertySize, setPropertySize] = useState("");
   const [propertySizeUnit, setPropertySizeUnit] = useState<"sq ft" | "sq m" | "sq yd">("sq ft");
-  const [propertySizeType, setPropertySizeType] = useState<"Super Build up" | "Built up" | "Carpet area" | "">("");
+  const [propertySizeType, setPropertySizeType] = useState<"Super Built up" | "Built up" | "Carpet area" | "">("");
 
   // NEW: Price negotiation & description
   const [priceNegotiable, setPriceNegotiable] = useState<"Negotiable" | "Non-Negotiable" | "">("");
@@ -401,6 +402,7 @@ useEffect(() => {
   setAmenities(d.amenities || []);
   setPropertySize(d.propertySize || "");
   setPropertySizeUnit(d.propertySizeUnit || "sq ft");
+  setPropertySizeType(d.propertySizeType || "");
 
     setCity(d.city || "");
     setLocality(d.locality || "");
@@ -569,6 +571,7 @@ useEffect(() => {
       amenities,
       propertySize,
       propertySizeUnit,
+      propertySizeType,
       city, locality, address, unitNo, pincode,
       photosCount: photos.length,
       hasVideo: !!video,
@@ -602,6 +605,7 @@ useEffect(() => {
     amenities,
     propertySize,
     propertySizeUnit,
+    propertySizeType,
     city, locality, address, unitNo, pincode,
     photosCount: isEditMode && effectivePhotos.length === 0 ? existingPhotosCount : effectivePhotos.length,
     hasVideo: isEditMode && !effectiveVideo ? existingHasVideo : !!effectiveVideo,
@@ -657,6 +661,7 @@ const handleEditMediaSubmit = () => {
   const amenitiesValue = Array.isArray(payload.amenities) ? payload.amenities : (amenities || []);
   const propertySizeValue = String(payload.propertySize ?? propertySize ?? "");
   const propertySizeUnitValue = String(payload.propertySizeUnit ?? propertySizeUnit ?? "sq ft");
+   const propertySizeTypeValue = String(payload.propertySizeType ?? propertySizeType ?? "");
   const cityValue = String(payload.city ?? city ?? "").trim();
   const localityValue = String(payload.locality ?? locality ?? "").trim();
   const addressValue = String(payload.address ?? address ?? "").trim();
@@ -739,6 +744,7 @@ const handleEditMediaSubmit = () => {
     formData.append('propertySize', propertySizeValue);
     formData.append('propertySizeUnit', propertySizeUnitValue);
     formData.append('city', cityValue);
+    formData.append('propertySizeType', propertySizeTypeValue);
     formData.append('locality', localityValue);
     formData.append('address', addressValue);
     formData.append('society', titleValue); // Using title as society name
@@ -1669,10 +1675,10 @@ const handleEditMediaSubmit = () => {
                       <div className="flex gap-3 mt-3">
                         <button
                           type="button"
-                          onClick={() => setPropertySizeType("Super Build up")}
-                          className={`flex-1 h-12 rounded-xl border font-semibold text-sm transition ${propertySizeType === "Super Build up" ? "bg-[#0b6b53] text-white border-[#0b6b53]" : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"}`}
+                          onClick={() => setPropertySizeType("Super Built up")}
+                          className={`flex-1 h-12 rounded-xl border font-semibold text-sm transition ${propertySizeType === "Super Built up" ? "bg-[#0b6b53] text-white border-[#0b6b53]" : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"}`}
                         >
-                          Super Build up
+                          Super Built up
                         </button>
                         <button
                           type="button"
@@ -1689,9 +1695,7 @@ const handleEditMediaSubmit = () => {
                           Carpet area
                         </button>
                       </div>
-                      <p className="text-xs text-gray-500 mt-2">
-                        Example: 1200 sq ft (built-up as per your local standard).
-                      </p>
+                      
                     </div>
 
                     <div>

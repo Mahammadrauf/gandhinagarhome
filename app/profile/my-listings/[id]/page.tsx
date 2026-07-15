@@ -274,6 +274,10 @@ export default function MyListingPage() {
                   <p className="text-lg font-semibold text-gray-900">
                     {property.propertySize} {property.propertySizeUnit}
                   </p>
+                  <p className="text-lg font-semibold text-gray-900">
+                    {property.propertySizeType}
+                  </p>
+                  
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-gray-500 uppercase mb-1 block">Price</label>

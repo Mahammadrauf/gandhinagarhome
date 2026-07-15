@@ -28,8 +28,8 @@ const formatPrice = (price: string): string => {
   return `₹${numPrice.toLocaleString("en-IN")}`;
 };
 
-const formatArea = (size: string, unit: string): string =>
-  size ? `${size} ${unit}` : "";
+const formatArea = (size: string, unit: string, type: string): string =>
+  size ? `${size} ${unit} ${type}` : "";
 
 export default function ConfirmationPage() {
   const router = useRouter();
@@ -215,8 +215,8 @@ export default function ConfirmationPage() {
                 <InfoBlock label="Bathrooms" value={listing.bathrooms} />
                 <InfoBlock label="Balcony" value={listing.balcony} />
                 <InfoBlock label="Parking" value={listing.parking} />
-                <InfoBlock label="Area (Size)" value={formatArea(listing.propertySize, listing.propertySizeUnit)} />
-
+                <InfoBlock label="Area (Size)" value={formatArea(listing.propertySize, listing.propertySizeUnit, listing.propertySizeType)} />
+                
                 {/* Row 3: Age (1) + Furnishing (1) + Price (2) = 4 cols */}
                 <InfoBlock label="Property Age" value={listing.ageOfProperty} />
                 <InfoBlock label="Furnishing" value={listing.furnishing} />
