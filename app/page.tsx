@@ -9,11 +9,11 @@ import ExclusiveProperties from '@/components/ExclusiveProperties';
 import Experience from '@/components/Experience';
 import WhyChoose from '@/components/WhyChoose';
 import WhyInvest from '@/components/WhyInvest';
-import ExploreListing from '@/components/ExploreListing'; // working client/server-safe component
+// import ExploreListing from '@/components/ExploreListing'; // DISABLED: hidden from homepage for now
 import Footer from '@/components/Footer';
 
 // Client-only sections to avoid "Unsupported Server Component type" errors
-const ExploreLocations = dynamic(() => import('@/components/ExploreLocations'), { ssr: false });
+// const ExploreLocations = dynamic(() => import('@/components/ExploreLocations'), { ssr: false }); // DISABLED: hidden from homepage for now
 const ContactUs = dynamic(() => import('@/components/ContactUs'), { ssr: false });
 
 export default function Home() {
@@ -43,11 +43,11 @@ export default function Home() {
       <WhyChoose />
       <WhyInvest />
 
-      {/* Your BHK/Bungalow/Plot filtered listings */}
-      <ExploreListing properties={allProps} />
+      {/* Your BHK/Bungalow/Plot filtered listings — DISABLED for now */}
+      {/* <ExploreListing properties={allProps} /> */}
 
-      {/* Explore by Location */}
-      <ExploreLocations/>
+      {/* Explore by Location — DISABLED for now */}
+      {/* <ExploreLocations/> */}
 
       {/* 👇 New: Contact Us form directly under Explore Locations */}
       <ContactUs />

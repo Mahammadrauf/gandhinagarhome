@@ -35,7 +35,8 @@ const useCardWidth = () => {
 
     const handleResize = () => {
       if (window.innerWidth < 640) {
-        setWidth(window.innerWidth * 0.85);
+        // Smaller mobile card so neighbouring properties peek in from both sides
+        setWidth(window.innerWidth * 0.68);
       } else {
         setWidth(CAROUSEL_CONFIG.DESKTOP_CARD_WIDTH);
       }
@@ -201,10 +202,10 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
 
   if (isLoading) {
     return (
-      <section className="py-20 bg-[#FAF9F6] h-[600px] flex items-center justify-center">
+      <section className="py-20 bg-[#FAF9F6] h-[600px] flex items-center justify-center overflow-hidden">
         <div className="animate-pulse flex flex-col items-center">
-          <div className="h-8 w-64 bg-stone-200 rounded mb-4"></div>
-          <div className="h-64 w-[350px] bg-stone-200 rounded-3xl"></div>
+          <div className="h-8 w-64 max-w-[80vw] bg-stone-200 rounded mb-4"></div>
+          <div className="h-64 w-[350px] max-w-[85vw] bg-stone-200 rounded-3xl"></div>
         </div>
       </section>
     );
@@ -215,14 +216,14 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
       <section className="py-20 bg-[#FAF9F6] relative overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="text-center">
-            <h2 className="text-4xl font-bold text-stone-800 mb-3 font-serif">
+            <h2 className="text-3xl md:text-4xl font-bold text-stone-800 mb-3 font-serif">
               Exclusive Properties
             </h2>
             <p className="text-stone-600 text-lg max-w-2xl mx-auto mb-8">
               No exclusive properties available at the moment.
             </p>
             <div className="animate-pulse flex flex-col items-center">
-              <div className="h-64 w-[350px] bg-stone-200 rounded-3xl"></div>
+              <div className="h-64 w-[350px] max-w-[85vw] bg-stone-200 rounded-3xl"></div>
             </div>
           </div>
         </div>
@@ -238,15 +239,15 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
 
   return (
     <section
-      className="py-20 bg-gradient-to-b from-[#FAF9F6] to-[#F5F2EB] relative overflow-hidden touch-pan-y"
+      className="py-12 md:py-20 bg-gradient-to-b from-[#FAF9F6] to-[#F5F2EB] relative overflow-hidden touch-pan-y"
       aria-labelledby="exclusive-properties-heading"
     >
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#B59E78]/40 to-transparent" />
 
       <div className="container mx-auto px-4">
         {/* Header */}
-        <div className="mb-12 text-center select-none">
-          <h2 id="exclusive-properties-heading" className="text-4xl font-bold text-stone-800 mb-3 font-serif">
+        <div className="mb-8 md:mb-12 text-center select-none">
+          <h2 id="exclusive-properties-heading" className="text-3xl md:text-4xl font-bold text-stone-800 mb-3 font-serif">
             Exclusive Properties
           </h2>
           <p className="text-stone-600 text-lg max-w-2xl mx-auto">
@@ -280,7 +281,7 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
 
           {/* Viewport with Drag Events Attached */}
           <div
-            className="relative w-full h-[540px] overflow-hidden select-none"
+            className="relative w-full h-[460px] sm:h-[540px] overflow-hidden select-none touch-pan-y"
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
@@ -294,15 +295,26 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
                 <article
                   key={property.id}
                   style={style}
-                  className="top-4 origin-center touch-none" 
+                  className="top-4 origin-center touch-pan-y"
                 >
                   <div className={`
                     relative rounded-3xl overflow-hidden h-full bg-[#FDFBF7] border border-[#EBE5D9] transition-shadow duration-500
                     ${isCenterCard ? "shadow-[0_25px_50px_-12px_rgba(87,72,47,0.25)] ring-1 ring-[#B59E78]/40" : "shadow-md"}
                   `}>
                     <div className="flex flex-col h-full bg-[#FDFBF7] rounded-3xl overflow-hidden">
-                      {/* Image */}
-                      <div className="relative h-48 sm:h-56 overflow-hidden rounded-t-3xl pointer-events-none">
+                      {/* Image — clickable, opens the property like View Details */}
+                      <Link
+                        href={`/properties/${property.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => {
+                          if (isDragging) {
+                            e.preventDefault();
+                          }
+                        }}
+                        draggable={false}
+                        className="relative h-40 sm:h-56 overflow-hidden rounded-t-3xl block"
+                      >
                         <img
                           src={property.image}
                           alt={property.location}
@@ -323,7 +335,7 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
                         <div className="absolute bottom-4 left-4 bg-white/95 px-3 py-2 rounded-lg shadow-md backdrop-blur-sm">
                           <span className="text-lg font-bold text-[#8C7A5B]">{property.price}</span>
                         </div>
-                      </div>
+                      </Link>
 
                       {/* Content */}
                       <div className="p-4 sm:p-5 flex-1 flex flex-col">

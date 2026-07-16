@@ -36,7 +36,8 @@ const useCardWidth = () => {
 
     const handleResize = () => {
       if (window.innerWidth < 640) {
-        setWidth(window.innerWidth * 0.85);
+        // Smaller mobile card so neighbouring properties peek in from both sides
+        setWidth(window.innerWidth * 0.68);
       } else {
         setWidth(CAROUSEL_CONFIG.DESKTOP_CARD_WIDTH);
       }
@@ -227,10 +228,10 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
 
   if (isLoading) {
     return (
-      <section className="py-20 bg-gray-50 h-[600px] flex items-center justify-center">
+      <section className="py-20 bg-gray-50 h-[600px] flex items-center justify-center overflow-hidden">
         <div className="animate-pulse flex flex-col items-center">
-          <div className="h-8 w-64 bg-gray-200 rounded mb-4"></div>
-          <div className="h-64 w-[350px] bg-gray-200 rounded-3xl"></div>
+          <div className="h-8 w-64 max-w-[80vw] bg-gray-200 rounded mb-4"></div>
+          <div className="h-64 w-[350px] max-w-[85vw] bg-gray-200 rounded-3xl"></div>
         </div>
       </section>
     );
@@ -239,16 +240,16 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
   if (!data || data.length === 0) {
     return (
       <section className="py-20 bg-gray-50 relative overflow-hidden">
-        <div className="container mx-auto">
+        <div className="container mx-auto px-4">
           <div className="text-center">
-            <h2 className="text-4xl font-bold text-stone-800 mb-3 font-serif">
+            <h2 className="text-3xl md:text-4xl font-bold text-stone-800 mb-3 font-serif">
               Featured Properties
             </h2>
             <p className="text-gray-600 text-lg mb-8">
               No featured properties available at the moment.
             </p>
             <div className="animate-pulse flex flex-col items-center">
-              <div className="h-64 w-[350px] bg-gray-200 rounded-3xl"></div>
+              <div className="h-64 w-[350px] max-w-[85vw] bg-gray-200 rounded-3xl"></div>
             </div>
           </div>
         </div>
@@ -257,13 +258,13 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
   }
 
   return (
-    <section className="py-20 bg-gradient-to-b from-[#c5e6ff]/10 via-[#9fd4ff]/25 to-[#f5fbff] relative overflow-hidden touch-pan-y">
+    <section className="py-12 md:py-20 bg-gradient-to-b from-[#c5e6ff]/10 via-[#9fd4ff]/25 to-[#f5fbff] relative overflow-hidden touch-pan-y">
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-sky-300 to-transparent" />
 
       <div className="container mx-auto">
         {/* Header */}
-        <div className="mb-12 text-center px-4 select-none">
-          <h2 className="text-4xl font-bold text-stone-800 mb-3 font-serif">
+        <div className="mb-8 md:mb-12 text-center px-4 select-none">
+          <h2 className="text-3xl md:text-4xl font-bold text-stone-800 mb-3 font-serif">
             Featured Properties
           </h2>
           <p className="text-gray-600 text-lg">
@@ -320,7 +321,7 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
 
           {/* Viewport */}
           <div
-            className="relative w-full h-[540px] overflow-hidden select-none"
+            className="relative w-full h-[460px] sm:h-[540px] overflow-hidden select-none touch-pan-y"
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
@@ -334,7 +335,7 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
                 <div
                   key={property.id}
                   style={style}
-                  className="top-4 origin-center touch-none"
+                  className="top-4 origin-center touch-pan-y"
                 >
                   <div
                     className={[
@@ -346,8 +347,19 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
                   >
                     {/* Inner Card Content */}
                     <div className="relative group flex-shrink-0 w-full bg-white rounded-3xl overflow-hidden h-full flex flex-col">
-                      {/* Image Area */}
-                      <div className="relative h-48 sm:h-52 overflow-hidden rounded-t-3xl flex-shrink-0 pointer-events-none">
+                      {/* Image Area — clickable, opens the property like View Details */}
+                      <Link
+                        href={`/properties/${property.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => {
+                          if (isDragging) {
+                            e.preventDefault();
+                          }
+                        }}
+                        draggable={false}
+                        className="relative h-40 sm:h-52 overflow-hidden rounded-t-3xl flex-shrink-0 block"
+                      >
                         <img
                           src={property.image}
                           alt={property.location}
@@ -375,7 +387,7 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
                             {property.price}
                           </span>
                         </div>
-                      </div>
+                      </Link>
 
                       {/* Content Area */}
                       <div className="p-5 flex flex-col flex-1">

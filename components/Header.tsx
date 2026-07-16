@@ -27,7 +27,7 @@ const NavLink: React.FC<NavLinkProps> = ({ href, children, onClick, mobile }) =>
   if (mobile) {
     return (
       <Link href={href} onClick={onClick} className="block w-full">
-        <div className={`py-3 px-4 text-gray-600 hover:bg-[#006A58]/5 hover:text-[#006A58] font-medium transition-colors rounded-lg`}>
+        <div className={`py-3 px-4 text-[15px] text-gray-700 hover:bg-[#006A58]/5 hover:text-[#006A58] active:bg-[#006A58]/10 font-semibold transition-colors rounded-xl`}>
           {children}
         </div>
       </Link>
@@ -35,10 +35,10 @@ const NavLink: React.FC<NavLinkProps> = ({ href, children, onClick, mobile }) =>
   }
   return (
     <Link href={href} className="relative group py-2">
-      <span className={`text-gray-600 font-medium text-sm group-hover:text-[#006A58] transition-colors`}>
+      <span className={`text-gray-700 font-semibold text-sm tracking-tight group-hover:text-[#006A58] transition-colors duration-200`}>
         {children}
       </span>
-      <span className="absolute bottom-0 left-1/2 h-0.5 w-0 bg-[#006A58] transition-all duration-300 ease-out group-hover:w-full group-hover:left-0"></span>
+      <span className="absolute -bottom-0.5 left-1/2 h-[2.5px] w-0 rounded-full bg-[#006A58] transition-all duration-300 ease-out group-hover:w-full group-hover:left-0"></span>
     </Link>
   );
 };
@@ -573,14 +573,17 @@ const Header = () => {
 
   return (
     <>
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${isScrolled || isMobileMenuOpen ? 'bg-white/95 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-5 border-b border-transparent'}`}>
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${isScrolled || isMobileMenuOpen ? 'bg-white/90 backdrop-blur-xl shadow-[0_1px_0_rgba(0,0,0,0.05),0_8px_24px_-16px_rgba(0,106,88,0.25)] py-3' : 'bg-transparent py-5 border-b border-transparent'}`}
+        style={{ paddingTop: `calc(${isScrolled || isMobileMenuOpen ? '0.75rem' : '1.25rem'} + env(safe-area-inset-top, 0px))` }}
+      >
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="group flex items-center gap-2 flex-shrink-0 z-50 mr-3 md:mr-0">
               <div className={`${BRAND_BG} p-1.5 rounded-lg text-white transition-transform group-hover:scale-110 duration-300`}>
                 <Home className="w-5 h-5" strokeWidth={2.5} />
               </div>
-              <span className={`text-lg max-[420px]:text-base max-[350px]:hidden font-bold text-gray-800 tracking-tight group-hover:text-[#006A58] transition-colors`}>Gandhinagar<span className="text-[#006A58]">Homes</span></span>
+              <span className={`text-lg max-[480px]:text-sm max-[400px]:hidden font-bold text-gray-800 tracking-tight group-hover:text-[#006A58] transition-colors whitespace-nowrap`}>Gandhinagar<span className="text-[#006A58]">Homes</span></span>
             </Link>
 
             {/* Desktop Navigation */}
@@ -595,8 +598,8 @@ const Header = () => {
 
               {!isLoggedIn ? (
                 <div className="flex items-center gap-3">
-                  <button onClick={() => openAuth('login')} className="border-2 border-[#006A58] text-[#006A58] px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-300 hover:bg-[#006A58]/5 active:scale-95">Log In</button>
-                  <button onClick={() => openAuth('signup')} className={`${BRAND_BG} ${BRAND_HOVER_BG} text-white px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-300 shadow-lg shadow-[#006A58]/20 hover:shadow-[#006A58]/40 active:scale-95 transform`}>Sign Up</button>
+                  <button onClick={() => openAuth('login')} className="border border-[#006A58]/40 text-[#006A58] px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 hover:border-[#006A58] hover:bg-[#006A58]/5 active:scale-95">Log In</button>
+                  <button onClick={() => openAuth('signup')} className={`${BRAND_BG} ${BRAND_HOVER_BG} text-white px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 shadow-[0_8px_20px_-8px_rgba(0,106,88,0.5)] hover:-translate-y-0.5 hover:shadow-[0_12px_24px_-8px_rgba(0,106,88,0.55)] active:translate-y-0 active:scale-95`}>Sign Up</button>
                 </div>
               ) : (
                 <div className="group relative cursor-pointer">
@@ -618,30 +621,30 @@ const Header = () => {
             </div>
 
             {/* Mobile Actions Container */}
-            <div className="flex items-center gap-2 md:hidden">
+            <div className="flex items-center gap-2 max-[400px]:gap-1.5 md:hidden">
               {!isLoggedIn ? (
                 <>
-                  <button onClick={() => openAuth('login')} className="flex-shrink-0 whitespace-nowrap border-2 border-[#006A58] text-[#006A58] px-3 py-2 max-[420px]:px-2.5 max-[420px]:text-xs rounded-full font-semibold text-sm transition-all duration-300 hover:bg-[#006A58]/5 active:scale-95">
+                  <button onClick={() => openAuth('login')} className="flex-shrink-0 whitespace-nowrap border-2 border-[#006A58] text-[#006A58] px-3 py-2 max-[480px]:px-2.5 max-[480px]:text-xs rounded-full font-semibold text-sm transition-all duration-300 hover:bg-[#006A58]/5 active:scale-95">
                     Log In
                   </button>
-                  <button onClick={() => openAuth('signup')} className={`flex-shrink-0 whitespace-nowrap ${BRAND_BG} ${BRAND_HOVER_BG} text-white px-3 py-2 max-[420px]:px-2.5 max-[420px]:text-xs rounded-full font-semibold text-sm transition-all duration-300 shadow-lg shadow-[#006A58]/20 hover:shadow-[#006A58]/40 active:scale-95 transform`}>
+                  <button onClick={() => openAuth('signup')} className={`flex-shrink-0 whitespace-nowrap ${BRAND_BG} ${BRAND_HOVER_BG} text-white px-3 py-2 max-[480px]:px-2.5 max-[480px]:text-xs rounded-full font-semibold text-sm transition-all duration-300 shadow-lg shadow-[#006A58]/20 hover:shadow-[#006A58]/40 active:scale-95 transform`}>
                     Sign Up
                   </button>
                 </>
               ) : (
-                <Link href="/profile" className="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
-                  <User className="w-6 h-6" />
+                <Link href="/profile" aria-label="My profile" className={`w-9 h-9 ${BRAND_BG} rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md shadow-[#006A58]/25 ring-2 ring-[#006A58]/10 active:scale-95 transition-transform flex-shrink-0`}>
+                  {user.firstName ? user.firstName[0].toUpperCase() : <User className="w-4 h-4" />}
                 </Link>
               )}
-              <button aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'} aria-expanded={isMobileMenuOpen} className="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors z-50" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-                {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              <button aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'} aria-expanded={isMobileMenuOpen} className={`w-10 h-10 flex items-center justify-center rounded-full border transition-all duration-200 active:scale-95 z-50 flex-shrink-0 ${isMobileMenuOpen ? 'bg-[#006A58] border-[#006A58] text-white shadow-md shadow-[#006A58]/25' : 'bg-white/90 border-gray-200 text-gray-700 shadow-sm hover:bg-gray-50'}`} onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
             </div>
           </div>
         </div>
 
         {/* Mobile Sidebar Dropdown */}
-        <div className={`absolute top-full left-0 w-full bg-white border-t border-gray-100 shadow-lg md:hidden z-40 transition-all duration-300 ease-in-out overflow-hidden ${isMobileMenuOpen ? 'max-h-screen opacity-100 pointer-events-auto' : 'max-h-0 opacity-0 pointer-events-none'}`}>
+        <div className={`absolute top-full left-0 w-full bg-white border-t border-gray-100 shadow-lg rounded-b-2xl md:hidden z-40 transition-all duration-300 ease-in-out ${isMobileMenuOpen ? 'max-h-[min(calc(100dvh-5rem),32rem)] opacity-100 pointer-events-auto overflow-y-auto overscroll-contain' : 'max-h-0 opacity-0 pointer-events-none overflow-hidden'}`}>
           <div className="flex flex-col p-4 space-y-1">
             <nav className="mb-4">
               <NavLink mobile href="/" onClick={() => setIsMobileMenuOpen(false)}>Home</NavLink>

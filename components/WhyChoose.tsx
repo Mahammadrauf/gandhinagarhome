@@ -137,9 +137,9 @@ const WhyChoose = () => {
 
 
   return (
-    <motion.section 
-      ref={sectionRef} 
-      className="py-12 bg-white"
+    <motion.section
+      ref={sectionRef}
+      className="py-12 bg-white overflow-x-clip"
       initial="hidden"
       animate={hasAnimated ? "visible" : "hidden"}
       variants={fadeInSlideUp} 

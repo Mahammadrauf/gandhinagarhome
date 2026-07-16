@@ -30,21 +30,21 @@ const KeyFeatures = () => {
   ];
 
   return (
-    <section className="py-12 bg-gray-50">
+    <section className="py-8 md:py-12 bg-gray-50">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
               <div
                 key={index}
                 // --- UPDATED: Added transition, group, and hover effects ---
-                className={`group bg-white rounded-lg shadow-md p-4 
-                            transition-all duration-300 ease-in-out 
-                            hover:-translate-y-1 hover:shadow-xl 
+                className={`group bg-white rounded-lg shadow-md p-3 md:p-4
+                            transition-all duration-300 ease-in-out
+                            hover:-translate-y-1 hover:shadow-xl
                             hover:bg-gradient-to-r ${feature.color}`}
               >
-                <div className="flex items-start gap-3">
+                <div className="flex flex-col md:flex-row items-start gap-2 md:gap-3">
                   {/* --- UPDATED: Added transition and group-hover effect --- */}
                   <div className={`flex-shrink-0 p-2 rounded-lg bg-primary/10 
                                   transition-all duration-300 
@@ -56,14 +56,14 @@ const KeyFeatures = () => {
                   </div>
                   <div className="flex-1">
                     {/* --- UPDATED: Added transition and group-hover effect --- */}
-                    <h3 className="text-base font-semibold text-gray-800 mb-1 
-                                   transition-colors duration-300 
+                    <h3 className="text-sm md:text-base font-semibold text-gray-800 mb-0.5 md:mb-1
+                                   transition-colors duration-300
                                    group-hover:text-white">
                       {feature.title}
                     </h3>
                     {/* --- UPDATED: Added transition and group-hover effect --- */}
-                    <p className="text-sm text-gray-600 
-                                 transition-colors duration-300 
+                    <p className="text-xs md:text-sm text-gray-600
+                                 transition-colors duration-300
                                  group-hover:text-white/80">
                       {feature.description}
                     </p>

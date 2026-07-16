@@ -112,7 +112,7 @@ const Hero = () => {
   };
 
   return (
-    <section className={`relative bg-white flex flex-col ${manrope.className}`}>
+    <section className={`relative bg-white flex flex-col overflow-x-clip ${manrope.className}`}>
       
       {/* === ANIMATION STYLES === */}
       <style jsx global>{`
@@ -124,11 +124,19 @@ const Hero = () => {
         .delay-100 { animation-delay: 0.15s; }
         .delay-200 { animation-delay: 0.3s; }
         .delay-300 { animation-delay: 0.45s; }
+        /* Mobile-first hero height: fill the first viewport below the fixed navbar.
+           Desktop values (640px+/768px+) match the previous fixed heights exactly. */
+        .hero-card-h { height: clamp(460px, calc(100vh - 7.5rem), 620px); }
+        @supports (height: 100dvh) {
+          .hero-card-h { height: clamp(460px, calc(100dvh - 7.5rem), 620px); }
+        }
+        @media (min-width: 640px) { .hero-card-h { height: 560px; } }
+        @media (min-width: 768px) { .hero-card-h { height: 460px; } }
       `}</style>
 
       {/* Main Content Area */}
-      <div className="container mx-auto px-4 md:px-8 mt-6 md:mt-6 relative z-10">
-        <div className="relative h-[620px] sm:h-[560px] md:h-[460px] overflow-hidden rounded-[2rem] md:rounded-[2.5rem] border border-gray-100 shadow-[0_30px_60px_-25px_rgba(4,76,67,0.35)]">
+      <div className="container mx-auto px-4 md:px-8 mt-4 md:mt-6 relative z-10">
+        <div className="relative hero-card-h overflow-hidden rounded-[2rem] md:rounded-[2.5rem] border border-gray-100 shadow-[0_30px_60px_-25px_rgba(4,76,67,0.35)]">
 
           {/* Background */}
           {/* Original green background - commented out */}
@@ -143,10 +151,10 @@ const Hero = () => {
 
           {/* TEXT BLOCK */}
           <div className="absolute top-0 bottom-0 left-0 right-0 flex flex-col justify-start pt-8 sm:pt-10 md:justify-center md:pt-0 md:pb-24 px-5 sm:px-8 md:px-16 lg:px-24 z-10 text-white max-w-4xl">
-            <h1 className="animate-rise text-[2rem] sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight mb-3 md:mb-4 drop-shadow-sm leading-[1.08] md:leading-[1.05]">
+            <h1 className="animate-rise text-[clamp(1.3rem,6.6vw,2rem)] sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight mb-3 md:mb-4 drop-shadow-sm leading-[1.08] md:leading-[1.05]">
               Gandhinagar<span className="text-emerald-300">Homes</span>.com
             </h1>
-            <p className="animate-rise delay-100 text-xs sm:text-sm md:text-base font-semibold tracking-[0.2em] text-emerald-200/90 mb-6 uppercase">
+            <p className="animate-rise delay-100 text-xs sm:text-sm md:text-base font-semibold tracking-[0.16em] sm:tracking-[0.2em] text-emerald-200/90 mb-6 uppercase">
              Where every property will find its next owner.
             </p>
             <p className="animate-rise delay-200 text-base md:text-lg text-emerald-50/85 leading-relaxed max-w-xl hidden md:block font-normal">
@@ -216,15 +224,15 @@ const Hero = () => {
       </div>
 
       {/* === CTA BUTTONS === */}
-      <div className="bg-white py-10 md:py-12 px-4 flex justify-center animate-rise delay-300">
-        <div className="bg-white rounded-[2.5rem] px-5 sm:px-8 py-5 sm:py-6 border border-gray-100 shadow-[0_12px_36px_-14px_rgba(4,76,67,0.16)] transition-shadow duration-300 hover:shadow-[0_18px_44px_-14px_rgba(4,76,67,0.24)] w-full max-w-sm sm:max-w-none sm:w-auto">
-          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center">
+      <div className="bg-white py-6 md:py-12 px-4 flex justify-center animate-rise delay-300">
+        <div className="bg-white rounded-[2rem] sm:rounded-[2.5rem] px-4 sm:px-8 py-4 sm:py-6 border border-gray-100 shadow-[0_12px_36px_-14px_rgba(4,76,67,0.16)] transition-shadow duration-300 hover:shadow-[0_18px_44px_-14px_rgba(4,76,67,0.24)] w-full max-w-sm sm:max-w-none sm:w-auto">
+          <div className="flex flex-row gap-3 sm:gap-6 items-center">
 
-            <Link href="/buy-property-in-gandhinagar-gujarat" className={`w-full sm:w-auto text-center flex-shrink-0 ${BUTTON_BASE_CLASSES} !px-10 sm:!px-12 !py-4`}>
+            <Link href="/buy-property-in-gandhinagar-gujarat" className={`flex-1 sm:flex-none sm:w-auto text-center ${BUTTON_BASE_CLASSES} !px-3 sm:!px-12 !py-3.5 sm:!py-4 !text-sm sm:!text-base whitespace-nowrap`}>
               Buy Property
             </Link>
 
-            <Link href="/sell-property-in-gandhinagar-gujarat/form" className={`w-full sm:w-auto text-center flex-shrink-0 ${BUTTON_BASE_CLASSES} !px-10 sm:!px-12 !py-4`}>
+            <Link href="/sell-property-in-gandhinagar-gujarat/form" className={`flex-1 sm:flex-none sm:w-auto text-center ${BUTTON_BASE_CLASSES} !px-3 sm:!px-12 !py-3.5 sm:!py-4 !text-sm sm:!text-base whitespace-nowrap`}>
               Sell Property
             </Link>
 

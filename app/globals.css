@@ -7,6 +7,14 @@ html {
   scrollbar-gutter: stable;
 }
 
+/* Guard against any element widening the page horizontally on mobile
+   (prevents the browser from zooming out to fit off-screen content).
+   `clip` does not create a scroll container, so position: sticky/fixed keep working. */
+html,
+body {
+  overflow-x: clip;
+}
+
 /* Flex-gap fallbacks for older WebKit (Safari) that didn't support gap on flex containers.
    These only apply when the browser does NOT support the `gap` property for flexbox. */
 .flex-gap-2-fallback { --gap: 0.5rem; }
