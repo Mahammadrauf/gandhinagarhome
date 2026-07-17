@@ -346,6 +346,15 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
                     ].join(" ")}
                   >
                     {/* Inner Card Content */}
+                     <Link
+                        href={`/properties/${property.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => {
+                          if (isDragging) {
+                            e.preventDefault();
+                          }
+                        }}>
                     <div className="relative group flex-shrink-0 w-full bg-white rounded-3xl overflow-hidden h-full flex flex-col">
                       {/* Image Area — clickable, opens the property like View Details */}
                       <Link
@@ -484,6 +493,7 @@ const FeaturedPropertiesCarousel: React.FC<FeaturedPropertyProps> = ({
                         </Link>
                       </div>
                     </div>
+                    </Link>
                   </div>
                 </div>
               );
