@@ -115,14 +115,21 @@ export default function PrivacyPolicy() {
               5A. Payment Processing & Security
             </h2>
             <p className="text-gray-700 leading-relaxed mb-4">
-              Gandhinagar Homes (operated by Lux Realty) uses <strong>CCAvenue</strong> as its payment gateway for processing online payments. The following important points apply to payment processing on our Platform:
+              Gandhinagar Homes (operated by Lux Realty) uses <strong>CCAvenue</strong> as its payment gateway for processing online payments for our listing publication plans. The following important points apply to payment processing on our Platform:
             </p>
             <ul className="list-disc list-inside space-y-3 text-gray-700 ml-2">
-              <li><strong>Limited to Listing Services Only:</strong> Online payments are accepted exclusively for property listing plans and services. We do not accept payments for property sales, booking amounts, token amounts, advances, brokerage, or any real estate transaction values.</li>
+              <li><strong>Limited to Listing Plans Only:</strong> Online payments are accepted exclusively for our three property listing plans:
+                <ul className="list-circle list-inside space-y-1 ml-4 mt-2">
+                  <li>Standard Plan (₹299) - 180 days listing</li>
+                  <li>Featured Plan (₹14,997) - 30 days featured + 150 days standard</li>
+                  <li>Exclusive Plan (₹19,997) - 30 days exclusive + 150 days standard</li>
+                </ul>
+              </li>
+              <li>We do NOT accept payments for property sales, booking amounts, token amounts, advances, brokerage, or any real estate transaction values.</li>
               <li><strong>Secure Payment Processing:</strong> All payment transactions are processed securely through CCAvenue's encrypted payment gateway.</li>
               <li><strong>No Card Storage:</strong> Payment card details (credit card, debit card, or other payment method information) are <strong>NOT stored on our servers</strong>. All sensitive payment information is securely processed and handled exclusively by CCAvenue.</li>
               <li><strong>PCI Compliance:</strong> CCAvenue maintains PCI-DSS (Payment Card Industry Data Security Standard) compliance to ensure your payment information is protected according to industry standards.</li>
-              <li><strong>Billing Information:</strong> We only store the billing address and transaction confirmation details necessary to process your listing service purchase.</li>
+              <li><strong>Billing Information:</strong> We only store the billing address and transaction confirmation details necessary to process your listing plan purchase.</li>
             </ul>
             <p className="text-gray-700 leading-relaxed mt-4">
               For questions regarding payment security, please contact our support team or visit CCAvenue's privacy and security documentation.
