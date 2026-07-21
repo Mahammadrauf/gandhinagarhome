@@ -35,10 +35,10 @@ export default function PrivacyPolicy() {
               1. Introduction
             </h2>
             <p className="text-gray-700 leading-relaxed">
-              GandhinagarHomes ("we," "us," "our," or "Company") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and otherwise process personal information in connection with our website, mobile application, and related services (collectively, the "Platform").
+              Gandhinagar Homes is an online property listing platform operated by <strong>Lux Realty</strong> (the legal entity). We are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and otherwise process personal information in connection with our website, mobile application, and related services (collectively, the "Platform").
             </p>
             <p className="text-gray-700 leading-relaxed mt-3">
-              We respect your privacy and are committed to being transparent about the data we collect and how we use it. This policy describes our privacy practices in clear and simple language.
+              We respect your privacy and are committed to being transparent about the data we collect and how we use it. This policy describes our privacy practices in clear and simple language. Lux Realty is responsible for managing this Platform and processing all payments through our CCAvenue payment gateway.
             </p>
           </section>
 
@@ -106,6 +106,26 @@ export default function PrivacyPolicy() {
             </p>
             <p className="text-gray-700 leading-relaxed mt-3">
               However, <strong>no method of transmission over the internet or electronic storage is 100% secure.</strong> We cannot guarantee absolute security of your information. You are responsible for maintaining the confidentiality of your login credentials and account information.
+            </p>
+          </section>
+
+          {/* Section 5A: Payment Information & Security */}
+          <section>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              5A. Payment Processing & Security
+            </h2>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              Gandhinagar Homes (operated by Lux Realty) uses <strong>CCAvenue</strong> as its payment gateway for processing online payments. The following important points apply to payment processing on our Platform:
+            </p>
+            <ul className="list-disc list-inside space-y-3 text-gray-700 ml-2">
+              <li><strong>Limited to Listing Services Only:</strong> Online payments are accepted exclusively for property listing plans and services. We do not accept payments for property sales, booking amounts, token amounts, advances, brokerage, or any real estate transaction values.</li>
+              <li><strong>Secure Payment Processing:</strong> All payment transactions are processed securely through CCAvenue's encrypted payment gateway.</li>
+              <li><strong>No Card Storage:</strong> Payment card details (credit card, debit card, or other payment method information) are <strong>NOT stored on our servers</strong>. All sensitive payment information is securely processed and handled exclusively by CCAvenue.</li>
+              <li><strong>PCI Compliance:</strong> CCAvenue maintains PCI-DSS (Payment Card Industry Data Security Standard) compliance to ensure your payment information is protected according to industry standards.</li>
+              <li><strong>Billing Information:</strong> We only store the billing address and transaction confirmation details necessary to process your listing service purchase.</li>
+            </ul>
+            <p className="text-gray-700 leading-relaxed mt-4">
+              For questions regarding payment security, please contact our support team or visit CCAvenue's privacy and security documentation.
             </p>
           </section>
 

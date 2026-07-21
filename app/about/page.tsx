@@ -208,6 +208,58 @@ export default function AboutPage() {
           </div>
         </section>
 
+        {/* COMPANY INFORMATION & LEGAL ENTITY */}
+        <section className="py-24 px-6 bg-white">
+          <div className="max-w-6xl mx-auto">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="bg-gradient-to-br from-emerald-50 to-slate-50 rounded-3xl p-8 md:p-12 border border-emerald-100"
+            >
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-600 flex items-center justify-center">
+                  <Building2 className="w-6 h-6 text-white" />
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold text-slate-900">About Our Company</h2>
+              </div>
+              
+              <div className="grid md:grid-cols-2 gap-8">
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900 mb-4">Who We Are</h3>
+                  <p className="text-slate-700 leading-relaxed mb-6">
+                    Gandhinagar Homes is an online property listing platform dedicated to revolutionizing the resale property market in Gandhinagar, Gujarat. We provide a transparent, efficient, and technology-driven ecosystem for buyers, sellers, and investors.
+                  </p>
+                  <p className="text-slate-700 leading-relaxed">
+                    Our mission is to eliminate the complexities of property transactions by connecting verified buyers and sellers directly, with complete transparency and local expertise.
+                  </p>
+                </div>
+                
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900 mb-4">Legal Entity & Payment Processing</h3>
+                  <p className="text-slate-700 leading-relaxed mb-4">
+                    Gandhinagar Homes is operated by <strong className="text-emerald-600">Lux Realty</strong>, the registered legal entity responsible for managing the platform and processing all payments.
+                  </p>
+                  <div className="bg-white rounded-2xl p-4 border border-emerald-100">
+                    <p className="text-sm text-slate-600 mb-2"><strong>Company Name:</strong> Lux Realty</p>
+                    <p className="text-sm text-slate-600 mb-2"><strong>Platform:</strong> Gandhinagar Homes</p>
+                    <p className="text-sm text-slate-600 mb-2"><strong>Payment Gateway:</strong> CCAvenue</p>
+                    <p className="text-sm text-slate-600"><strong>Payment Type:</strong> Property Listing Services Only</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-8 pt-8 border-t border-emerald-200">
+                <h3 className="text-lg font-bold text-slate-900 mb-4">Important Notice About Payments</h3>
+                <p className="text-slate-700 leading-relaxed">
+                  Lux Realty processes online payments <strong>exclusively for property listing charges</strong> through CCAvenue. Our payment gateway is NOT used for property sales, booking amounts, token amounts, advances, brokerage payments, or any other real estate transaction values. All such transactions occur directly between buyers and sellers outside our platform.
+                </p>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
         {/* FROM OUR BLOG */}
         <section className="py-24 px-6">
           <div className="max-w-6xl mx-auto">

@@ -160,6 +160,7 @@ const Footer = () => {
               <ul className="space-y-1">
                 <LinkItem href="/buy-property-in-gandhinagar-gujarat" label="Buy Properties" />
                 <LinkItem href="/sell-property-in-gandhinagar-gujarat" label="List Your Property" />
+                <LinkItem href="/pricing" label="Pricing Plans" />
                 <LinkItem href="/about" label="About Us" />
                 <LinkItem href="/blog" label="Real Estate News" />
                 <LinkItem href="/contact" label="Contact Support" />
@@ -282,7 +283,7 @@ const Footer = () => {
           </p>
 
           <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2">
-            {['Privacy Policy', 'Terms and Conditions', 'Sitemap', 'Disclaimer'].map((item) => (
+            {['Pricing', 'Privacy Policy', 'Terms and Conditions', 'Refund & Cancellation Policy', 'Disclaimer'].map((item) => (
               <li key={item}>
                 <Link href={`/${item.toLowerCase().replace(/ /g, '-')}`} className="text-xs font-bold text-black hover:text-[#006B5B] transition-colors relative group">
                   {item}
