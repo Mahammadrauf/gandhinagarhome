@@ -41,8 +41,16 @@ export default function ContactPage() {
                 </div>
                 
                 <div className="bg-white rounded-lg p-4 mt-6 border border-emerald-200">
-                  <p className="text-sm text-gray-700">
-                    <strong>Important:</strong> Online payments are processed <strong>only for property listing services</strong>. We do not accept payments for property sales, booking amounts, token amounts, or any real estate transaction values.
+                  <p className="text-sm text-gray-700 mb-3">
+                    <strong>Payment Services:</strong> Lux Realty processes payments <strong>exclusively for property listing services</strong> through our three plans:
+                  </p>
+                  <ul className="text-xs text-gray-700 space-y-1 ml-2">
+                    <li>• Standard Plan: ₹299 (180 days)</li>
+                    <li>• Featured Plan: ₹14,997 (30 featured + 150 standard days)</li>
+                    <li>• Exclusive Plan: ₹19,997 (30 exclusive + 150 standard days)</li>
+                  </ul>
+                  <p className="text-xs text-gray-700 mt-3 font-semibold">
+                    We do NOT accept payments for property sales, booking amounts, token amounts, advances, or any real estate transaction values.
                   </p>
                 </div>
               </div>

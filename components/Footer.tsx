@@ -283,10 +283,16 @@ const Footer = () => {
           </p>
 
           <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2">
-            {['Pricing', 'Privacy Policy', 'Terms and Conditions', 'Refund & Cancellation Policy', 'Disclaimer'].map((item) => (
-              <li key={item}>
-                <Link href={`/${item.toLowerCase().replace(/ /g, '-')}`} className="text-xs font-bold text-black hover:text-[#006B5B] transition-colors relative group">
-                  {item}
+            {[
+              { label: 'Pricing', path: '/pricing' },
+              { label: 'Privacy Policy', path: '/privacy-policy' },
+              { label: 'Terms and Conditions', path: '/terms-and-conditions' },
+              { label: 'Refund & Cancellation Policy', path: '/refund-cancellation-policy' },
+              { label: 'Disclaimer', path: '/disclaimer' }
+            ].map((item) => (
+              <li key={item.label}>
+                <Link href={item.path} className="text-xs font-bold text-black hover:text-[#006B5B] transition-colors relative group">
+                  {item.label}
                   <span className="absolute -bottom-1 left-0 w-0 h-px bg-[#006B5B] group-hover:w-full transition-all duration-300"></span>
                 </Link>
               </li>
