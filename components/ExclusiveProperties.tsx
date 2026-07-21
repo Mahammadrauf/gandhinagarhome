@@ -301,6 +301,15 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
                     relative rounded-3xl overflow-hidden h-full bg-[#FDFBF7] border border-[#EBE5D9] transition-shadow duration-500
                     ${isCenterCard ? "shadow-[0_25px_50px_-12px_rgba(87,72,47,0.25)] ring-1 ring-[#B59E78]/40" : "shadow-md"}
                   `}>
+                    <Link
+                        href={`/properties/${property.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => {
+                          if (isDragging) {
+                            e.preventDefault();
+                          }
+                        }}>
                     <div className="flex flex-col h-full bg-[#FDFBF7] rounded-3xl overflow-hidden">
                       {/* Image — clickable, opens the property like View Details */}
                       <Link
@@ -373,6 +382,7 @@ const ExclusivePropertyCarousel: React.FC<ExclusivePropertyProps> = ({
                         </Link>
                       </div>
                     </div>
+                    </Link>
                   </div>
                 </article>
               );
