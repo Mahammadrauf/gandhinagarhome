@@ -22,7 +22,7 @@ export default function PrivacyPolicy() {
             Privacy Policy
           </h1>
           <p className="text-gray-600 text-sm">
-            Last updated: February 2026
+            Last updated: July 2026
           </p>
         </div>
 
@@ -38,7 +38,7 @@ export default function PrivacyPolicy() {
               Gandhinagar Homes is an online property listing platform operated by <strong>Lux Realty</strong> (the legal entity). We are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and otherwise process personal information in connection with our website, mobile application, and related services (collectively, the "Platform").
             </p>
             <p className="text-gray-700 leading-relaxed mt-3">
-              We respect your privacy and are committed to being transparent about the data we collect and how we use it. This policy describes our privacy practices in clear and simple language. Lux Realty is responsible for managing this Platform and processing all payments through our CCAvenue payment gateway.
+              We respect your privacy and are committed to being transparent about the data we collect and how we use it. This policy describes our privacy practices in clear and simple language. Lux Realty is responsible for managing this Platform and processing all payments through our CCAvenue payment gateway for our listing plans: Standard (₹299), Featured (₹14,997), and Exclusive (₹19,997).
             </p>
           </section>
 
