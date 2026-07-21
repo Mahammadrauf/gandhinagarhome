@@ -173,21 +173,22 @@ export default function RefundCancellationPolicy() {
           <section>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">7. Property Transaction Amounts (NOT Covered)</h2>
             <p className="text-gray-700 leading-relaxed mb-4">
-              <strong>This Refund & Cancellation Policy does NOT apply to property transaction amounts.</strong>
+              <strong>This Refund & Cancellation Policy does NOT apply to property transaction amounts or real estate transaction values.</strong>
             </p>
             <p className="text-gray-700 leading-relaxed mb-4">
-              The following are handled directly between buyers and sellers and are NOT processed through Gandhinagar Homes:
+              Gandhinagar Homes is exclusively a property listing platform. We do NOT accept or process payments for property transactions. The following are handled directly between buyers and sellers and are NOT processed through our payment system:
             </p>
             <ul className="list-disc list-inside space-y-2 text-gray-700 ml-2">
               <li>Property purchase price or sale value</li>
               <li>Booking amount or token payment</li>
-              <li>Advance payment</li>
-              <li>Brokerage or agent fees</li>
+              <li>Advance payment for property</li>
+              <li>Brokerage or agent fees for property transactions</li>
+              <li>Registration or legal fees</li>
               <li>Any funds related to property title or possession transfer</li>
             </ul>
             <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-sm text-red-900">
-                <strong>Important:</strong> Gandhinagar Homes and Lux Realty do NOT accept payments for property transactions. Any such payments must be arranged directly between buyers and sellers. We have no responsibility or liability for disputes or refund requests related to property transaction amounts.
+                <strong>Important:</strong> Gandhinagar Homes and Lux Realty process ONLY listing publication charges (Standard, Featured, or Exclusive plans). We have NO responsibility or liability for disputes or refund requests related to property transaction amounts. All such transactions occur directly between buyers and sellers.
               </p>
             </div>
           </section>

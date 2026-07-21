@@ -229,23 +229,44 @@ export default function AboutPage() {
                 <div>
                   <h3 className="text-xl font-bold text-slate-900 mb-4">Who We Are</h3>
                   <p className="text-slate-700 leading-relaxed mb-6">
-                    Gandhinagar Homes is an online property listing platform dedicated to revolutionizing the resale property market in Gandhinagar, Gujarat. We provide a transparent, efficient, and technology-driven ecosystem for buyers, sellers, and investors.
+                    Gandhinagar Homes is an online property listing platform dedicated to revolutionizing the resale property market in Gandhinagar, Gujarat. We provide a transparent, efficient, and technology-driven ecosystem for buyers, sellers, and investors to connect directly.
                   </p>
                   <p className="text-slate-700 leading-relaxed">
-                    Our mission is to eliminate the complexities of property transactions by connecting verified buyers and sellers directly, with complete transparency and local expertise.
+                    Our mission is to eliminate the complexities of property transactions by connecting verified buyers and sellers directly, with complete transparency and local expertise. We offer three listing plans: Standard (₹299), Featured (₹14,997), and Exclusive (₹19,997).
                   </p>
                 </div>
                 
                 <div>
                   <h3 className="text-xl font-bold text-slate-900 mb-4">Legal Entity & Payment Processing</h3>
                   <p className="text-slate-700 leading-relaxed mb-4">
-                    Gandhinagar Homes is operated by <strong className="text-emerald-600">Lux Realty</strong>, the registered legal entity responsible for managing the platform and processing all payments.
+                    Gandhinagar Homes is operated by <strong className="text-emerald-600">Lux Realty</strong>, the registered legal entity. Until Gandhinagar Homes is registered as an independent legal entity, <strong>Lux Realty processes all payments</strong> through the CCAvenue payment gateway on behalf of Gandhinagar Homes.
                   </p>
-                  <div className="bg-white rounded-2xl p-4 border border-emerald-100">
-                    <p className="text-sm text-slate-600 mb-2"><strong>Company Name:</strong> Lux Realty</p>
-                    <p className="text-sm text-slate-600 mb-2"><strong>Platform:</strong> Gandhinagar Homes</p>
-                    <p className="text-sm text-slate-600 mb-2"><strong>Payment Gateway:</strong> CCAvenue</p>
-                    <p className="text-sm text-slate-600"><strong>Payment Type:</strong> Property Listing Services Only</p>
+                  <div className="bg-white rounded-2xl p-4 border border-emerald-100 space-y-2">
+                    <p className="text-sm text-slate-600"><strong>Operating Company:</strong> Lux Realty</p>
+                    <p className="text-sm text-slate-600"><strong>Platform:</strong> Gandhinagar Homes</p>
+                    <p className="text-sm text-slate-600"><strong>Payment Gateway:</strong> CCAvenue (PCI-DSS Compliant)</p>
+                    <p className="text-sm text-slate-600"><strong>Payment Type:</strong> Listing Publication Plans Only</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-8 pt-8 border-t border-emerald-200">
+                <h3 className="text-lg font-bold text-slate-900 mb-4">Our Listing Plans</h3>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="bg-white rounded-lg p-4 border border-emerald-100">
+                    <p className="font-bold text-slate-900">Standard Plan</p>
+                    <p className="text-2xl font-black text-emerald-600 mt-1">₹299</p>
+                    <p className="text-xs text-slate-600 mt-2">180 Days • Email Support • Standard Inquiry Form</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 border border-blue-100">
+                    <p className="font-bold text-slate-900">Featured Plan</p>
+                    <p className="text-2xl font-black text-blue-600 mt-1">₹14,997</p>
+                    <p className="text-xs text-slate-600 mt-2">30 Featured + 150 Standard • WhatsApp Support • Top 5 Ranking</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 border border-amber-100">
+                    <p className="font-bold text-slate-900">Exclusive Plan</p>
+                    <p className="text-2xl font-black text-amber-700 mt-1">₹19,997</p>
+                    <p className="text-xs text-slate-600 mt-2">30 Exclusive + 150 Standard • Photoshoot Included • 24/7 Support</p>
                   </div>
                 </div>
               </div>
@@ -253,7 +274,7 @@ export default function AboutPage() {
               <div className="mt-8 pt-8 border-t border-emerald-200">
                 <h3 className="text-lg font-bold text-slate-900 mb-4">Important Notice About Payments</h3>
                 <p className="text-slate-700 leading-relaxed">
-                  Lux Realty processes online payments <strong>exclusively for property listing charges</strong> through CCAvenue. Our payment gateway is NOT used for property sales, booking amounts, token amounts, advances, brokerage payments, or any other real estate transaction values. All such transactions occur directly between buyers and sellers outside our platform.
+                  We process online payments <strong>exclusively for property listing publication and promotion services</strong> through our three plans above. Our payment gateway is NOT used for property sales, booking amounts, token amounts, advances, brokerage payments, or any other real estate transaction values. All such transactions occur directly between buyers and sellers outside our platform.
                 </p>
               </div>
             </motion.div>
